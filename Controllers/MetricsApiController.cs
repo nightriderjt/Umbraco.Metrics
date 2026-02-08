@@ -19,10 +19,12 @@ namespace UmbMetrics.Controllers;
 public class MetricsApiController : ManagementApiControllerBase
 {
     private readonly IPerformanceMetricsService _metricsService;
+    private readonly IUmbracoMetricsService _umbracoMetricsService;
 
-    public MetricsApiController(IPerformanceMetricsService metricsService)
+    public MetricsApiController(IPerformanceMetricsService metricsService,IUmbracoMetricsService umbracoMetricsService)
     {
         _metricsService = metricsService;
+        this._umbracoMetricsService = umbracoMetricsService;
     }
 
     /// <summary>
@@ -30,8 +32,7 @@ public class MetricsApiController : ManagementApiControllerBase
     /// </summary>
     /// <returns>Performance metrics data</returns>
     [HttpGet("performance")]
-    [MapToApiVersion("1.0")]
-    [ProducesResponseType(typeof(PerformanceMetrics), StatusCodes.Status200OK)]
+       [ProducesResponseType(typeof(PerformanceMetrics), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetPerformanceMetrics()
     {
@@ -47,6 +48,19 @@ public class MetricsApiController : ManagementApiControllerBase
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError
             );
+        }
+    }
+    [HttpGet("umb")]
+    public async Task<IActionResult> GetUmbracoMetrics()
+    {
+        try
+        {
+            var metrics = await _umbracoMetricsService.GetMetricsAsync();
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 }

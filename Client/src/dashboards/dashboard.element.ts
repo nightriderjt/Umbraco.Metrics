@@ -90,7 +90,8 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     try {
       if (this._autoRefresh && this.#metricsService.isConnected) {
         // Request update through SignalR
-        await this.#metricsService.requestMetrics();
+          await this.#metricsService.requestMetrics();
+          this.#loadUmbracoMetrics();
       } else {
         // Direct HTTP request
         await Promise.all([

@@ -1,13 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UmbMetrics.Middleware;
+using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
-
-public interface IPerformanceMetricsService
-{
-    Task<PerformanceMetrics> GetMetricsAsync();
-}
 
 public class PerformanceMetricsService : IPerformanceMetricsService
 {
@@ -162,7 +158,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         try
         {
             _currentProcess.Refresh();
-            var uptime = DateTime.UtcNow - _currentProcess.StartTime;
+            var uptime = DateTime.Now.Subtract(_currentProcess.StartTime);
             
             return new ApplicationInfo
             {
