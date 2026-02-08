@@ -7,6 +7,7 @@ import {
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import type { ApplicationInfo } from "../types/performance-metrics.js";
+import { formatUptime } from "../utils/format-utils.js";
 
 @customElement("umbmetrics-app-info-banner")
 export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
@@ -15,14 +16,6 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
 
   @property({ type: Boolean })
   isConnected: boolean = false;
-
-  #formatUptime(seconds: number): string {
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${days}d ${hours}h ${minutes}m ${secs}s`;
-  }
 
   render() {
     if (!this.applicationInfo) {
@@ -44,7 +37,7 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
           <strong>CPU Cores:</strong> ${this.applicationInfo.processorCount}
         </div>
         <div class="info-item">
-          <strong>Uptime:</strong> ${this.#formatUptime(this.applicationInfo.uptimeSeconds)}
+          <strong>Uptime:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
         </div>
         ${this.isConnected ? html`
           <div class="info-item connected">

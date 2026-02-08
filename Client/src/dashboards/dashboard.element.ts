@@ -15,8 +15,8 @@ import type { UmbAuthContext } from "@umbraco-cms/backoffice/auth";
 import { MetricsPerformanceService } from "../services/metrics-performance.service.js";
 import type { PerformanceMetrics } from "../types/performance-metrics.js";
 import type { UmbracoMetrics } from "../types/umbraco-metrics.js";
-import type { MetricCardColor } from "../components/metric-card.element.js";
 import type { StatRow } from "../components/stat-card.element.js";
+import { getStatusColor, formatNumber } from "../utils/format-utils.js";
 import "../components/app-info-banner.element.js";
 import "../components/metric-card.element.js";
 import "../components/metrics-grid.element.js";
@@ -248,18 +248,6 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     }
   };
 
-  #getStatusColor(value: number, threshold: number): MetricCardColor {
-    return value > threshold
-      ? "danger"
-      : value > threshold * 0.7
-      ? "warning"
-      : "positive";
-  }
-
-  #formatNumber(num: number): string {
-    return num.toLocaleString();
-  }
-
   #switchTab = (tabName: string) => {
     this._activeTab = tabName;
   };
@@ -283,7 +271,7 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
           title="CPU Usage"
           value="${m.cpuUsage.toFixed(1)}%"
           detail="Process CPU"
-          color="${this.#getStatusColor(m.cpuUsage, 80)}"
+          color="${getStatusColor(m.cpuUsage, 80)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
@@ -305,20 +293,20 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
           title="Avg Response"
           value="${m.requestMetrics.averageResponseTimeMs.toFixed(0)} ms"
           detail="Last 1000 requests"
-          color="${this.#getStatusColor(m.requestMetrics.averageResponseTimeMs, 1000)}"
+          color="${getStatusColor(m.requestMetrics.averageResponseTimeMs, 1000)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
           icon="icon-link"
           title="Active Requests"
           value="${m.requestMetrics.activeRequests}"
-          detail="Total: ${this.#formatNumber(m.requestMetrics.totalRequests)}"
+          detail="Total: ${formatNumber(m.requestMetrics.totalRequests)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
           icon="icon-alert"
           title="Failed Requests"
-          value="${this.#formatNumber(m.requestMetrics.failedRequests)}"
+          value="${formatNumber(m.requestMetrics.failedRequests)}"
           detail="4xx/5xx responses"
           color="${m.requestMetrics.failedRequests > 0 ? 'danger' : 'positive'}"
         ></umbmetrics-metric-card>
@@ -334,7 +322,7 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
           icon="icon-list"
           title="Work Items"
           value="${m.threadInfo.pendingWorkItemCount}"
-          detail="Completed: ${this.#formatNumber(m.threadInfo.completedWorkItemCount)}"
+          detail="Completed: ${formatNumber(m.threadInfo.completedWorkItemCount)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
@@ -361,9 +349,9 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     ];
 
     const collectionStats: StatRow[] = [
-      { label: 'Gen 0', value: this.#formatNumber(m.garbageCollectionStats.gen0Collections) },
-      { label: 'Gen 1', value: this.#formatNumber(m.garbageCollectionStats.gen1Collections) },
-      { label: 'Gen 2', value: this.#formatNumber(m.garbageCollectionStats.gen2Collections) },
+      { label: 'Gen 0', value: formatNumber(m.garbageCollectionStats.gen0Collections) },
+      { label: 'Gen 1', value: formatNumber(m.garbageCollectionStats.gen1Collections) },
+      { label: 'Gen 2', value: formatNumber(m.garbageCollectionStats.gen2Collections) },
     ];
 
     const gcDetails: StatRow[] = [
@@ -410,32 +398,32 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     const m = this._umbracoMetrics;
 
     const contentStats: StatRow[] = [
-      { label: 'Total Nodes', value: this.#formatNumber(m.contentStatistics.totalContentNodes) },
-      { label: 'Published', value: this.#formatNumber(m.contentStatistics.publishedNodes), color: 'positive' },
-      { label: 'Unpublished', value: this.#formatNumber(m.contentStatistics.unpublishedNodes), color: 'warning' },
-      { label: 'Trashed', value: this.#formatNumber(m.contentStatistics.trashedNodes), color: m.contentStatistics.trashedNodes > 0 ? 'danger' : 'positive' },
+      { label: 'Total Nodes', value: formatNumber(m.contentStatistics.totalContentNodes) },
+      { label: 'Published', value: formatNumber(m.contentStatistics.publishedNodes), color: 'positive' },
+      { label: 'Unpublished', value: formatNumber(m.contentStatistics.unpublishedNodes), color: 'warning' },
+      { label: 'Trashed', value: formatNumber(m.contentStatistics.trashedNodes), color: m.contentStatistics.trashedNodes > 0 ? 'danger' : 'positive' },
       { label: 'Content Types', value: m.contentStatistics.contentTypeCount },
     ];
 
     const mediaStats: StatRow[] = [
-      { label: 'Total Items', value: this.#formatNumber(m.mediaStatistics.totalMediaItems) },
+      { label: 'Total Items', value: formatNumber(m.mediaStatistics.totalMediaItems) },
       { label: 'Total Size', value: `${m.mediaStatistics.totalMediaSizeMB.toFixed(2)} MB` },
-      { label: 'Images', value: this.#formatNumber(m.mediaStatistics.imagesCount) },
-      { label: 'Documents', value: this.#formatNumber(m.mediaStatistics.documentsCount) },
+      { label: 'Images', value: formatNumber(m.mediaStatistics.imagesCount) },
+      { label: 'Documents', value: formatNumber(m.mediaStatistics.documentsCount) },
       { label: 'Media Types', value: m.mediaStatistics.mediaTypeCount },
     ];
 
     const cacheStats: StatRow[] = [
-      { label: 'Runtime Cache', value: `${this.#formatNumber(m.cacheStatistics.runtimeCacheCount)} items` },
-      { label: 'NuCache', value: `${this.#formatNumber(m.cacheStatistics.nuCacheCount)} items` },
+      { label: 'Runtime Cache', value: `${formatNumber(m.cacheStatistics.runtimeCacheCount)} items` },
+      { label: 'NuCache', value: `${formatNumber(m.cacheStatistics.nuCacheCount)} items` },
       { label: 'Total Size', value: m.cacheStatistics.totalCacheSize },
     ];
 
     const userStats: StatRow[] = [
-      { label: 'Total Users', value: this.#formatNumber(m.backofficeUsers.totalUsers) },
-      { label: 'Active Users', value: this.#formatNumber(m.backofficeUsers.activeUsers), color: 'positive' },
-      { label: 'Administrators', value: this.#formatNumber(m.backofficeUsers.adminUsers) },
-      { label: 'Current Sessions', value: this.#formatNumber(m.backofficeUsers.currentSessions), color: m.backofficeUsers.currentSessions > 0 ? 'positive' : 'default' },
+      { label: 'Total Users', value: formatNumber(m.backofficeUsers.totalUsers) },
+      { label: 'Active Users', value: formatNumber(m.backofficeUsers.activeUsers), color: 'positive' },
+      { label: 'Administrators', value: formatNumber(m.backofficeUsers.adminUsers) },
+      { label: 'Current Sessions', value: formatNumber(m.backofficeUsers.currentSessions), color: m.backofficeUsers.currentSessions > 0 ? 'positive' : 'default' },
     ];
 
     return html`
