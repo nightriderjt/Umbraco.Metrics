@@ -1,5 +1,6 @@
 import type { PerformanceMetrics } from '../types/performance-metrics.js';
 import * as signalR from '@microsoft/signalr';
+import { UmbracoMetrics } from '../types/umbraco-metrics.js';
 
 export class MetricsPerformanceService {
   #connection?: signalR.HubConnection;
@@ -231,6 +232,26 @@ export class MetricsPerformanceService {
    */
   get connectionState(): string {
     return this.#connection?.state?.toString() || 'Disconnected';
+  }
+
+  /**
+   * Fetches Umbraco-specific metrics from the server
+   */
+  async getUmbracoMetrics(): Promise<UmbracoMetrics> {
+      const token = await this.#tokenProvider();
+    
+      const response = await fetch(`${this.API_BASE_URL}/umb`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Umbraco metrics: ${response.statusText}`);
+    }
+
+    return await response.json();
   }
 
    #notifyListeners(metrics: PerformanceMetrics): void {

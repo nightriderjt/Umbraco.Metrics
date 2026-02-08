@@ -14,10 +14,10 @@ public class MetricsComposer : IComposer
     {
         // Register metrics service
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
-        
+        builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
-        
+
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
         {
