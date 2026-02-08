@@ -108,32 +108,9 @@ app.UseUmbraco()
 
 ```
 
-### Step 3: Update Your Middleware (Startup.cs) 
 
 
-Ensure you have the necessary middleware to support SignalR and Umbraco Metrics:
-
-```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    // Other middleware...
-
-    app.UseRouting();
-
-    app.UseEndpoints(endpoints =>
-    {
-        // Map Umbraco metrics hub
-        endpoints.MapHub<MetricsHub>("/umbraco-metrics");
-
-        // Map default controller route
-        endpoints.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
-    });
-}
-```
-
-### Step 4: Access the Dashboard
+### Step 3: Access the Dashboard
 
 After installation and configuration, restart your Umbraco site and navigate to `Settings` -> `Umbraco Metrics` to access your monitoring dashboard.
 
