@@ -1,44 +1,39 @@
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Hosting;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Core.Security;
 using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Core.PublishedCache;
+using System.Text.Json;
+using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
-
-public interface IUmbracoMetricsService
-{
-    Task<UmbracoMetrics> GetMetricsAsync();
-}
 
 public class UmbracoMetricsService : IUmbracoMetricsService
 {
     private readonly IContentService _contentService;
     private readonly IMediaService _mediaService;
     private readonly IUserService _userService;
-    private readonly IBackOfficeUserManager _backOfficeUserManager;
     private readonly AppCaches _appCaches;
     private readonly ILogger<UmbracoMetricsService> _logger;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
+    private readonly IHostingEnvironment _hostingEnvironment;
 
     public UmbracoMetricsService(
         IContentService contentService,
         IMediaService mediaService,
         IUserService userService,
-        IBackOfficeUserManager backOfficeUserManager,
         AppCaches appCaches,
         ILogger<UmbracoMetricsService> logger,
-        IUmbracoDatabaseFactory databaseFactory)
+        IUmbracoDatabaseFactory databaseFactory,
+        IHostingEnvironment hostingEnvironment)
     {
         _contentService = contentService;
         _mediaService = mediaService;
         _userService = userService;
-        _backOfficeUserManager = backOfficeUserManager;
         _appCaches = appCaches;
         _logger = logger;
         _databaseFactory = databaseFactory;
+        _hostingEnvironment = hostingEnvironment;
     }
 
     public async Task<UmbracoMetrics> GetMetricsAsync()
@@ -63,34 +58,208 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         }
     }
 
-    private async Task<ContentStatistics> GetContentStatisticsAsync()
+    private CacheStatistics GetCacheStatistics()
     {
-        var allContent = _contentService.GetRootContent();
-        var published = 0;
-        var unpublished = 0;
-        var total = 0;
+        var runtimeCacheCount = 0;
+        var runtimeCacheSizeBytes = 0L;
+        var nuCacheCount = 0;
+        var nuCacheSizeBytes = 0L;
 
-        void CountContent(IEnumerable<IContent> nodes)
+        try
         {
-            foreach (var node in nodes)
-            {
-                total++;
-                if (node.Published)
-                    published++;
-                else
-                    unpublished++;
+            // === RUNTIME CACHE ===
+            var runtimeCacheItems = _appCaches.RuntimeCache.SearchByKey("").ToList();
+            runtimeCacheCount = runtimeCacheItems.Count;
+            runtimeCacheSizeBytes = EstimateRuntimeCacheSize(runtimeCacheItems);
 
-                var children = _contentService.GetPagedChildren(node.Id, 0, int.MaxValue, out _);
-                if (children.Any())
-                    CountContent(children);
-            }
+            // === NUCACHE (Published Content Cache) ===
+            nuCacheSizeBytes = GetNuCacheFileSize();
+            nuCacheCount = GetPublishedContentCountFromDatabase();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not retrieve cache statistics");
         }
 
-        CountContent(allContent);
+        return new CacheStatistics
+        {
+            RuntimeCacheCount = runtimeCacheCount,
+            RuntimeCacheSizeMB = Math.Round(runtimeCacheSizeBytes / 1024.0 / 1024.0, 2),
+            NuCacheCount = nuCacheCount,
+            NuCacheSizeMB = Math.Round(nuCacheSizeBytes / 1024.0 / 1024.0, 2),
+            TotalCacheSize = FormatBytes(runtimeCacheSizeBytes + nuCacheSizeBytes)
+        };
+    }
 
+    private int GetPublishedContentCountFromDatabase()
+    {
+        try
+        {
+            using var db = _databaseFactory.CreateDatabase();
+            
+            var publishedContent = db.ExecuteScalar<int>(
+                @"SELECT COUNT(*) FROM umbracoDocument d
+                  INNER JOIN umbracoNode n ON d.nodeId = n.id
+                  WHERE d.published = 1 AND n.trashed = 0");
+
+            var mediaCount = db.ExecuteScalar<int>(
+                @"SELECT COUNT(*) FROM umbracoNode 
+                  WHERE nodeObjectType = @0 AND trashed = 0",
+                Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+
+            return publishedContent + mediaCount;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not get published content count from database");
+            return 0;
+        }
+    }
+
+    private long GetNuCacheFileSize()
+    {
+        try
+        {
+            var localTempPath = _hostingEnvironment.LocalTempPath;
+            var nuCachePath = Path.Combine(localTempPath, "NuCache");
+
+            if (!Directory.Exists(nuCachePath))
+            {
+                var umbracoPath = Path.Combine(_hostingEnvironment.ApplicationPhysicalPath, "umbraco", "Data", "NuCache");
+                if (Directory.Exists(umbracoPath))
+                {
+                    nuCachePath = umbracoPath;
+                }
+                else
+                {
+                    _logger.LogDebug("NuCache directory not found");
+                    return 0;
+                }
+            }
+
+            long totalSize = 0;
+            var allFiles = Directory.GetFiles(nuCachePath, "*", SearchOption.AllDirectories);
+            foreach (var file in allFiles)
+            {
+                var fileInfo = new FileInfo(file);
+                totalSize += fileInfo.Length;
+            }
+
+            _logger.LogDebug("NuCache total size: {Size} bytes from {Count} files", totalSize, allFiles.Length);
+            return totalSize;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not get NuCache file size");
+            return 0;
+        }
+    }
+
+    private long EstimateRuntimeCacheSize(List<object> cacheItems)
+    {
+        if (cacheItems.Count == 0) return 0;
+
+        try
+        {
+            var sampleSize = Math.Min(cacheItems.Count, 500);
+            var sampledBytes = 0L;
+
+            for (int i = 0; i < sampleSize; i++)
+            {
+                var item = cacheItems[i];
+                if (item == null) continue;
+                sampledBytes += EstimateObjectSize(item);
+            }
+
+            if (sampleSize > 0)
+            {
+                var avgBytesPerItem = sampledBytes / sampleSize;
+                return avgBytesPerItem * cacheItems.Count;
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error estimating runtime cache size");
+            return 0;
+        }
+    }
+
+    private long EstimateObjectSize(object obj)
+    {
+        if (obj == null) return 0;
+
+        try
+        {
+            return obj switch
+            {
+                string s => s.Length * 2 + 56,
+                byte[] b => b.Length + 24,
+                int => 20,
+                long => 24,
+                double => 24,
+                bool => 17,
+                DateTime => 24,
+                Guid => 32,
+                _ => EstimateComplexObjectSize(obj)
+            };
+        }
+        catch
+        {
+            return 256;
+        }
+    }
+
+    private long EstimateComplexObjectSize(object obj)
+    {
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                MaxDepth = 3,
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+            };
+
+            var json = JsonSerializer.Serialize(obj, options);
+            return (json.Length * 2) + 100;
+        }
+        catch
+        {
+            var type = obj.GetType();
+            var propertyCount = type.GetProperties().Length;
+            return propertyCount * 100 + 200;
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        return bytes switch
+        {
+            < 1024 => $"{bytes} B",
+            < 1024 * 1024 => $"{bytes / 1024.0:F2} KB",
+            < 1024 * 1024 * 1024 => $"{bytes / 1024.0 / 1024.0:F2} MB",
+            _ => $"{bytes / 1024.0 / 1024.0 / 1024.0:F2} GB"
+        };
+    }
+
+    private async Task<ContentStatistics> GetContentStatisticsAsync()
+    {
         using var db = _databaseFactory.CreateDatabase();
+
+        var total = db.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM umbracoNode 
+              WHERE nodeObjectType = @0 AND trashed = 0",
+            Umbraco.Cms.Core.Constants.ObjectTypes.Document);
+
+        var published = db.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM umbracoDocument d
+              INNER JOIN umbracoNode n ON d.nodeId = n.id
+              WHERE d.published = 1 AND n.trashed = 0");
+
         var trashedCount = db.ExecuteScalar<int>(
-            "SELECT COUNT(*) FROM umbracoNode WHERE nodeObjectType = @0 AND trashed = 1",
+            @"SELECT COUNT(*) FROM umbracoNode 
+              WHERE nodeObjectType = @0 AND trashed = 1",
             Umbraco.Cms.Core.Constants.ObjectTypes.Document);
 
         var contentTypeCount = db.ExecuteScalar<int>(
@@ -100,7 +269,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         {
             TotalContentNodes = total,
             PublishedNodes = published,
-            UnpublishedNodes = unpublished,
+            UnpublishedNodes = total - published,
             TrashedNodes = trashedCount,
             ContentTypeCount = contentTypeCount
         };
@@ -108,43 +277,40 @@ public class UmbracoMetricsService : IUmbracoMetricsService
 
     private async Task<MediaStatistics> GetMediaStatisticsAsync()
     {
-        var allMedia = _mediaService.GetRootMedia();
-        var total = 0;
-        var images = 0;
-        var documents = 0;
-
-        void CountMedia(IEnumerable<IMedia> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                total++;
-                var contentType = node.ContentType.Alias.ToLower();
-                
-                if (contentType.Contains("image") || contentType.Contains("photo"))
-                    images++;
-                else if (contentType.Contains("file") || contentType.Contains("document"))
-                    documents++;
-
-                var children = _mediaService.GetPagedChildren(node.Id, 0, int.MaxValue, out _);
-                if (children.Any())
-                    CountMedia(children);
-            }
-        }
-
-        CountMedia(allMedia);
-
         using var db = _databaseFactory.CreateDatabase();
-        
-        // Get total media file size
+
+        var total = db.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM umbracoNode 
+              WHERE nodeObjectType = @0 AND trashed = 0",
+            Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+
         var totalSizeBytes = db.ExecuteScalar<long?>(
-            @"SELECT SUM(CAST(dataNvarchar AS BIGINT)) 
-              FROM cmsPropertyData pd
+            @"SELECT SUM(CAST(pd.varcharValue AS BIGINT)) 
+              FROM umbracoPropertyData pd
               INNER JOIN cmsPropertyType pt ON pd.propertytypeid = pt.id
-              WHERE pt.Alias = 'umbracoBytes'") ?? 0;
+              WHERE pt.Alias = 'umbracoBytes' AND pd.varcharValue IS NOT NULL 
+              AND pd.varcharValue != ''") ?? 0;
+
+        var images = db.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM umbracoNode n
+              INNER JOIN umbracoContent c ON n.id = c.nodeId
+              INNER JOIN cmsContentType ct ON c.contentTypeId = ct.nodeId
+              WHERE n.nodeObjectType = @0 AND n.trashed = 0
+              AND ct.alias = 'Image'",
+            Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+
+        var documents = db.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM umbracoNode n
+              INNER JOIN umbracoContent c ON n.id = c.nodeId
+              INNER JOIN cmsContentType ct ON c.contentTypeId = ct.nodeId
+              WHERE n.nodeObjectType = @0 AND n.trashed = 0
+              AND ct.alias = 'File'",
+            Umbraco.Cms.Core.Constants.ObjectTypes.Media);
 
         var mediaTypeCount = db.ExecuteScalar<int>(
-            "SELECT COUNT(*) FROM cmsContentType WHERE nodeId IN (SELECT id FROM umbracoNode WHERE nodeObjectType = @0)",
-             Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+            @"SELECT COUNT(*) FROM cmsContentType 
+              WHERE nodeId IN (SELECT id FROM umbracoNode WHERE nodeObjectType = @0)",
+            Umbraco.Cms.Core.Constants.ObjectTypes.MediaType);
 
         return new MediaStatistics
         {
@@ -156,49 +322,12 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         };
     }
 
-    private CacheStatistics GetCacheStatistics()
-    {
-        var runtimeCacheCount = 0;
-        var nuCacheCount = 0;
-
-        try
-        {
-            // Get runtime cache count (this is an approximation)
-            if (_appCaches.RuntimeCache is AppCaches runtimeCache)
-            {
-                runtimeCacheCount = runtimeCache.RuntimeCache.SearchByKey("").Count();
-            }
-
-            // NuCache published snapshot count
-          
-                var nuCache = _appCaches.IsolatedCaches.Get<IPublishedContentCache>().Result;
-                if (nuCache != null)
-                {
-                    nuCacheCount = nuCache.SearchByKey("").Count();
-                }
-            
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Could not retrieve cache statistics");
-        }
-
-        return new CacheStatistics
-        {
-            RuntimeCacheCount = runtimeCacheCount,
-            NuCacheCount = nuCacheCount,
-            RequestCacheHitRatio = 0.0, // This would require custom tracking
-            TotalCacheSize = "N/A"
-        };
-    }
-
     private async Task<BackofficeUserInfo> GetBackofficeUserInfoAsync()
     {
         var allUsers = _userService.GetAll(0, int.MaxValue, out var totalRecords).ToList();
         var activeUsers = allUsers.Count(u => !u.IsLockedOut && u.IsApproved);
-        var adminUsers = allUsers.Count(u => u.Groups.Any(g => g.Alias ==Umbraco.Cms.Core.Constants.Security .AdminGroupAlias));
+        var adminUsers = allUsers.Count(u => u.Groups.Any(g => g.Alias == Umbraco.Cms.Core.Constants.Security.AdminGroupAlias));
 
-        // Count current sessions (users logged in within last 30 minutes)
         var thirtyMinutesAgo = DateTime.UtcNow.AddMinutes(-30);
         var activeSessions = allUsers.Count(u => u.LastLoginDate >= thirtyMinutesAgo);
 
@@ -210,48 +339,4 @@ public class UmbracoMetricsService : IUmbracoMetricsService
             CurrentSessions = activeSessions
         };
     }
-}
-
-// DTOs
-public class UmbracoMetrics
-{
-    public DateTime Timestamp { get; set; }
-    public ContentStatistics ContentStatistics { get; set; } = new();
-    public MediaStatistics MediaStatistics { get; set; } = new();
-    public CacheStatistics CacheStatistics { get; set; } = new();
-    public BackofficeUserInfo BackofficeUsers { get; set; } = new();
-}
-
-public class ContentStatistics
-{
-    public int TotalContentNodes { get; set; }
-    public int PublishedNodes { get; set; }
-    public int UnpublishedNodes { get; set; }
-    public int TrashedNodes { get; set; }
-    public int ContentTypeCount { get; set; }
-}
-
-public class MediaStatistics
-{
-    public int TotalMediaItems { get; set; }
-    public double TotalMediaSizeMB { get; set; }
-    public int MediaTypeCount { get; set; }
-    public int ImagesCount { get; set; }
-    public int DocumentsCount { get; set; }
-}
-
-public class CacheStatistics
-{
-    public int RuntimeCacheCount { get; set; }
-    public int NuCacheCount { get; set; }
-    public double RequestCacheHitRatio { get; set; }
-    public string TotalCacheSize { get; set; } = "N/A";
-}
-
-public class BackofficeUserInfo
-{
-    public int ActiveUsers { get; set; }
-    public int TotalUsers { get; set; }
-    public int AdminUsers { get; set; }
-    public int CurrentSessions { get; set; }
 }

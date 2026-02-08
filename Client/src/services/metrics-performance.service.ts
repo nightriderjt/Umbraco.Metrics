@@ -240,7 +240,7 @@ export class MetricsPerformanceService {
   async getUmbracoMetrics(): Promise<UmbracoMetrics> {
       const token = await this.#tokenProvider();
     
-      const response = await fetch('/${this.API_BASE_URL}/umb', {
+      const response = await fetch(`${this.API_BASE_URL}/umb`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
