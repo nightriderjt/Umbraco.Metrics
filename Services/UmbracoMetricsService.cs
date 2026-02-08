@@ -207,18 +207,16 @@ public class UmbracoMetricsService : IUmbracoMetricsService
             return 256;
         }
     }
-
+    private static JsonSerializerOptions SerializerOptions()=> new()
+    {
+        MaxDepth = 3,
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+    };
     private long EstimateComplexObjectSize(object obj)
     {
         try
         {
-            var options = new JsonSerializerOptions
-            {
-                MaxDepth = 3,
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
-            };
-
-            var json = JsonSerializer.Serialize(obj, options);
+            var json = JsonSerializer.Serialize(obj, SerializerOptions());
             return (json.Length * 2) + 100;
         }
         catch
