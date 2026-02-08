@@ -26,9 +26,9 @@ public class MetricsMiddleware
         Interlocked.Increment(ref _activeRequests);
         Interlocked.Increment(ref _totalRequests);
         _requestTimestamps.Enqueue(DateTime.UtcNow);
-        
+
         // Clean old timestamps (older than 1 minute)
-        while (_requestTimestamps.TryPeek(out var timestamp) && 
+        while (_requestTimestamps.TryPeek(out var timestamp) &&
                (DateTime.UtcNow - timestamp).TotalMinutes > 1)
         {
             _requestTimestamps.TryDequeue(out _);
@@ -37,7 +37,7 @@ public class MetricsMiddleware
         try
         {
             await _next(context); // FIX: Pass 'context' to '_next'
-            
+
             if (context.Response.StatusCode >= 400)
             {
                 Interlocked.Increment(ref _failedRequests);
@@ -52,9 +52,9 @@ public class MetricsMiddleware
         {
             stopwatch.Stop();
             Interlocked.Decrement(ref _activeRequests);
-            
+
             _responseTimes.Enqueue(stopwatch.Elapsed.TotalMilliseconds);
-            
+
             // Keep only last 1000 response times to prevent memory growth
             while (_responseTimes.Count > 1000)
             {
@@ -88,13 +88,5 @@ public class MetricsMiddleware
     public static int GetLastMinuteRequests()
     {
         return _requestTimestamps.Count;
-    }
-}
-
-public static class MetricsMiddlewareExtensions
-{
-    public static IApplicationBuilder UseMetricsMiddleware(this IApplicationBuilder builder)
-    {
-        return builder.UseMiddleware<MetricsMiddleware>();
     }
 }

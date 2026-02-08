@@ -4,6 +4,7 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Security;
 using Umbraco.Cms.Infrastructure.Persistence;
+using Umbraco.Cms.Core.PublishedCache;
 
 namespace UmbMetrics.Services;
 
@@ -90,7 +91,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         using var db = _databaseFactory.CreateDatabase();
         var trashedCount = db.ExecuteScalar<int>(
             "SELECT COUNT(*) FROM umbracoNode WHERE nodeObjectType = @0 AND trashed = 1",
-            Constants.Document);
+            Umbraco.Cms.Core.Constants.ObjectTypes.Document);
 
         var contentTypeCount = db.ExecuteScalar<int>(
             "SELECT COUNT(*) FROM cmsContentType");
@@ -143,7 +144,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
 
         var mediaTypeCount = db.ExecuteScalar<int>(
             "SELECT COUNT(*) FROM cmsContentType WHERE nodeId IN (SELECT id FROM umbracoNode WHERE nodeObjectType = @0)",
-            Constants.ObjectTypes.MediaType);
+             Umbraco.Cms.Core.Constants.ObjectTypes.Media);
 
         return new MediaStatistics
         {
@@ -163,20 +164,19 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         try
         {
             // Get runtime cache count (this is an approximation)
-            if (_appCaches.RuntimeCache is AppCache runtimeCache)
+            if (_appCaches.RuntimeCache is AppCaches runtimeCache)
             {
-                runtimeCacheCount = runtimeCache.ClearByKey("").Count();
+                runtimeCacheCount = runtimeCache.RuntimeCache.SearchByKey("").Count();
             }
 
             // NuCache published snapshot count
-            if (_appCaches.IsolatedCaches.Exists(nameof(Umbraco.Cms.Infrastructure.PublishedCache.PublishedSnapshotCache)))
-            {
-                var nuCache = _appCaches.IsolatedCaches.Get(nameof(Umbraco.Cms.Infrastructure.PublishedCache.PublishedSnapshotCache));
+          
+                var nuCache = _appCaches.IsolatedCaches.Get<IPublishedContentCache>().Result;
                 if (nuCache != null)
                 {
-                    nuCacheCount = nuCache.ClearByKey("").Count();
+                    nuCacheCount = nuCache.SearchByKey("").Count();
                 }
-            }
+            
         }
         catch (Exception ex)
         {
@@ -196,7 +196,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
     {
         var allUsers = _userService.GetAll(0, int.MaxValue, out var totalRecords).ToList();
         var activeUsers = allUsers.Count(u => !u.IsLockedOut && u.IsApproved);
-        var adminUsers = allUsers.Count(u => u.Groups.Any(g => g.Alias == Constants.Security.AdminGroupAlias));
+        var adminUsers = allUsers.Count(u => u.Groups.Any(g => g.Alias ==Umbraco.Cms.Core.Constants.Security .AdminGroupAlias));
 
         // Count current sessions (users logged in within last 30 minutes)
         var thirtyMinutesAgo = DateTime.UtcNow.AddMinutes(-30);

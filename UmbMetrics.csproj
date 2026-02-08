@@ -15,6 +15,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Core" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Web.Common" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.1.0" />

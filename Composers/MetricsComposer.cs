@@ -2,6 +2,7 @@ using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using UmbMetrics.Middleware;
 using UmbMetrics.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UmbMetrics.Composers;
 
