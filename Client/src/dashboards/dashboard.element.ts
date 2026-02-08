@@ -14,6 +14,7 @@ import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import type { UmbAuthContext } from "@umbraco-cms/backoffice/auth";
 import { MetricsPerformanceService } from "../services/metrics-performance.service.js";
 import type { PerformanceMetrics } from "../types/performance-metrics.js";
+import { UmbracoMetrics } from "../types/umbraco-metrics.js";
 import stylesString from './dashboard.element.css?inline';
 
 @customElement("umbmetrics-dashboard")
@@ -32,6 +33,9 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
 
   @state()
   private _isConnected: boolean = false;
+
+  @state()
+  private _umbracoMetrics?: UmbracoMetrics;
 
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
@@ -89,7 +93,10 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
         await this.#metricsService.requestMetrics();
       } else {
         // Direct HTTP request
-        await this.#loadPerformanceMetrics();
+        await Promise.all([
+          this.#loadPerformanceMetrics(),
+          this.#loadUmbracoMetrics()
+        ]);
       }
       buttonElement.state = "success";
     } catch (error) {
@@ -120,6 +127,29 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
       }
     }
   };
+
+  async #loadUmbracoMetrics() {
+    if (!this.#metricsService) {
+      console.error('Metrics service not initialized');
+      return;
+    }
+
+    try {
+      this._umbracoMetrics = await this.#metricsService.getUmbracoMetrics();
+    } catch (error) {
+      console.error("Error loading Umbraco metrics:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: "Error",
+            message: error instanceof Error 
+              ? error.message 
+              : "Failed to load Umbraco metrics",
+          },
+        });
+      }
+    }
+  }
 
   #toggleAutoRefresh = async () => {
     this._autoRefresh = !this._autoRefresh;
@@ -488,6 +518,143 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     `;
   }
 
+  #renderUmbracoTab() {
+    if (!this._umbracoMetrics) {
+      return html`<p>Click "Refresh Metrics" to load Umbraco-specific data</p>`;
+    }
+
+    const metrics = this._umbracoMetrics;
+
+    return html`
+      <div class="metrics-grid">
+        <!-- Content Statistics -->
+        <uui-box class="span-2">
+          <div class="metric-card">
+            <uui-icon name="icon-document"></uui-icon>
+            <h3>Content Statistics</h3>
+            <div class="umbraco-stats">
+              <div class="stat-row">
+                <span>Total Nodes:</span>
+                <strong>${this.#formatNumber(metrics.contentStatistics.totalContentNodes)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Published:</span>
+                <strong class="positive">${this.#formatNumber(metrics.contentStatistics.publishedNodes)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Unpublished:</span>
+                <strong class="warning">${this.#formatNumber(metrics.contentStatistics.unpublishedNodes)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Trashed:</span>
+                <strong class="${metrics.contentStatistics.trashedNodes > 0 ? 'danger' : 'positive'}">
+                  ${this.#formatNumber(metrics.contentStatistics.trashedNodes)}
+                </strong>
+              </div>
+              <div class="stat-row">
+                <span>Content Types:</span>
+                <strong>${metrics.contentStatistics.contentTypeCount}</strong>
+              </div>
+            </div>
+          </div>
+        </uui-box>
+
+        <!-- Media Statistics -->
+        <uui-box class="span-2">
+          <div class="metric-card">
+            <uui-icon name="icon-picture"></uui-icon>
+            <h3>Media Library</h3>
+            <div class="umbraco-stats">
+              <div class="stat-row">
+                <span>Total Items:</span>
+                <strong>${this.#formatNumber(metrics.mediaStatistics.totalMediaItems)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Total Size:</span>
+                <strong>${metrics.mediaStatistics.totalMediaSizeMB.toFixed(2)} MB</strong>
+              </div>
+              <div class="stat-row">
+                <span>Images:</span>
+                <strong>${this.#formatNumber(metrics.mediaStatistics.imagesCount)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Documents:</span>
+                <strong>${this.#formatNumber(metrics.mediaStatistics.documentsCount)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Media Types:</span>
+                <strong>${metrics.mediaStatistics.mediaTypeCount}</strong>
+              </div>
+            </div>
+          </div>
+        </uui-box>
+
+        <!-- Cache Statistics -->
+        <uui-box class="span-2">
+          <div class="metric-card">
+            <uui-icon name="icon-server-alt"></uui-icon>
+            <h3>Cache Performance</h3>
+            <div class="umbraco-stats">
+              <div class="stat-row">
+                <span>Runtime Cache:</span>
+                <strong>${this.#formatNumber(metrics.cacheStatistics.runtimeCacheCount)} items</strong>
+              </div>
+              <div class="stat-row">
+                <span>NuCache:</span>
+                <strong>${this.#formatNumber(metrics.cacheStatistics.nuCacheCount)} items</strong>
+              </div>
+              <div class="stat-row">
+                <span>Total Size:</span>
+                <strong>${metrics.cacheStatistics.totalCacheSize}</strong>
+              </div>
+            </div>
+          </div>
+        </uui-box>
+
+        <!-- Backoffice Users -->
+        <uui-box class="span-2">
+          <div class="metric-card">
+            <uui-icon name="icon-users"></uui-icon>
+            <h3>Backoffice Users</h3>
+            <div class="umbraco-stats">
+              <div class="stat-row">
+                <span>Total Users:</span>
+                <strong>${this.#formatNumber(metrics.backofficeUsers.totalUsers)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Active Users:</span>
+                <strong class="positive">${this.#formatNumber(metrics.backofficeUsers.activeUsers)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Administrators:</span>
+                <strong>${this.#formatNumber(metrics.backofficeUsers.adminUsers)}</strong>
+              </div>
+              <div class="stat-row">
+                <span>Current Sessions:</span>
+                <strong class="${metrics.backofficeUsers.currentSessions > 0 ? 'positive' : 'default'}">
+                  ${this.#formatNumber(metrics.backofficeUsers.currentSessions)}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </uui-box>
+      </div>
+    `;
+  }
+
+  #renderTabContent() {
+    switch (this._activeTab) {
+      case 'overview':
+        return this.#renderOverviewTab();
+      case 'heap':
+        return this.#renderHeapTab();
+      case 'umbraco':
+        return this.#renderUmbracoTab();
+      default:
+        return this.#renderOverviewTab();
+    }
+  }
+
   render() {
     return html`
       <uui-box headline="Application Performance Metrics" class="wide">
@@ -531,11 +698,18 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
           >
             <uui-icon name="icon-box"></uui-icon> Heap & GC
           </uui-button>
+          <uui-button 
+            look="${this._activeTab === 'umbraco' ? 'primary' : 'default'}"
+            color="${this._activeTab === 'umbraco' ? 'positive' : 'default'}"
+            @click="${() => this.#switchTab('umbraco')}"
+          >
+            <uui-icon name="icon-umbraco"></uui-icon> Umbraco
+          </uui-button>
         </div>
 
         <!-- Tab Content -->
         <div class="tab-content">
-          ${this._activeTab === 'overview' ? this.#renderOverviewTab() : this.#renderHeapTab()}
+          ${this.#renderTabContent()}
         </div>
       </uui-box>
     `;

@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using UmbMetrics.Middleware;
-using UmbMetrics.Services;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
-using Umbraco.Cms.Web.Common.ApplicationBuilder;
+using UmbMetrics.Middleware;
+using UmbMetrics.Services;
 
 namespace UmbMetrics.Composers;
 
@@ -12,24 +9,11 @@ public class MetricsComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
-        // Register metrics service
+        // Register services
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
-        
-        // Register background service for broadcasting metrics
-        builder.Services.AddHostedService<MetricsBroadcastService>();
+        builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         
         // Register middleware
-        builder.Services.Configure<UmbracoPipelineOptions>(options =>
-        {
-            options.AddFilter(new UmbracoPipelineFilter(
-                "MetricsMiddleware",
-                applicationBuilder =>
-                {
-                    applicationBuilder.UseMiddleware<MetricsMiddleware>();
-                },
-                applicationBuilder => { },
-                applicationBuilder => { }
-            ));
-        });
+        builder.Services.AddSingleton<MetricsMiddleware>();
     }
 }
