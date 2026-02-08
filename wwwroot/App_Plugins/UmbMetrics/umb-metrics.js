@@ -1,17 +1,16 @@
-const manifests$2 = [
+const t = [
   {
     name: "Umb Metrics Entrypoint",
     alias: "UmbMetrics.Entrypoint",
     type: "backofficeEntryPoint",
-    js: () => import("./entrypoint-Oq5q_Wuc.js")
+    js: () => import("./entrypoint-BdY19EoO.js")
   }
-];
-const manifests$1 = [
+], i = [
   {
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element--1xPDrN_.js"),
+    js: () => import("./dashboard.element-r8UkBARs.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -23,12 +22,11 @@ const manifests$1 = [
       }
     ]
   }
-];
-const manifests = [
-  ...manifests$2,
-  ...manifests$1
+], s = [
+  ...t,
+  ...i
 ];
 export {
-  manifests
+  s as manifests
 };
 //# sourceMappingURL=umb-metrics.js.map
