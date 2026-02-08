@@ -152,7 +152,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         }
     }
 
-    private long EstimateRuntimeCacheSize(List<object> cacheItems)
+    private long EstimateRuntimeCacheSize(List<object?> cacheItems)
     {
         if (cacheItems.Count == 0) return 0;
 

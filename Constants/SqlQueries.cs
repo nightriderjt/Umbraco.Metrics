@@ -3,6 +3,11 @@ namespace UmbMetrics.Constants;
 /// <summary>
 /// SQL queries used for Umbraco metrics collection
 /// </summary>
+/// 
+public static class Generic
+{
+    public const string ApiName = "umbmetrics";
+}
 public static class SqlQueries
 {
     public static class Content

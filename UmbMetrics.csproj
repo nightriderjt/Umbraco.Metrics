@@ -19,9 +19,7 @@
     
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Core" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.1.0" />
-    <PackageReference Include="Umbraco.Cms.Web.Common" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.1.0" />
     <PackageReference Include="Umbraco.Cms.Api.Management" Version="17.1.0" />
   </ItemGroup>
@@ -32,7 +30,7 @@
 
     <!-- However make the Umbraco-package.json included for dotnet pack or nuget package and visible to the solution -->
     <None Include="Client\public\umbraco-package.json" Pack="false" />
-    <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
