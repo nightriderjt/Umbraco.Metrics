@@ -1,0 +1,7 @@
+namespace UmbMetrics
+{
+    public class Constants
+    {
+        public const string ApiName = "umbmetrics";
+    }
+}

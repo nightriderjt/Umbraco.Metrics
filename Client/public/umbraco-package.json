@@ -1,0 +1,14 @@
+{
+  "id": "UmbMetrics",
+  "name": "UmbMetrics",
+  "version": "17.1.0",
+  "allowTelemetry": true,
+  "extensions": [
+    {
+      "name": "Umb Metrics Bundle",
+      "alias": "UmbMetrics.Bundle",
+      "type": "bundle",
+      "js": "/App_Plugins/UmbMetrics/umb-metrics.js"
+    }
+  ]
+}
