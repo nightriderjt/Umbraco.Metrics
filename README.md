@@ -60,20 +60,82 @@ Get a bird's-eye view of your application: CPU, memory, requests, threads, and t
 **Heap & Garbage Collection**
 Deep dive into .NET's memory management: see how the garbage collector is performing, understand memory allocation patterns, and identify potential memory leaks.
 
-## Installation
-
-1. Add UmbMetrics to your Umbraco project
-2. Build the client assets
-3. Restart your site
-4. Navigate to Settings → Umbraco Metrics
-
-Detailed installation instructions available in the documentation.
-
 ## Requirements
 
 - Umbraco CMS 17 or higher
 - .NET 10
 - Any hosting environment (works on Windows, Linux, Azure, AWS, etc.)
+
+## Installation & Configuration
+
+### Step 1: Install the Package
+
+Add UmbMetrics to your Umbraco project via NuGet or by referencing the project.
+
+### Step 2: Configure Your Startup (Program.cs)
+
+
+
+Update your `Program.cs` file to add SignalR services and map the MetricsHub endpoint. This uses the modern minimal hosting model (no `Startup.cs` or `ConfigureServices` method):
+
+```csharp
+// Add using statement
+using Umbraco.Metrics;
+var builder = WebApplication.CreateBuilder(args);
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddComposers()
+    .Build();
+// Register services
+builder.Services.AddSignalR();
+
+
+app.UseUmbraco()
+    .WithMiddleware(u =>
+    {
+        u.UseBackOffice();
+        u.UseWebsite();
+    })
+    .WithEndpoints(u =>
+    {
+        u.UseBackOfficeEndpoints();
+        u.UseWebsiteEndpoints();
+        
+        // Map SignalR hub endpoint
+        u.EndpointRouteBuilder?.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");
+    });
+
+```
+
+### Step 3: Update Your Middleware (Startup.cs) 
+
+
+Ensure you have the necessary middleware to support SignalR and Umbraco Metrics:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    // Other middleware...
+
+    app.UseRouting();
+
+    app.UseEndpoints(endpoints =>
+    {
+        // Map Umbraco metrics hub
+        endpoints.MapHub<MetricsHub>("/umbraco-metrics");
+
+        // Map default controller route
+        endpoints.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+    });
+}
+```
+
+### Step 4: Access the Dashboard
+
+After installation and configuration, restart your Umbraco site and navigate to `Settings` -> `Umbraco Metrics` to access your monitoring dashboard.
 
 ## Real-Time Updates
 
