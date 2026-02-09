@@ -46,7 +46,7 @@ export class ActiveRequestsSidebarElement extends UmbElementMixin(LitElement) {
   #startAutoRefresh = () => {
     this.#refreshInterval = window.setInterval(() => {
       this.#refresh();
-    }, 1000);
+    }, 5000);
   };
 
   #stopAutoRefresh = () => {

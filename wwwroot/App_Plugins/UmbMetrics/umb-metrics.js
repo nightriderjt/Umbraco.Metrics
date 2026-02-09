@@ -10,7 +10,7 @@ const t = [
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-CleWPQ6m.js"),
+    js: () => import("./dashboard.element-BngMMQOM.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"

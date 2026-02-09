@@ -191,14 +191,14 @@ function N(n) {
 async function Oe(n, e, t, o, i, s) {
   const r = {}, [c, l] = j();
   r[c] = l, n.log(a.Trace, `(${e} transport) sending data. ${Z(i, s.logMessageContent)}.`);
-  const d = N(i) ? "arraybuffer" : "text", p = await t.post(o, {
+  const d = N(i) ? "arraybuffer" : "text", g = await t.post(o, {
     content: i,
     headers: { ...r, ...s.headers },
     responseType: d,
     timeout: s.timeout,
     withCredentials: s.withCredentials
   });
-  n.log(a.Trace, `(${e} transport) request complete. Response status: ${p.statusCode}.`);
+  n.log(a.Trace, `(${e} transport) request complete. Response status: ${g.statusCode}.`);
 }
 function ct(n) {
   return n === void 0 ? new he(a.Information) : n === null ? Y.instance : n.log !== void 0 ? n : new he(n);
@@ -240,7 +240,7 @@ class he {
 }
 function j() {
   let n = "X-SignalR-User-Agent";
-  return _.isNode && (n = "User-Agent"), [n, ht(rt, ut(), pt(), dt())];
+  return _.isNode && (n = "User-Agent"), [n, ht(rt, ut(), gt(), dt())];
 }
 function ht(n, e, t, o) {
   let i = "Microsoft SignalR/";
@@ -266,13 +266,13 @@ function dt() {
   if (_.isNode)
     return process.versions.node;
 }
-function pt() {
+function gt() {
   return _.isNode ? "NodeJS" : "Browser";
 }
-function pe(n) {
+function ge(n) {
   return n.stack ? n.stack : n.message ? n.message : `${n}`;
 }
-function gt() {
+function pt() {
   if (typeof globalThis < "u")
     return globalThis;
   if (typeof self < "u")
@@ -289,7 +289,7 @@ class ft extends de {
       const t = typeof __webpack_require__ == "function" ? __non_webpack_require__ : require;
       this._jar = new (t("tough-cookie")).CookieJar(), typeof fetch > "u" ? this._fetchType = t("node-fetch") : this._fetchType = fetch, this._fetchType = t("fetch-cookie")(this._fetchType, this._jar);
     } else
-      this._fetchType = fetch.bind(gt());
+      this._fetchType = fetch.bind(pt());
     if (typeof AbortController > "u") {
       const t = typeof __webpack_require__ == "function" ? __non_webpack_require__ : require;
       this._abortControllerType = t("abort-controller");
@@ -571,10 +571,10 @@ class yt {
   }
 }
 const St = 30 * 1e3, Ct = 15 * 1e3, kt = 1e5;
-var g;
+var p;
 (function(n) {
   n.Disconnected = "Disconnected", n.Connecting = "Connecting", n.Connected = "Connected", n.Disconnecting = "Disconnecting", n.Reconnecting = "Reconnecting";
-})(g || (g = {}));
+})(p || (p = {}));
 class $e {
   /** @internal */
   // Using a public static factory method means we can have a private constructor and an _internal_
@@ -587,7 +587,7 @@ class $e {
   constructor(e, t, o, i, s, r, c) {
     this._nextKeepAlive = 0, this._freezeEventListener = () => {
       this._logger.log(a.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://learn.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
-    }, m.isRequired(e, "connection"), m.isRequired(t, "logger"), m.isRequired(o, "protocol"), this.serverTimeoutInMilliseconds = s ?? St, this.keepAliveIntervalInMilliseconds = r ?? Ct, this._statefulReconnectBufferSize = c ?? kt, this._logger = t, this._protocol = o, this.connection = e, this._reconnectPolicy = i, this._handshakeProtocol = new bt(), this.connection.onreceive = (l) => this._processIncomingData(l), this.connection.onclose = (l) => this._connectionClosed(l), this._callbacks = {}, this._methods = {}, this._closedCallbacks = [], this._reconnectingCallbacks = [], this._reconnectedCallbacks = [], this._invocationId = 0, this._receivedHandshakeResponse = !1, this._connectionState = g.Disconnected, this._connectionStarted = !1, this._cachedPingMessage = this._protocol.writeMessage({ type: u.Ping });
+    }, m.isRequired(e, "connection"), m.isRequired(t, "logger"), m.isRequired(o, "protocol"), this.serverTimeoutInMilliseconds = s ?? St, this.keepAliveIntervalInMilliseconds = r ?? Ct, this._statefulReconnectBufferSize = c ?? kt, this._logger = t, this._protocol = o, this.connection = e, this._reconnectPolicy = i, this._handshakeProtocol = new bt(), this.connection.onreceive = (l) => this._processIncomingData(l), this.connection.onclose = (l) => this._connectionClosed(l), this._callbacks = {}, this._methods = {}, this._closedCallbacks = [], this._reconnectingCallbacks = [], this._reconnectedCallbacks = [], this._invocationId = 0, this._receivedHandshakeResponse = !1, this._connectionState = p.Disconnected, this._connectionStarted = !1, this._cachedPingMessage = this._protocol.writeMessage({ type: u.Ping });
   }
   /** Indicates the state of the {@link HubConnection} to the server. */
   get state() {
@@ -609,7 +609,7 @@ class $e {
    * @param {string} url The url to connect to.
    */
   set baseUrl(e) {
-    if (this._connectionState !== g.Disconnected && this._connectionState !== g.Reconnecting)
+    if (this._connectionState !== p.Disconnected && this._connectionState !== p.Reconnecting)
       throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
     if (!e)
       throw new Error("The HubConnection url must be a valid url.");
@@ -623,13 +623,13 @@ class $e {
     return this._startPromise = this._startWithStateTransitions(), this._startPromise;
   }
   async _startWithStateTransitions() {
-    if (this._connectionState !== g.Disconnected)
+    if (this._connectionState !== p.Disconnected)
       return Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."));
-    this._connectionState = g.Connecting, this._logger.log(a.Debug, "Starting HubConnection.");
+    this._connectionState = p.Connecting, this._logger.log(a.Debug, "Starting HubConnection.");
     try {
-      await this._startInternal(), _.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = g.Connected, this._connectionStarted = !0, this._logger.log(a.Debug, "HubConnection connected successfully.");
+      await this._startInternal(), _.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = p.Connected, this._connectionStarted = !0, this._logger.log(a.Debug, "HubConnection connected successfully.");
     } catch (e) {
-      return this._connectionState = g.Disconnected, this._logger.log(a.Debug, `HubConnection failed to start successfully because of error '${e}'.`), Promise.reject(e);
+      return this._connectionState = p.Disconnected, this._logger.log(a.Debug, `HubConnection failed to start successfully because of error '${e}'.`), Promise.reject(e);
     }
   }
   async _startInternal() {
@@ -668,12 +668,12 @@ class $e {
     }
   }
   _stopInternal(e) {
-    if (this._connectionState === g.Disconnected)
+    if (this._connectionState === p.Disconnected)
       return this._logger.log(a.Debug, `Call to HubConnection.stop(${e}) ignored because it is already in the disconnected state.`), Promise.resolve();
-    if (this._connectionState === g.Disconnecting)
+    if (this._connectionState === p.Disconnecting)
       return this._logger.log(a.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnecting state.`), this._stopPromise;
     const t = this._connectionState;
-    return this._connectionState = g.Disconnecting, this._logger.log(a.Debug, "Stopping HubConnection."), this._reconnectDelayHandle ? (this._logger.log(a.Debug, "Connection stopped during reconnect delay. Done reconnecting."), clearTimeout(this._reconnectDelayHandle), this._reconnectDelayHandle = void 0, this._completeClose(), Promise.resolve()) : (t === g.Connected && this._sendCloseMessage(), this._cleanupTimeout(), this._cleanupPingTimer(), this._stopDuringStartError = e || new T("The connection was stopped before the hub handshake could complete."), this.connection.stop(e));
+    return this._connectionState = p.Disconnecting, this._logger.log(a.Debug, "Stopping HubConnection."), this._reconnectDelayHandle ? (this._logger.log(a.Debug, "Connection stopped during reconnect delay. Done reconnecting."), clearTimeout(this._reconnectDelayHandle), this._reconnectDelayHandle = void 0, this._completeClose(), Promise.resolve()) : (t === p.Connected && this._sendCloseMessage(), this._cleanupTimeout(), this._cleanupPingTimer(), this._stopDuringStartError = e || new T("The connection was stopped before the hub handshake could complete."), this.connection.stop(e));
   }
   async _sendCloseMessage() {
     try {
@@ -741,14 +741,14 @@ class $e {
   invoke(e, ...t) {
     const [o, i] = this._replaceStreamingParams(t), s = this._createInvocation(e, t, !1, i);
     return new Promise((c, l) => {
-      this._callbacks[s.invocationId] = (p, D) => {
+      this._callbacks[s.invocationId] = (g, D) => {
         if (D) {
           l(D);
           return;
-        } else p && (p.type === u.Completion ? p.error ? l(new Error(p.error)) : c(p.result) : l(new Error(`Unexpected message type: ${p.type}`)));
+        } else g && (g.type === u.Completion ? g.error ? l(new Error(g.error)) : c(g.result) : l(new Error(`Unexpected message type: ${g.type}`)));
       };
-      const d = this._sendWithProtocol(s).catch((p) => {
-        l(p), delete this._callbacks[s.invocationId];
+      const d = this._sendWithProtocol(s).catch((g) => {
+        l(g), delete this._callbacks[s.invocationId];
       });
       this._launchStreams(o, d);
     });
@@ -797,7 +797,7 @@ class $e {
           switch (o.type) {
             case u.Invocation:
               this._invokeClientMethod(o).catch((i) => {
-                this._logger.log(a.Error, `Invoke client method threw error: ${pe(i)}`);
+                this._logger.log(a.Error, `Invoke client method threw error: ${ge(i)}`);
               });
               break;
             case u.StreamItem:
@@ -808,7 +808,7 @@ class $e {
                 try {
                   i(o);
                 } catch (s) {
-                  this._logger.log(a.Error, `Stream callback threw error: ${pe(s)}`);
+                  this._logger.log(a.Error, `Stream callback threw error: ${ge(s)}`);
                 }
               }
               break;
@@ -861,11 +861,11 @@ class $e {
       this._timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
       let e = this._nextKeepAlive - (/* @__PURE__ */ new Date()).getTime();
       if (e < 0) {
-        this._connectionState === g.Connected && this._trySendPingMessage();
+        this._connectionState === p.Connected && this._trySendPingMessage();
         return;
       }
       this._pingServerHandle === void 0 && (e < 0 && (e = 0), this._pingServerHandle = setTimeout(async () => {
-        this._connectionState === g.Connected && await this._trySendPingMessage();
+        this._connectionState === p.Connected && await this._trySendPingMessage();
       }, e));
     }
   }
@@ -883,19 +883,19 @@ class $e {
     let r, c, l;
     for (const d of i)
       try {
-        const p = r;
-        r = await d.apply(this, e.arguments), s && r && p && (this._logger.log(a.Error, `Multiple results provided for '${t}'. Sending error to server.`), l = this._createCompletionMessage(e.invocationId, "Client provided multiple results.", null)), c = void 0;
-      } catch (p) {
-        c = p, this._logger.log(a.Error, `A callback for the method '${t}' threw error '${p}'.`);
+        const g = r;
+        r = await d.apply(this, e.arguments), s && r && g && (this._logger.log(a.Error, `Multiple results provided for '${t}'. Sending error to server.`), l = this._createCompletionMessage(e.invocationId, "Client provided multiple results.", null)), c = void 0;
+      } catch (g) {
+        c = g, this._logger.log(a.Error, `A callback for the method '${t}' threw error '${g}'.`);
       }
     l ? await this._sendWithProtocol(l) : s ? (c ? l = this._createCompletionMessage(e.invocationId, `${c}`, null) : r !== void 0 ? l = this._createCompletionMessage(e.invocationId, null, r) : (this._logger.log(a.Warning, `No result given for '${t}' method and invocation ID '${e.invocationId}'.`), l = this._createCompletionMessage(e.invocationId, "Client didn't provide a result.", null)), await this._sendWithProtocol(l)) : r && this._logger.log(a.Error, `Result given for '${t}' method but server is not expecting a result.`);
   }
   _connectionClosed(e) {
-    this._logger.log(a.Debug, `HubConnection.connectionClosed(${e}) called while in state ${this._connectionState}.`), this._stopDuringStartError = this._stopDuringStartError || e || new T("The underlying connection was closed before the hub handshake could complete."), this._handshakeResolver && this._handshakeResolver(), this._cancelCallbacksWithError(e || new Error("Invocation canceled due to the underlying connection being closed.")), this._cleanupTimeout(), this._cleanupPingTimer(), this._connectionState === g.Disconnecting ? this._completeClose(e) : this._connectionState === g.Connected && this._reconnectPolicy ? this._reconnect(e) : this._connectionState === g.Connected && this._completeClose(e);
+    this._logger.log(a.Debug, `HubConnection.connectionClosed(${e}) called while in state ${this._connectionState}.`), this._stopDuringStartError = this._stopDuringStartError || e || new T("The underlying connection was closed before the hub handshake could complete."), this._handshakeResolver && this._handshakeResolver(), this._cancelCallbacksWithError(e || new Error("Invocation canceled due to the underlying connection being closed.")), this._cleanupTimeout(), this._cleanupPingTimer(), this._connectionState === p.Disconnecting ? this._completeClose(e) : this._connectionState === p.Connected && this._reconnectPolicy ? this._reconnect(e) : this._connectionState === p.Connected && this._completeClose(e);
   }
   _completeClose(e) {
     if (this._connectionStarted) {
-      this._connectionState = g.Disconnected, this._connectionStarted = !1, this._messageBuffer && (this._messageBuffer._dispose(e ?? new Error("Connection closed.")), this._messageBuffer = void 0), _.isBrowser && window.document.removeEventListener("freeze", this._freezeEventListener);
+      this._connectionState = p.Disconnected, this._connectionStarted = !1, this._messageBuffer && (this._messageBuffer._dispose(e ?? new Error("Connection closed.")), this._messageBuffer = void 0), _.isBrowser && window.document.removeEventListener("freeze", this._freezeEventListener);
       try {
         this._closedCallbacks.forEach((t) => t.apply(this, [e]));
       } catch (t) {
@@ -910,13 +910,13 @@ class $e {
       this._logger.log(a.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt."), this._completeClose(e);
       return;
     }
-    if (this._connectionState = g.Reconnecting, e ? this._logger.log(a.Information, `Connection reconnecting because of error '${e}'.`) : this._logger.log(a.Information, "Connection reconnecting."), this._reconnectingCallbacks.length !== 0) {
+    if (this._connectionState = p.Reconnecting, e ? this._logger.log(a.Information, `Connection reconnecting because of error '${e}'.`) : this._logger.log(a.Information, "Connection reconnecting."), this._reconnectingCallbacks.length !== 0) {
       try {
         this._reconnectingCallbacks.forEach((r) => r.apply(this, [e]));
       } catch (r) {
         this._logger.log(a.Error, `An onreconnecting callback called with error '${e}' threw error '${r}'.`);
       }
-      if (this._connectionState !== g.Reconnecting) {
+      if (this._connectionState !== p.Reconnecting) {
         this._logger.log(a.Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
         return;
       }
@@ -924,12 +924,12 @@ class $e {
     for (; s !== null; ) {
       if (this._logger.log(a.Information, `Reconnect attempt number ${o + 1} will start in ${s} ms.`), await new Promise((r) => {
         this._reconnectDelayHandle = setTimeout(r, s);
-      }), this._reconnectDelayHandle = void 0, this._connectionState !== g.Reconnecting) {
+      }), this._reconnectDelayHandle = void 0, this._connectionState !== p.Reconnecting) {
         this._logger.log(a.Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
         return;
       }
       try {
-        if (await this._startInternal(), this._connectionState = g.Connected, this._logger.log(a.Information, "HubConnection reconnected successfully."), this._reconnectedCallbacks.length !== 0)
+        if (await this._startInternal(), this._connectionState = p.Connected, this._logger.log(a.Information, "HubConnection reconnected successfully."), this._reconnectedCallbacks.length !== 0)
           try {
             this._reconnectedCallbacks.forEach((r) => r.apply(this, [this.connection.connectionId]));
           } catch (r) {
@@ -937,8 +937,8 @@ class $e {
           }
         return;
       } catch (r) {
-        if (this._logger.log(a.Information, `Reconnect attempt failed because of error '${r}'.`), this._connectionState !== g.Reconnecting) {
-          this._logger.log(a.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`), this._connectionState === g.Disconnecting && this._completeClose();
+        if (this._logger.log(a.Information, `Reconnect attempt failed because of error '${r}'.`), this._connectionState !== p.Reconnecting) {
+          this._logger.log(a.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`), this._connectionState === p.Disconnecting && this._completeClose();
           return;
         }
         o++, i = r instanceof Error ? r : new Error(r.toString()), s = this._getNextRetryDelay(o, Date.now() - t, i);
@@ -964,7 +964,7 @@ class $e {
       try {
         i(null, e);
       } catch (s) {
-        this._logger.log(a.Error, `Stream 'error' callback called with '${e}' threw error: ${pe(s)}`);
+        this._logger.log(a.Error, `Stream 'error' callback called with '${e}' threw error: ${ge(s)}`);
       }
     });
   }
@@ -1223,8 +1223,8 @@ class Tt {
       else {
         const c = this._httpClient.getCookieString(e), l = {};
         l.Cookie = c;
-        const [d, p] = j();
-        l[d] = p, r = new this._options.EventSource(e, { withCredentials: this._options.withCredentials, headers: { ...l, ...this._options.headers } });
+        const [d, g] = j();
+        l[d] = g, r = new this._options.EventSource(e, { withCredentials: this._options.withCredentials, headers: { ...l, ...this._options.headers } });
       }
       try {
         r.onmessage = (c) => {
@@ -1269,8 +1269,8 @@ class Rt {
       const c = this._httpClient.getCookieString(e);
       let l = !1;
       if (_.isNode || _.isReactNative) {
-        const d = {}, [p, D] = j();
-        d[p] = D, o && (d[q.Authorization] = `Bearer ${o}`), c && (d[q.Cookie] = c), r = new this._webSocketConstructor(e, void 0, {
+        const d = {}, [g, D] = j();
+        d[g] = D, o && (d[q.Authorization] = `Bearer ${o}`), c && (d[q.Cookie] = c), r = new this._webSocketConstructor(e, void 0, {
           headers: { ...d, ...this._headers }
         });
       } else
@@ -1278,22 +1278,22 @@ class Rt {
       r || (r = new this._webSocketConstructor(e)), t === C.Binary && (r.binaryType = "arraybuffer"), r.onopen = (d) => {
         this._logger.log(a.Information, `WebSocket connected to ${e}.`), this._webSocket = r, l = !0, i();
       }, r.onerror = (d) => {
-        let p = null;
-        typeof ErrorEvent < "u" && d instanceof ErrorEvent ? p = d.error : p = "There was an error with the transport", this._logger.log(a.Information, `(WebSockets transport) ${p}.`);
+        let g = null;
+        typeof ErrorEvent < "u" && d instanceof ErrorEvent ? g = d.error : g = "There was an error with the transport", this._logger.log(a.Information, `(WebSockets transport) ${g}.`);
       }, r.onmessage = (d) => {
         if (this._logger.log(a.Trace, `(WebSockets transport) data received. ${Z(d.data, this._logMessageContent)}.`), this.onreceive)
           try {
             this.onreceive(d.data);
-          } catch (p) {
-            this._close(p);
+          } catch (g) {
+            this._close(g);
             return;
           }
       }, r.onclose = (d) => {
         if (l)
           this._close(d);
         else {
-          let p = null;
-          typeof ErrorEvent < "u" && d instanceof ErrorEvent ? p = d.error : p = "WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.", s(new Error(p));
+          let g = null;
+          typeof ErrorEvent < "u" && d instanceof ErrorEvent ? g = d.error : g = "WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.", s(new Error(g));
         }
       };
     });
@@ -1436,11 +1436,11 @@ class Pt {
     const r = [], c = o.availableTransports || [];
     let l = o;
     for (const d of c) {
-      const p = this._resolveTransportOrError(d, t, i, l?.useStatefulReconnect === !0);
-      if (p instanceof Error)
-        r.push(`${d.transport} failed:`), r.push(p);
-      else if (this._isITransport(p)) {
-        if (this.transport = p, !l) {
+      const g = this._resolveTransportOrError(d, t, i, l?.useStatefulReconnect === !0);
+      if (g instanceof Error)
+        r.push(`${d.transport} failed:`), r.push(g);
+      else if (this._isITransport(g)) {
+        if (this.transport = g, !l) {
           try {
             l = await this._getNegotiationResponse(e);
           } catch (D) {
@@ -1803,7 +1803,7 @@ class Bt {
       console.log("Connection already in progress, waiting..."), await this.#i();
       return;
     }
-    if (this.#e?.state === g.Connected) {
+    if (this.#e?.state === p.Connected) {
       console.log("Already connected to hub");
       return;
     }
@@ -1881,7 +1881,7 @@ class Bt {
    * Manually request metrics update from the hub
    */
   async requestMetrics() {
-    if (!this.#e || this.#e.state !== g.Connected)
+    if (!this.#e || this.#e.state !== p.Connected)
       throw new Error("Not connected to metrics hub");
     try {
       await this.#e.invoke("RequestMetrics");
@@ -1893,7 +1893,7 @@ class Bt {
    * Check if connected to hub
    */
   get isConnected() {
-    return this.#e?.state === g.Connected;
+    return this.#e?.state === p.Connected;
   }
   /**
    * Get current connection state
@@ -2050,7 +2050,7 @@ var Lt = Object.defineProperty, Ft = Object.getOwnPropertyDescriptor, Le = (n) =
 }, zt = (n, e, t) => e.has(n) || Le("Cannot " + t), jt = (n, e, t) => (zt(n, e, "read from private field"), t ? t.call(n) : e.get(n)), Gt = (n, e, t) => e.has(n) ? Le("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(n) : e.set(n, t), fe;
 let I = class extends K(G) {
   constructor() {
-    super(...arguments), this.icon = "icon-info", this.title = "", this.value = "", this.detail = "", this.color = "default", this.span = 1, this.clickable = !1, this.actionIcon = "icon-expand", this.actionLabel = "View Details", Gt(this, fe, (n) => {
+    super(...arguments), this.icon = "icon-info", this.title = "", this.value = "", this.detail = "", this.color = "default", this.span = 1, this.clickable = !1, this.actionIcon = "icon-activity", this.actionLabel = "View Details", Gt(this, fe, (n) => {
       n.stopPropagation(), this.clickable && this.dispatchEvent(new CustomEvent("card-action", { bubbles: !0, composed: !0 }));
     });
   }
@@ -2438,7 +2438,7 @@ var Qt = Object.defineProperty, Yt = Object.getOwnPropertyDescriptor, ze = (n) =
   for (var i = o > 1 ? void 0 : o ? Yt(e, t) : e, s = n.length - 1, r; s >= 0; s--)
     (r = n[s]) && (i = (o ? r(e, t, i) : r(i)) || i);
   return o && i && Qt(e, t, i), i;
-}, Re = (n, e, t) => e.has(n) || ze("Cannot " + t), R = (n, e, t) => (Re(n, e, "read from private field"), t ? t.call(n) : e.get(n)), H = (n, e, t) => e.has(n) ? ze("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(n) : e.set(n, t), qe = (n, e, t, o) => (Re(n, e, "write to private field"), e.set(n, t), t), ge = (n, e, t) => (Re(n, e, "access private method"), t), z, ie, se, _e, me, re, J, je, Ge, Xe;
+}, Re = (n, e, t) => e.has(n) || ze("Cannot " + t), R = (n, e, t) => (Re(n, e, "read from private field"), t ? t.call(n) : e.get(n)), H = (n, e, t) => e.has(n) ? ze("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(n) : e.set(n, t), qe = (n, e, t, o) => (Re(n, e, "write to private field"), e.set(n, t), t), pe = (n, e, t) => (Re(n, e, "access private method"), t), z, ie, se, _e, me, re, J, je, Ge, Xe;
 let L = class extends K(G) {
   constructor() {
     super(...arguments), H(this, J), this.open = !1, this.requests = [], this.loading = !1, this._autoRefresh = !1, H(this, z), H(this, ie, () => {
@@ -2450,7 +2450,7 @@ let L = class extends K(G) {
     }), H(this, me, () => {
       qe(this, z, window.setInterval(() => {
         R(this, se).call(this);
-      }, 1e3));
+      }, 5e3));
     }), H(this, re, () => {
       R(this, z) && (clearInterval(R(this, z)), qe(this, z, void 0));
     });
@@ -2507,9 +2507,9 @@ let L = class extends K(G) {
               ${this.requests.map((n) => f`
                 <li class="request-item">
                   <div class="request-header">
-                    <span class="method ${ge(this, J, Ge).call(this, n.method)}">${n.method}</span>
+                    <span class="method ${pe(this, J, Ge).call(this, n.method)}">${n.method}</span>
                     <span class="path" title="${n.path}${n.queryString}">${n.path}</span>
-                    <span class="duration">${ge(this, J, je).call(this, n.durationMs)}</span>
+                    <span class="duration">${pe(this, J, je).call(this, n.durationMs)}</span>
                   </div>
                   <div class="request-details">
                     <div class="detail-row">
@@ -2529,7 +2529,7 @@ let L = class extends K(G) {
                     ${n.userAgent ? f`
                       <div class="detail-row user-agent">
                         <uui-icon name="icon-browser-window"></uui-icon>
-                        <span title="${n.userAgent}">${ge(this, J, Xe).call(this, n.userAgent)}</span>
+                        <span title="${n.userAgent}">${pe(this, J, Xe).call(this, n.userAgent)}</span>
                       </div>
                     ` : ""}
                   </div>
@@ -3249,4 +3249,4 @@ export {
   $ as ExampleDashboardElement,
   ln as default
 };
-//# sourceMappingURL=dashboard.element-CleWPQ6m.js.map
+//# sourceMappingURL=dashboard.element-BngMMQOM.js.map

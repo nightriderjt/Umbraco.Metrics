@@ -1,7 +1,10 @@
+using Lucene.Net.QueryParsers.Xml.Builders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
+using Umbraco.Cms.Core.Media.EmbedProviders;
 
 namespace UmbMetrics.Middleware;
 
@@ -23,7 +26,11 @@ public class MetricsMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var requestId = Guid.NewGuid().ToString();
+        if(!context.Request.Path.Value.Contains("metrics")
+            && !context.Request.Path.Value.Contains("serverEventHub")
+            && !context.Request.Path.Value.Contains("active-requests"))
+        {
+   var requestId = Guid.NewGuid().ToString();
         var stopwatch = Stopwatch.StartNew();
         
         Interlocked.Increment(ref _activeRequests);
@@ -78,6 +85,14 @@ public class MetricsMiddleware
                 _responseTimes.TryDequeue(out _);
             }
         }
+
+
+        }
+        else
+        {
+            await _next(context);
+        }
+     
     }
 
     public static long TotalRequests => _totalRequests;
@@ -88,6 +103,9 @@ public class MetricsMiddleware
     {
         return _activeRequestDetails.Values
             .OrderByDescending(r => r.StartTime)
+            .Where(x=> !x.Path.Contains("metrics")
+            && !x.Path.Contains("serverEventHub") 
+            && !x.Path.Contains("active-requests"))
             .Select(r => new ActiveRequestInfo
             {
                 RequestId = r.RequestId,

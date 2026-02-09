@@ -33,7 +33,7 @@ export class MetricCardElement extends UmbElementMixin(LitElement) {
   clickable: boolean = false;
 
   @property({ type: String })
-  actionIcon: string = "icon-expand";
+  actionIcon: string = "icon-activity";
 
   @property({ type: String })
   actionLabel: string = "View Details";
