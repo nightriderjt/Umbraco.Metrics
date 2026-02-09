@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using UmbMetrics.Middleware;
 using UmbMetrics.Services;
 using Umbraco.Cms.Api.Common.Attributes;
 using Umbraco.Cms.Api.Management.Controllers;
@@ -62,5 +63,11 @@ public class MetricsApiController : ManagementApiControllerBase
         {
             return StatusCode(500, new { error = ex.Message });
         }
+    }
+    [HttpGet("active-requests")]
+    public IActionResult GetActiveRequests()
+    {
+        var activeRequests = MetricsMiddleware.GetActiveRequestDetails();
+        return Ok(activeRequests);
     }
 }

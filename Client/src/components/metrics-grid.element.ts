@@ -28,6 +28,7 @@ export class MetricsGridElement extends UmbElementMixin(LitElement) {
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+      grid-auto-rows: 1fr;
       gap: 1rem;
     }
 
@@ -43,7 +44,7 @@ export class MetricsGridElement extends UmbElementMixin(LitElement) {
       }
     }
 
-    /* Support for span classes on slotted elements */
+    /* Handle span classes for slotted elements */
     ::slotted([span="2"]) {
       grid-column: span 2;
     }

@@ -13,6 +13,7 @@ public class MetricsMiddleware
     private static int _activeRequests = 0;
     private static readonly ConcurrentQueue<double> _responseTimes = new();
     private static readonly ConcurrentQueue<DateTime> _requestTimestamps = new();
+    private static readonly ConcurrentDictionary<string, ActiveRequestInfo> _activeRequestDetails = new();
     private static readonly DateTime _startTime = DateTime.UtcNow;
 
     public MetricsMiddleware(RequestDelegate next)
@@ -22,10 +23,25 @@ public class MetricsMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var requestId = Guid.NewGuid().ToString();
         var stopwatch = Stopwatch.StartNew();
+        
         Interlocked.Increment(ref _activeRequests);
         Interlocked.Increment(ref _totalRequests);
         _requestTimestamps.Enqueue(DateTime.UtcNow);
+
+        // Track active request details
+        var activeRequest = new ActiveRequestInfo
+        {
+            RequestId = requestId,
+            Path = context.Request.Path.Value ?? "/",
+            Method = context.Request.Method,
+            StartTime = DateTime.UtcNow,
+            QueryString = context.Request.QueryString.Value ?? "",
+            UserAgent = context.Request.Headers.UserAgent.ToString(),
+            RemoteIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown"
+        };
+        _activeRequestDetails.TryAdd(requestId, activeRequest);
 
         // Clean old timestamps (older than 1 minute)
         while (_requestTimestamps.TryPeek(out var timestamp) &&
@@ -36,7 +52,7 @@ public class MetricsMiddleware
 
         try
         {
-            await _next(context); // FIX: Pass 'context' to '_next'
+            await _next(context);
 
             if (context.Response.StatusCode >= 400)
             {
@@ -52,6 +68,7 @@ public class MetricsMiddleware
         {
             stopwatch.Stop();
             Interlocked.Decrement(ref _activeRequests);
+            _activeRequestDetails.TryRemove(requestId, out _);
 
             _responseTimes.Enqueue(stopwatch.Elapsed.TotalMilliseconds);
 
@@ -66,6 +83,24 @@ public class MetricsMiddleware
     public static long TotalRequests => _totalRequests;
     public static long FailedRequests => _failedRequests;
     public static int ActiveRequests => _activeRequests;
+
+    public static IEnumerable<ActiveRequestInfo> GetActiveRequestDetails()
+    {
+        return _activeRequestDetails.Values
+            .OrderByDescending(r => r.StartTime)
+            .Select(r => new ActiveRequestInfo
+            {
+                RequestId = r.RequestId,
+                Path = r.Path,
+                Method = r.Method,
+                StartTime = r.StartTime,
+                DurationMs = (DateTime.UtcNow - r.StartTime).TotalMilliseconds,
+                QueryString = r.QueryString,
+                UserAgent = r.UserAgent,
+                RemoteIp = r.RemoteIp
+            })
+            .ToList();
+    }
 
     public static double GetRequestsPerSecond()
     {
@@ -89,4 +124,16 @@ public class MetricsMiddleware
     {
         return _requestTimestamps.Count;
     }
+}
+
+public class ActiveRequestInfo
+{
+    public string RequestId { get; set; } = string.Empty;
+    public string Path { get; set; } = string.Empty;
+    public string Method { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public double DurationMs { get; set; }
+    public string QueryString { get; set; } = string.Empty;
+    public string UserAgent { get; set; } = string.Empty;
+    public string RemoteIp { get; set; } = string.Empty;
 }

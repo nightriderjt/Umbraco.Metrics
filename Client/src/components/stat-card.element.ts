@@ -24,32 +24,38 @@ export class StatCardElement extends UmbElementMixin(LitElement) {
   @property({ type: Array })
   stats: StatRow[] = [];
 
-  @property({ type: Number })
+  @property({ type: Number, reflect: true })
   span: number = 1;
 
   render() {
     return html`
-      <uui-box>
-        <div class="stat-card">
-          <uui-icon name="${this.icon}"></uui-icon>
-          <h3>${this.title}</h3>
+      <div class="stat-card">
+        <div class="card-header">
+          <div class="header-title">
+            <uui-icon name="${this.icon}"></uui-icon>
+            <h3>${this.title}</h3>
+          </div>
+        </div>
+        
+        <div class="card-body">
           <div class="stats-list">
             ${this.stats.map(stat => html`
               <div class="stat-row">
-                <span>${stat.label}</span>
+                <span class="stat-label">${stat.label}</span>
                 <strong class="${stat.color || 'default'}">${stat.value}</strong>
               </div>
             `)}
           </div>
           <slot></slot>
         </div>
-      </uui-box>
+      </div>
     `;
   }
 
   static styles = css`
     :host {
       display: block;
+      height: 100%;
     }
 
     :host([span="2"]) {
@@ -65,20 +71,46 @@ export class StatCardElement extends UmbElementMixin(LitElement) {
     }
 
     .stat-card {
-      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--uui-color-surface);
+      border: 1px solid var(--uui-color-border);
+      border-radius: var(--uui-border-radius);
+      overflow: hidden;
     }
 
-    .stat-card uui-icon {
-      font-size: 2rem;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--uui-color-surface-alt);
+      border-bottom: 1px solid var(--uui-color-border);
+      min-height: 48px;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-title uui-icon {
+      font-size: 1.25rem;
       color: var(--uui-color-interactive);
-      margin-bottom: 0.5rem;
     }
 
-    .stat-card h3 {
-      margin: 0 0 1rem 0;
-      font-size: 1rem;
+    .header-title h3 {
+      margin: 0;
+      font-size: 0.875rem;
       font-weight: 600;
-      color: var(--uui-color-text);
+      color: var(--uui-color-text-alt);
+    }
+
+    .card-body {
+      flex: 1;
+      padding: 1rem;
     }
 
     .stats-list {
@@ -99,13 +131,13 @@ export class StatCardElement extends UmbElementMixin(LitElement) {
       border-bottom: none;
     }
 
-    .stat-row span {
+    .stat-label {
       color: var(--uui-color-text-alt);
       font-size: 0.875rem;
     }
 
     .stat-row strong {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
     }
 
