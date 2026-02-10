@@ -4,6 +4,7 @@ using Umbraco.Cms.Core.Hosting;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Persistence;
 using System.Text.Json;
+using UmbMetrics.Constants;
 using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
@@ -97,14 +98,10 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         {
             using var db = _databaseFactory.CreateDatabase();
             
-            var publishedContent = db.ExecuteScalar<int>(
-                @"SELECT COUNT(*) FROM umbracoDocument d
-                  INNER JOIN umbracoNode n ON d.nodeId = n.id
-                  WHERE d.published = 1 AND n.trashed = 0");
+            var publishedContent = db.ExecuteScalar<int>(UmbMetrics.Constants.SqlQueries.Cache.PublishedContentCount);
 
             var mediaCount = db.ExecuteScalar<int>(
-                @"SELECT COUNT(*) FROM umbracoNode 
-                  WHERE nodeObjectType = @0 AND trashed = 0",
+                UmbMetrics.Constants.SqlQueries.Cache.MediaCount,
                 Umbraco.Cms.Core.Constants.ObjectTypes.Media);
 
             return publishedContent + mediaCount;
@@ -155,7 +152,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         }
     }
 
-    private long EstimateRuntimeCacheSize(List<object> cacheItems)
+    private long EstimateRuntimeCacheSize(List<object?> cacheItems)
     {
         if (cacheItems.Count == 0) return 0;
 
@@ -210,18 +207,16 @@ public class UmbracoMetricsService : IUmbracoMetricsService
             return 256;
         }
     }
-
+    private static JsonSerializerOptions SerializerOptions()=> new()
+    {
+        MaxDepth = 3,
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+    };
     private long EstimateComplexObjectSize(object obj)
     {
         try
         {
-            var options = new JsonSerializerOptions
-            {
-                MaxDepth = 3,
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
-            };
-
-            var json = JsonSerializer.Serialize(obj, options);
+            var json = JsonSerializer.Serialize(obj, SerializerOptions());
             return (json.Length * 2) + 100;
         }
         catch
@@ -248,22 +243,16 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         using var db = _databaseFactory.CreateDatabase();
 
         var total = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoNode 
-              WHERE nodeObjectType = @0 AND trashed = 0",
+            UmbMetrics.Constants.SqlQueries.Content.TotalContentNodes,
             Umbraco.Cms.Core.Constants.ObjectTypes.Document);
 
-        var published = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoDocument d
-              INNER JOIN umbracoNode n ON d.nodeId = n.id
-              WHERE d.published = 1 AND n.trashed = 0");
+        var published = db.ExecuteScalar<int>(UmbMetrics.Constants.SqlQueries.Content.PublishedContentNodes);
 
         var trashedCount = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoNode 
-              WHERE nodeObjectType = @0 AND trashed = 1",
+            UmbMetrics.Constants.SqlQueries.Content.TrashedContentNodes,
             Umbraco.Cms.Core.Constants.ObjectTypes.Document);
 
-        var contentTypeCount = db.ExecuteScalar<int>(
-            "SELECT COUNT(*) FROM cmsContentType");
+        var contentTypeCount = db.ExecuteScalar<int>(UmbMetrics.Constants.SqlQueries.Content.ContentTypeCount);
 
         return new ContentStatistics
         {
@@ -280,36 +269,23 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         using var db = _databaseFactory.CreateDatabase();
 
         var total = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoNode 
-              WHERE nodeObjectType = @0 AND trashed = 0",
+            UmbMetrics.Constants.SqlQueries.Media.TotalMediaNodes,
             Umbraco.Cms.Core.Constants.ObjectTypes.Media);
 
-        var totalSizeBytes = db.ExecuteScalar<long?>(
-            @"SELECT SUM(CAST(pd.varcharValue AS BIGINT)) 
-              FROM umbracoPropertyData pd
-              INNER JOIN cmsPropertyType pt ON pd.propertytypeid = pt.id
-              WHERE pt.Alias = 'umbracoBytes' AND pd.varcharValue IS NOT NULL 
-              AND pd.varcharValue != ''") ?? 0;
+        var totalSizeBytes = db.ExecuteScalar<long?>(UmbMetrics.Constants.SqlQueries.Media.TotalMediaSize) ?? 0;
 
         var images = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoNode n
-              INNER JOIN umbracoContent c ON n.id = c.nodeId
-              INNER JOIN cmsContentType ct ON c.contentTypeId = ct.nodeId
-              WHERE n.nodeObjectType = @0 AND n.trashed = 0
-              AND ct.alias = 'Image'",
-            Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+            UmbMetrics.Constants.SqlQueries.Media.MediaByTypeAlias,
+            Umbraco.Cms.Core.Constants.ObjectTypes.Media,
+            "Image");
 
         var documents = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM umbracoNode n
-              INNER JOIN umbracoContent c ON n.id = c.nodeId
-              INNER JOIN cmsContentType ct ON c.contentTypeId = ct.nodeId
-              WHERE n.nodeObjectType = @0 AND n.trashed = 0
-              AND ct.alias = 'File'",
-            Umbraco.Cms.Core.Constants.ObjectTypes.Media);
+            UmbMetrics.Constants.SqlQueries.Media.MediaByTypeAlias,
+            Umbraco.Cms.Core.Constants.ObjectTypes.Media,
+            "File");
 
         var mediaTypeCount = db.ExecuteScalar<int>(
-            @"SELECT COUNT(*) FROM cmsContentType 
-              WHERE nodeId IN (SELECT id FROM umbracoNode WHERE nodeObjectType = @0)",
+            UmbMetrics.Constants.SqlQueries.Media.MediaTypeCount,
             Umbraco.Cms.Core.Constants.ObjectTypes.MediaType);
 
         return new MediaStatistics

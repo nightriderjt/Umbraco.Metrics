@@ -1,7 +1,9 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using UmbMetrics.Middleware;
 using UmbMetrics.Services;
 using Umbraco.Cms.Api.Common.Attributes;
 using Umbraco.Cms.Api.Management.Controllers;
@@ -20,11 +22,13 @@ public class MetricsApiController : ManagementApiControllerBase
 {
     private readonly IPerformanceMetricsService _metricsService;
     private readonly IUmbracoMetricsService _umbracoMetricsService;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public MetricsApiController(IPerformanceMetricsService metricsService,IUmbracoMetricsService umbracoMetricsService)
+    public MetricsApiController(IPerformanceMetricsService metricsService,IUmbracoMetricsService umbracoMetricsService,IWebHostEnvironment webHostEnvironment)
     {
         _metricsService = metricsService;
-        this._umbracoMetricsService = umbracoMetricsService;
+        _umbracoMetricsService = umbracoMetricsService;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     /// <summary>
@@ -62,5 +66,11 @@ public class MetricsApiController : ManagementApiControllerBase
         {
             return StatusCode(500, new { error = ex.Message });
         }
+    }
+    [HttpGet("active-requests")]
+    public IActionResult GetActiveRequests()
+    {
+        var activeRequests = MetricsMiddleware.GetActiveRequestDetails(ControllerContext.HttpContext,_webHostEnvironment);
+        return Ok(activeRequests);
     }
 }
