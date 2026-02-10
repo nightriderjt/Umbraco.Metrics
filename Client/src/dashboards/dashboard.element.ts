@@ -15,7 +15,7 @@ import type { UmbAuthContext } from "@umbraco-cms/backoffice/auth";
 import { MetricsPerformanceService } from "../services/metrics-performance.service.js";
 import type { PerformanceMetrics } from "../types/performance-metrics.js";
 import type { UmbracoMetrics } from "../types/umbraco-metrics.js";
-import type { ActiveRequestInfo } from "../types/active-request.js";
+
 import type { StatRow } from "../components/stat-card.element.js";
 import { getStatusColor, formatNumber } from "../utils/format-utils.js";
 import "../components/app-info-banner.element.js";
@@ -24,9 +24,11 @@ import "../components/metrics-grid.element.js";
 import "../components/stat-card.element.js";
 import "../components/active-requests-sidebar.element.js";
 import stylesString from './dashboard.element.css?inline';
+import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
+import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
 
 @customElement("umbmetrics-dashboard")
-export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
+export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   @state()
   private _contextCurrentUser?: UmbCurrentUserModel;
 
@@ -45,14 +47,7 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
   @state()
   private _umbracoMetrics?: UmbracoMetrics;
 
-  @state()
-  private _sidebarOpen: boolean = false;
 
-  @state()
-  private _activeRequests: ActiveRequestInfo[] = [];
-
-  @state()
-  private _loadingActiveRequests: boolean = false;
 
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
@@ -166,44 +161,20 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
     }
   }
 
-  #loadActiveRequests = async () => {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      return;
-    }
 
-    this._loadingActiveRequests = true;
 
-    try {
-      this._activeRequests = await this.#metricsService.getActiveRequests();
-    } catch (error) {
-      console.error("Error loading active requests:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: "Error",
-            message: error instanceof Error 
-              ? error.message 
-              : "Failed to load active requests",
-          },
-        });
-      }
-    } finally {
-      this._loadingActiveRequests = false;
-    }
-  };
+  
 
-  #openActiveRequestsSidebar = async () => {
-    // First open the sidebar to show loading state immediately
-    this._sidebarOpen = true;
-    // Then load the data
-    await this.#loadActiveRequests();
-  };
 
-  #closeSidebar = () => {
-    this._sidebarOpen = false;
-    this._activeRequests = []; // Clear data when closing
-  };
+ #openActiveRequestsSidebar=async()=> {
+  const modalManager =  await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+  
+   modalManager?.open(
+    this, 
+    ACTIVE_REQUESTS_SIDEBAR_MODAL   
+  );
+}
+ 
 
   #toggleAutoRefresh = async () => {
     this._autoRefresh = !this._autoRefresh;
@@ -580,24 +551,16 @@ export class ExampleDashboardElement extends UmbElementMixin(LitElement) {
           ${this.#renderTabContent()}
         </div>
       </uui-box>
-
-      <umbmetrics-active-requests-sidebar
-        ?open="${this._sidebarOpen}"
-        .requests="${this._activeRequests}"
-        .loading="${this._loadingActiveRequests}"
-        @close="${this.#closeSidebar}"
-        @refresh="${this.#loadActiveRequests}"
-      ></umbmetrics-active-requests-sidebar>
-    `;
+          `;
   }
 
   static styles = css`${unsafeCSS(stylesString)}`;
 }
 
-export default ExampleDashboardElement;
+export default UmbMetrcisDashboardElement;
 
 declare global {
   interface HTMLElementTagNameMap {
-    "umbmetrics-dashboard": ExampleDashboardElement;
+    "umbmetrics-dashboard": UmbMetrcisDashboardElement;
   }
 }

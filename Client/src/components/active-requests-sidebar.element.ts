@@ -1,389 +1,295 @@
-import {
-  LitElement,
-  css,
-  html,
-  customElement,
-  property,
-  state,
-} from "@umbraco-cms/backoffice/external/lit";
-import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import type { ActiveRequestInfo } from "../types/active-request.js";
+import { 
+   
+  css, 
+  html, 
+  customElement, 
+    state, 
+    unsafeCSS
+} from '@umbraco-cms/backoffice/external/lit';
+import {  UmbModalElement } from '@umbraco-cms/backoffice/modal';
+import { ActiveRequestInfo } from '../types/active-request';
+import { UMB_NOTIFICATION_CONTEXT } from '@umbraco-cms/backoffice/notification';
+import { UMB_AUTH_CONTEXT, UmbAuthContext } from '@umbraco-cms/backoffice/auth';
+import { MetricsPerformanceService } from '../services/metrics-performance.service';
+import { UUITagLook } from '../types/uui-tag-look';
+import { UUIModalElement } from '@umbraco-cms/backoffice/external/uui';
+import styles from './active-requests-sidebar.styles.css?inline';
 
-@customElement("umbmetrics-active-requests-sidebar")
-export class ActiveRequestsSidebarElement extends UmbElementMixin(LitElement) {
-  @property({ type: Boolean, reflect: true })
-  open: boolean = false;
 
-  @property({ type: Array })
-  requests: ActiveRequestInfo[] = [];
 
-  @property({ type: Boolean })
-  loading: boolean = false;
 
+
+@customElement('umbmetrics-active-requests-sidebar')
+export class ActiveRequestsSidebarElement extends UmbModalElement {
+  modalContext: any;
+
+
+  constructor() {
+    super();
+   this.consumeContext(UMB_NOTIFICATION_CONTEXT, (notificationContext) => {
+      this.#notificationContext = notificationContext;
+    });
+
+       this.consumeContext(UMB_AUTH_CONTEXT, (authContext) => {
+          this.#authContext = authContext;          
+          this.#metricsService = new MetricsPerformanceService(async () => {
+            const token = await this.#authContext?.getLatestToken();
+            if (!token) {
+              throw new Error('No authentication token available');
+            }
+            return token;
+          });
+        });
+  }
+  @state()
+  private _requests: ActiveRequestInfo[] = [];
+
+  @state()
+  private _loading: boolean = false;
+  #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
+  #authContext?: UmbAuthContext;
+  #metricsService?: MetricsPerformanceService;
   @state()
   private _autoRefresh: boolean = false;
 
-  #refreshInterval?: number;
+  private _refreshInterval?: number;
 
-  #close = () => {
-    this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._setupKeyboardNavigation();
+    this.#loadActiveRequests();
+  }
+  #loadActiveRequests = async () => {
+    if (!this.#metricsService) {
+      console.error('Metrics service not initialized');
+      return;
+    }
+
+    this._loading = true;
+    try {
+      this._requests = await this.#metricsService.getActiveRequests();
+    } catch (error) {
+      console.error("Error loading active requests:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: "Error",
+            message: error instanceof Error 
+              ? error.message 
+              : "Failed to load active requests",
+          },
+        });
+      }
+    } finally {
+      this._loading = false;
+    }
   };
 
-  #refresh = () => {
-    this.dispatchEvent(new CustomEvent('refresh', { bubbles: true, composed: true }));
-  };
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._stopAutoRefresh();
+    this._cleanupKeyboardNavigation();
+  }
 
-  #toggleAutoRefresh = () => {
+  private _setupKeyboardNavigation(): void {
+    const keydownHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this._rejectModal();
+      }
+    };
+
+    document.addEventListener('keydown', keydownHandler);
+    this._cleanupKeyboardNavigation = () => {
+      document.removeEventListener('keydown', keydownHandler);
+    };
+  }
+
+  private _cleanupKeyboardNavigation(): void {
+    // Cleanup handled by the setup function
+  }
+
+   _rejectModal(): void {
+    this.modalContext?.reject();
+  }
+
+   _submitModal(): void {
+    this.modalContext?.submit();
+  }
+
+  
+
+  private _toggleAutoRefresh(): void {
     this._autoRefresh = !this._autoRefresh;
     
     if (this._autoRefresh) {
-      this.#startAutoRefresh();
+      this._startAutoRefresh();
     } else {
-      this.#stopAutoRefresh();
+      this._stopAutoRefresh();
     }
-  };
-
-  #startAutoRefresh = () => {
-    this.#refreshInterval = window.setInterval(() => {
-      this.#refresh();
-    }, 5000);
-  };
-
-  #stopAutoRefresh = () => {
-    if (this.#refreshInterval) {
-      clearInterval(this.#refreshInterval);
-      this.#refreshInterval = undefined;
-    }
-  };
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.#stopAutoRefresh();
   }
 
-  #formatDuration(ms: number): string {
+  private _startAutoRefresh(): void {
+    this._stopAutoRefresh(); // Clear any existing interval
+    this._refreshInterval = window.setInterval(() => {
+      this.#loadActiveRequests();
+    }, 5000);
+  }
+
+  private _stopAutoRefresh(): void {
+    if (this._refreshInterval) {
+      clearInterval(this._refreshInterval);
+      this._refreshInterval = undefined;
+    }
+  }
+
+  private _formatDuration(ms: number): string {
     if (ms < 1000) return `${ms.toFixed(0)} ms`;
     if (ms < 60000) return `${(ms / 1000).toFixed(1)} s`;
     return `${(ms / 60000).toFixed(1)} min`;
   }
 
-  #getMethodColor(method: string): string {
+  
+  private _getMethodLook(method: string): UUITagLook {
     switch (method.toUpperCase()) {
-      case 'GET': return 'positive';
-      case 'POST': return 'warning';
-      case 'PUT': return 'warning';
-      case 'DELETE': return 'danger';
+      case 'GET': return 'primary';
+      case 'POST': return 'secondary';
+      case 'PUT': return 'secondary';
+      case 'DELETE': return 'outline';
       default: return 'default';
     }
   }
-
-  render() {
-    return html`
-      <div class="sidebar-overlay ${this.open ? 'open' : ''}" @click="${this.#close}"></div>
-      <aside class="sidebar ${this.open ? 'open' : ''}">
-        <header class="sidebar-header">
-          <h2>
-            <uui-icon name="icon-link"></uui-icon>
-            Active Requests
-          </h2>
-          <div class="header-actions">
-            <uui-button 
-              look="secondary" 
-              compact
-              @click="${this.#refresh}"
-              ?disabled="${this.loading}"
-            >
-              <uui-icon name="icon-refresh"></uui-icon>
-            </uui-button>
-            <uui-toggle
-              label="Auto-refresh"
-              .checked="${this._autoRefresh}"
-              @change="${this.#toggleAutoRefresh}"
-            ></uui-toggle>
-            <uui-button look="secondary" compact @click="${this.#close}">
-              <uui-icon name="icon-wrong"></uui-icon>
-            </uui-button>
-          </div>
-        </header>
-
-        <div class="sidebar-content">
-          ${this.loading ? html`
-            <div class="loading">
-              <uui-loader></uui-loader>
-              <span>Loading active requests...</span>
-            </div>
-          ` : this.requests.length === 0 ? html`
-            <div class="empty-state">
-              <uui-icon name="icon-check"></uui-icon>
-              <p>No active requests</p>
-              <small>All requests have completed</small>
-            </div>
-          ` : html`
-            <div class="request-count">
-              <strong>${this.requests.length}</strong> active request${this.requests.length !== 1 ? 's' : ''}
-            </div>
-            <ul class="request-list">
-              ${this.requests.map(req => html`
-                <li class="request-item">
-                  <div class="request-header">
-                    <span class="method ${this.#getMethodColor(req.method)}">${req.method}</span>
-                    <span class="path" title="${req.path}${req.queryString}">${req.path}</span>
-                    <span class="duration">${this.#formatDuration(req.durationMs)}</span>
-                  </div>
-                  <div class="request-details">
-                    <div class="detail-row">
-                      <uui-icon name="icon-time"></uui-icon>
-                      <span>Started: ${new Date(req.startTime).toLocaleTimeString()}</span>
-                    </div>
-                    ${req.queryString ? html`
-                      <div class="detail-row">
-                        <uui-icon name="icon-search"></uui-icon>
-                        <span class="query-string">${req.queryString}</span>
-                      </div>
-                    ` : ''}
-                    <div class="detail-row">
-                      <uui-icon name="icon-globe"></uui-icon>
-                      <span>${req.remoteIp}</span>
-                    </div>
-                    ${req.userAgent ? html`
-                      <div class="detail-row user-agent">
-                        <uui-icon name="icon-browser-window"></uui-icon>
-                        <span title="${req.userAgent}">${this.#truncateUserAgent(req.userAgent)}</span>
-                      </div>
-                    ` : ''}
-                  </div>
-                </li>
-              `)}
-            </ul>
-          `}
-        </div>
-      </aside>
-    `;
-  }
-
-  #truncateUserAgent(ua: string): string {
+  private _truncateUserAgent(ua: string): string {
     if (ua.length > 50) {
       return ua.substring(0, 47) + '...';
     }
     return ua;
   }
 
-  static styles = css`
-    :host {
-      display: contents;
+  private _formatTime(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch {
+      return dateString;
     }
+  }
 
-    .sidebar-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s, visibility 0.3s;
-      z-index: 1000;
-    }
+  render() {
+    return html`
+      <!-- Modal Layout Structure -->
+      <umb-modal-container>
+<umb-modal-sidebar>
 
-    .sidebar-overlay.open {
-      opacity: 1;
-      visibility: visible;
-    }
+<umb-body-layout headline="Active Requests">    
 
-    .sidebar {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 450px;
-      max-width: 90vw;
-      height: 100vh;
-      background: var(--uui-color-surface);
-      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
-      transform: translateX(100%);
-      transition: transform 0.3s ease-in-out;
-      z-index: 1001;
-      display: flex;
-      flex-direction: column;
-    }
+        <!-- Modal content -->
+        <div class="modal-content">
+          ${this._loading ? html`
+            <div class="loading-state">
+              <uui-loader></uui-loader>
+              <p>Loading active requests...</p>
+            </div>
+          ` : this._requests.length === 0 ? html`
+            <div class="empty-state">
+              <uui-icon name="icon-check"></uui-icon>
+              <h3>No active requests</h3>
+              <p>All requests have completed</p>
+            </div>
+          ` : html`
+            <!-- Requests summary -->
+            <div class="requests-summary">
+              <span class="summary-text">
+                ${this._requests.length} active request${this._requests.length !== 1 ? 's' : ''}
+              </span>
+            </div>
 
-    .sidebar.open {
-      transform: translateX(0);
-    }
+            <!-- Requests list -->
+            <div class="requests-container">
+              ${this._requests.map((req) => html`
+                <div class="request-item">
+                  <!-- Request header with method, path, and duration -->
+                  <div class="request-header">
+                    <uui-tag look="${this._getMethodLook(req.method)}" class="method-tag">
+                      ${req.method}
+                    </uui-tag>
+                    
+                    <div class="request-main-info">
+                      <span class="request-path" title="${req.path}${req.queryString}">
+                        ${req.path}
+                      </span>
+                      <span class="request-duration">
+                        ${this._formatDuration(req.durationMs)}
+                      </span>
+                    </div>
+                  </div>
 
-    .sidebar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--uui-color-border);
-      background: var(--uui-color-surface-alt);
-    }
-
-    .sidebar-header h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .sidebar-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-    }
-
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      padding: 3rem;
-      color: var(--uui-color-text-alt);
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem;
-      text-align: center;
-      color: var(--uui-color-text-alt);
-    }
-
-    .empty-state uui-icon {
-      font-size: 3rem;
-      color: var(--uui-color-positive);
-      margin-bottom: 1rem;
-    }
-
-    .empty-state p {
-      margin: 0;
-      font-size: 1.1rem;
-    }
-
-    .empty-state small {
-      opacity: 0.7;
-    }
-
-    .request-count {
-      padding: 0.75rem 1rem;
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .request-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .request-item {
-      background: var(--uui-color-surface-alt);
-      border: 1px solid var(--uui-color-border);
-      border-radius: var(--uui-border-radius);
-      overflow: hidden;
-    }
-
-    .request-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background: var(--uui-color-surface);
-      border-bottom: 1px solid var(--uui-color-border);
-    }
-
-    .method {
-      font-weight: 700;
-      font-size: 0.75rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: var(--uui-border-radius);
-      text-transform: uppercase;
-    }
-
-    .method.positive {
-      background: var(--uui-color-positive-emphasis);
-      color: var(--uui-color-positive);
-    }
-
-    .method.warning {
-      background: var(--uui-color-warning-emphasis);
-      color: var(--uui-color-warning);
-    }
-
-    .method.danger {
-      background: var(--uui-color-danger-emphasis);
-      color: var(--uui-color-danger);
-    }
-
-    .path {
-      flex: 1;
-      font-family: monospace;
-      font-size: 0.85rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .duration {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--uui-color-interactive);
-    }
-
-    .request-details {
-      padding: 0.75rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .detail-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      color: var(--uui-color-text-alt);
-    }
-
-    .detail-row uui-icon {
-      font-size: 0.9rem;
-      opacity: 0.7;
-    }
-
-    .query-string {
-      font-family: monospace;
-      font-size: 0.75rem;
-      word-break: break-all;
-    }
-
-    .user-agent span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  `;
+                  <!-- Request details -->
+                  <div class="request-details">
+                    <div class="detail-item">
+                      <uui-icon name="icon-time"></uui-icon>
+                      <span>${this._formatTime(req.startTime)}</span>
+                    </div>
+                    
+                    ${req.queryString ? html`
+                      <div class="detail-item">
+                        <uui-icon name="icon-search"></uui-icon>
+                        <span class="query-string">${req.queryString}</span>
+                      </div>
+                    ` : ''}
+                    
+                    <div class="detail-item">
+                      <uui-icon name="icon-globe"></uui-icon>
+                      <span>${req.remoteIp}</span>
+                    </div>
+                    
+                    ${req.userAgent ? html`
+                      <div class="detail-item">
+                        <uui-icon name="icon-browser-window"></uui-icon>
+                        <span title="${req.userAgent}">
+                          ${this._truncateUserAgent(req.userAgent)}
+                        </span>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `)}
+            </div>
+          `}
+        </div>
+        <umb-footer-layout  slot="footer">  <uui-toggle class="align-center-self" slot="actions"
+              label="Auto-refresh"
+            .checked="${this._autoRefresh}"
+            @change="${this._toggleAutoRefresh}"
+          ></uui-toggle>    <uui-button slot="actions" color="positive" look="primary" @click="${this.#loadActiveRequests}">
+            <uui-icon name="icon-refresh"></uui-icon>Refresh
+          </uui-button>
+         
+<uui-button slot="actions" look="primary" color="danger" type="button" @click=${this._rejectModal}>Close</uui-button> 
+        
+           
+        </umb-footer-layout>
+      </umb-body-layout>
+</umb-modal-sidebar>
+ 
+      </umb-modal-container>
+     
+    `;
+  }
+ static customstyles = css`${unsafeCSS(styles)}`;
+ 
+    static styles = [...UUIModalElement.styles,ActiveRequestsSidebarElement.customstyles, css``];
 }
 
 export default ActiveRequestsSidebarElement;
 
 declare global {
   interface HTMLElementTagNameMap {
-    "umbmetrics-active-requests-sidebar": ActiveRequestsSidebarElement;
+    'umbmetrics-active-requests-sidebar': ActiveRequestsSidebarElement;
   }
 }
