@@ -1,4 +1,5 @@
 import type { PerformanceMetrics } from '../types/performance-metrics.js';
+import type { ActiveRequestInfo } from '../types/active-request.js';
 import * as signalR from '@microsoft/signalr';
 import { UmbracoMetrics } from '../types/umbraco-metrics.js';
 
@@ -238,9 +239,9 @@ export class MetricsPerformanceService {
    * Fetches Umbraco-specific metrics from the server
    */
   async getUmbracoMetrics(): Promise<UmbracoMetrics> {
-      const token = await this.#tokenProvider();
+    const token = await this.#tokenProvider();
     
-      const response = await fetch(`${this.API_BASE_URL}/umb`, {
+    const response = await fetch(`${this.API_BASE_URL}/umb`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -254,7 +255,38 @@ export class MetricsPerformanceService {
     return await response.json();
   }
 
-   #notifyListeners(metrics: PerformanceMetrics): void {
+  /**
+   * Fetches active requests from the server
+   */
+  async getActiveRequests(): Promise<ActiveRequestInfo[]> {
+    const token = await this.#tokenProvider();
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+
+    const response = await fetch(`${this.API_BASE_URL}/active-requests`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized: Please ensure you are logged into the Umbraco backoffice');
+      }
+      
+      throw new Error(
+        `Failed to fetch active requests: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  }
+
+  #notifyListeners(metrics: PerformanceMetrics): void {
     this.#listeners.forEach(listener => {
       try {
         listener(metrics);

@@ -1,0 +1,13 @@
+import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from './active-requests-sidebar.modal.js';
+
+export const manifests: Array<UmbExtensionManifest> = [
+  {
+    type: 'modal',
+    alias: 'UmbMetrics.Modal.ActiveRequestsSidebar',
+    name: 'Active Requests Sidebar Modal',
+    js: () => import('./active-requests-sidebar.element.js'),
+    meta: {
+      modal: ACTIVE_REQUESTS_SIDEBAR_MODAL,
+    },
+  },
+];
