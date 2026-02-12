@@ -10,10 +10,12 @@
     <PackageId>UmbMetrics</PackageId>
     <Product>UmbMetrics</Product>
     <Title>UmbMetrics</Title>
-    <Version>17.1.0.4</Version>
-    <Tags>umbraco-marketplace></Tags>
+    <Version>17.1.0.6</Version>
+    <PackageTags>umbraco-marketplace&gt;</PackageTags>
     <Authors>Stelios Zisis</Authors>
-    <ProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</ProjectUrl>
+    <PackageProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</PackageProjectUrl>
+   <RepositoryUrl>https://github.com/nightriderjt/Umbraco.Metrics</RepositoryUrl>
+    <PackageIcon>UmbMetricsLogo.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,6 +36,7 @@
     <!-- However make the Umbraco-package.json included for dotnet pack or nuget package and visible to the solution -->
     <None Include="Client\public\umbraco-package.json" Pack="false" />
     <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="Client\public\assets\UmbMetricsLogo.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <ItemGroup>

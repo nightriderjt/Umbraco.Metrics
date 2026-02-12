@@ -50,7 +50,7 @@ When something goes wrong, immediately see what's happening with your server. No
 
 ## How It Works
 
-Once installed, UmbMetrics adds a new dashboard to your Umbraco **Settings** section. Simply navigate to it to see your metrics. Toggle on real-time updates to watch your metrics refresh automatically every 5 seconds - perfect for monitoring during deployments, traffic spikes, or performance testing.
+Once installed, UmbMetrics adds a new dashboard to your Umbraco **Settings** section. Simply navigate to it to see your metrics. Toggle on real-time updates to watch your metrics refresh automatically every 1 second - perfect for monitoring during deployments, traffic spikes, or performance testing.
 
 ### Two Views, Complete Picture
 

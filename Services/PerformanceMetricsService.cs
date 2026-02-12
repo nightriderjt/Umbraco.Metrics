@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UmbMetrics.Middleware;
-using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
 

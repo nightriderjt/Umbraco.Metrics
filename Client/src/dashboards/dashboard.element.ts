@@ -313,7 +313,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
           icon="icon-timer"
           title="Avg Response"
           value="${m.requestMetrics.averageResponseTimeMs.toFixed(0)} ms"
-          detail="Last 1000 requests"
+          detail="Last 100 requests"
           color="${getStatusColor(m.requestMetrics.averageResponseTimeMs, 1000)}"
         ></umbmetrics-metric-card>
 
