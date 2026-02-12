@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
+using Umbraco.Cms.Core.Media.EmbedProviders;
 
 namespace UmbMetrics.Middleware;
 

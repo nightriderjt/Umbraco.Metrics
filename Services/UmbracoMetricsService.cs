@@ -4,6 +4,7 @@ using Umbraco.Cms.Core.Hosting;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Persistence;
 using System.Text.Json;
+using UmbMetrics.Constants;
 using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
