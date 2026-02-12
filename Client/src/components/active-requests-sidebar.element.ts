@@ -134,7 +134,7 @@ export class ActiveRequestsSidebarElement extends UmbModalElement {
     this._stopAutoRefresh(); // Clear any existing interval
     this._refreshInterval = window.setInterval(() => {
       this.#loadActiveRequests();
-    }, 5000);
+    }, 1000);
   }
 
   private _stopAutoRefresh(): void {

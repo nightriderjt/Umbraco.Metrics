@@ -1,13 +1,8 @@
-using Lucene.Net.QueryParsers.Xml.Builders;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics;
-using Umbraco.Cms.Core.Media.EmbedProviders;
 
 namespace UmbMetrics.Middleware;
 
@@ -101,7 +96,7 @@ public class MetricsMiddleware
 
     private  static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
     {
-       // if (env.IsDevelopment()) return true;
+        if (env.IsDevelopment()) return true;
         return !context.Request.Path.Value.Contains("metrics")
                     && !context.Request.Path.Value.Contains("serverEventHub")
                     && !context.Request.Path.Value.Contains("active-requests");
