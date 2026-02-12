@@ -83,8 +83,8 @@ public class MetricsMiddleware
 
                 _responseTimes.Enqueue(stopwatch.Elapsed.TotalMilliseconds);
 
-                // Keep only last 1000 response times to prevent memory growth
-                while (_responseTimes.Count > 1000)
+                // Keep only last 100 response times to prevent memory growth
+                while (_responseTimes.Count > 100)
                 {
                     _responseTimes.TryDequeue(out _);
                 }
@@ -101,7 +101,7 @@ public class MetricsMiddleware
 
     private  static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment()) return true;
+       // if (env.IsDevelopment()) return true;
         return !context.Request.Path.Value.Contains("metrics")
                     && !context.Request.Path.Value.Contains("serverEventHub")
                     && !context.Request.Path.Value.Contains("active-requests");
@@ -115,7 +115,6 @@ public class MetricsMiddleware
     {
         return _activeRequestDetails.Values
             .OrderByDescending(r => r.StartTime)
-            .Where(x=> ExcludeSystemPaths(context,env))
             .Select(r => new ActiveRequestInfo
             {
                 RequestId = r.RequestId,
