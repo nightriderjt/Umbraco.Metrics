@@ -34,5 +34,20 @@
 == Suggestion ==
 * Use VSCode as the editor of choice as it has good tooling support for TypeScript and it will recommend a VSCode Extension for good Lit WebComponent completions
 
+== Export Functionality ==
+
+UmbMetrics now includes export capabilities for metrics data. You can export metrics in multiple formats:
+* CSV - For spreadsheet analysis
+* JSON - For programmatic use
+* XML - For enterprise integration
+
+To use the export feature:
+1. Build the project with `npm run build`
+2. Run your Umbraco website
+3. Navigate to the UmbMetrics dashboard
+4. Click the "Export Metrics" button
+5. Choose your format and options
+6. Download your metrics data
+
 == Other Resources ==
 * Umbraco Docs - https://docs.umbraco.com/umbraco-cms/customizing/overview

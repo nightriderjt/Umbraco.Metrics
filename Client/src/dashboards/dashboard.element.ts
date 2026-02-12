@@ -26,6 +26,7 @@ import "../components/active-requests-sidebar.element.js";
 import stylesString from './dashboard.element.css?inline';
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
+import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
 
 @customElement("umbmetrics-dashboard")
 export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
@@ -166,14 +167,23 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   
 
 
- #openActiveRequestsSidebar=async()=> {
-  const modalManager =  await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-  
-   modalManager?.open(
-    this, 
-    ACTIVE_REQUESTS_SIDEBAR_MODAL   
-  );
-}
+  #openActiveRequestsSidebar = async () => {
+    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    
+    modalManager?.open(
+      this, 
+      ACTIVE_REQUESTS_SIDEBAR_MODAL   
+    );
+  }
+
+  #openExportModal = async () => {
+    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    
+    modalManager?.open(
+      this, 
+      UMB_METRICS_EXPORT_MODAL   
+    );
+  }
  
 
   #toggleAutoRefresh = async () => {
@@ -504,6 +514,10 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         <div class="metrics-controls">
           <uui-button color="default" look="primary" @click="${this.#onClickRefreshMetrics}">
             <uui-icon name="icon-refresh"></uui-icon> Refresh Metrics
+          </uui-button>
+
+          <uui-button color="default" look="outline" @click="${this.#openExportModal}">
+            <uui-icon name="icon-download"></uui-icon> Export Metrics
           </uui-button>
 
           <uui-toggle

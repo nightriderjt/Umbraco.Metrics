@@ -132,14 +132,67 @@ All metrics stay within your environment. Nothing is sent to external services. 
 - GitHub: https://github.com/nightriderjt/Umbraco.Metrics
 - Report issues: https://github.com/nightriderjt/Umbraco.Metrics/issues
 
+## Export Functionality
+
+UmbMetrics now includes powerful export capabilities, allowing you to download your metrics data for offline analysis, reporting, or archiving.
+
+### Available Export Formats
+
+1. **CSV (Comma-Separated Values)**
+   - Perfect for spreadsheet analysis in Excel, Google Sheets, or data visualization tools
+   - Includes proper escaping for Excel compatibility
+   - Structured with clear column headers
+
+2. **JSON (JavaScript Object Notation)**
+   - Ideal for programmatic analysis and integration with other systems
+   - Preserves the complete data structure
+   - Easy to parse with any programming language
+
+3. **XML (eXtensible Markup Language)**
+   - Suitable for enterprise systems and legacy integrations
+   - Well-structured hierarchical format
+   - Includes schema information
+
+### Export Scopes
+
+- **Current Metrics**: Export only the currently displayed metrics
+- **Historical Data**: Export metrics collected over time (requires historical storage)
+- **Custom Range**: Export metrics from a specific date range
+
+### What You Can Export
+
+- **Performance Metrics**: CPU usage, memory consumption, thread information, garbage collection stats
+- **Umbraco Metrics**: Content statistics, media library information, cache performance, user data
+- **Active Requests**: Detailed information about currently processing requests
+- **Application Information**: Server details, uptime, version information
+
+### How to Export
+
+1. Navigate to the UmbMetrics dashboard in your Umbraco backoffice
+2. Click the "Export Metrics" button in the dashboard controls
+3. Choose your preferred format (CSV, JSON, or XML)
+4. Select which metrics to include
+5. Configure the export scope and date range if needed
+6. Click "Export Metrics" to download your data
+
+### Quick Export Options
+
+For convenience, UmbMetrics provides one-click export buttons:
+- **Export as CSV**: Quick export of all metrics in CSV format
+- **Export as JSON**: Quick export of all metrics in JSON format
+
+### File Size Estimation
+
+The export modal provides real-time file size estimates based on your selected options, helping you choose the right format and scope for your needs.
+
 ## What's Next?
 
 Future enhancements planned:
 - Historical metrics storage
 - Alerting and notifications
 - Custom metric thresholds
-- Export metrics data
 - Multi-server monitoring
+- Advanced analytics and visualization
 
 ---
 
