@@ -3,9 +3,9 @@ import { UmbElementMixin as k } from "@umbraco-cms/backoffice/element-api";
 import { UMB_NOTIFICATION_CONTEXT as Y } from "@umbraco-cms/backoffice/notification";
 import { UMB_CURRENT_USER_CONTEXT as Z } from "@umbraco-cms/backoffice/current-user";
 import { UMB_AUTH_CONTEXT as ee } from "@umbraco-cms/backoffice/auth";
-import { M as te } from "./active-requests-sidebar.element-CYvpeEM1.js";
+import { M as te } from "./active-requests-sidebar.element-DxrkQQUB.js";
 import { UMB_MODAL_MANAGER_CONTEXT as ie } from "@umbraco-cms/backoffice/modal";
-import { A as re } from "./bundle.manifests-BFkcBhE_.js";
+import { A as re } from "./bundle.manifests-BV8RrVWw.js";
 function L(e, t) {
   return e > t ? "danger" : e > t * 0.7 ? "warning" : "positive";
 }
@@ -912,4 +912,4 @@ export {
   v as UmbMetrcisDashboardElement,
   Te as default
 };
-//# sourceMappingURL=dashboard.element-VVhuZ0i7.js.map
+//# sourceMappingURL=dashboard.element-DL5vTwJj.js.map

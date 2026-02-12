@@ -1,0 +1,1 @@
+{"version":3,"file":"icons-DaMqJOw9.js","sources":["../../../Client/src/icons/icons.ts"],"sourcesContent":["export default [\r\n  {\r\n        name: \"umbmetrics-logo\",\r\n        path: import(\"./umbLogo\"),\r\n  },\r\n];"],"names":["icons"],"mappings":"AAAA,MAAAA,IAAe;AAAA,EACb;AAAA,IACM,MAAM;AAAA,IACN,MAAM,OAAO,uBAAW;AAAA,EAAA;AAEhC;"}

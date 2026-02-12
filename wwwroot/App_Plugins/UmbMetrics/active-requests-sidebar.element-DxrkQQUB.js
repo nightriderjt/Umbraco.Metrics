@@ -2012,7 +2012,7 @@ let v = class extends se {
   _startAutoRefresh() {
     this._stopAutoRefresh(), this._refreshInterval = window.setInterval(() => {
       S(this, $).call(this);
-    }, 5e3);
+    }, 1e3);
   }
   _stopAutoRefresh() {
     this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = void 0);
@@ -2179,4 +2179,4 @@ export {
   Oe as M,
   tt as a
 };
-//# sourceMappingURL=active-requests-sidebar.element-CYvpeEM1.js.map
+//# sourceMappingURL=active-requests-sidebar.element-DxrkQQUB.js.map

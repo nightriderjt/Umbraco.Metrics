@@ -11,7 +11,7 @@
     <Product>UmbMetrics</Product>
     <Title>UmbMetrics</Title>
     <Version>17.1.0.5</Version>
-    <PackageTags>umbraco-marketplace></PackageTags>
+    <PackageTags>umbraco-marketplace&gt;</PackageTags>
     <Authors>Stelios Zisis</Authors>
     <PackageProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</PackageProjectUrl>
    <RepositoryUrl>https://github.com/nightriderjt/Umbraco.Metrics</RepositoryUrl>

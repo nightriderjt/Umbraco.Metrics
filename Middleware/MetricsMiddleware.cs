@@ -96,7 +96,7 @@ public class MetricsMiddleware
 
     private  static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment()) return true;
+        if (!env.IsDevelopment()) return true;
         return !context.Request.Path.Value.Contains("metrics")
                     && !context.Request.Path.Value.Contains("serverEventHub")
                     && !context.Request.Path.Value.Contains("active-requests");
