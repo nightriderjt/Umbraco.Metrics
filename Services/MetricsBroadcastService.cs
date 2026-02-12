@@ -13,7 +13,7 @@ public class MetricsBroadcastService : BackgroundService
     private readonly IHubContext<MetricsHub> _hubContext;
     private readonly IPerformanceMetricsService _metricsService;
     private readonly ILogger<MetricsBroadcastService> _logger;
-    private readonly TimeSpan _broadcastInterval = TimeSpan.FromSeconds(5);
+    private readonly TimeSpan _broadcastInterval = TimeSpan.FromSeconds(1);
 
     public MetricsBroadcastService(
         IHubContext<MetricsHub> hubContext,

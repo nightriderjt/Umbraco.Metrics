@@ -1,7 +1,7 @@
 {
   "id": "UmbMetrics",
   "name": "UmbMetrics",
-  "version": "17.1.0.1",
+  "version": "17.1.0.6",
   "allowTelemetry": true,
   "extensions": [
     {
@@ -9,6 +9,17 @@
       "alias": "UmbMetrics.Bundle",
       "type": "bundle",
       "js": "/App_Plugins/UmbMetrics/umb-metrics.js"
+    },
+    {
+      "type": "packageView",
+      "alias": "UmbMetrics.PackageView",
+      "name": "UmbMetrics Package View",
+      "js": "/App_Plugins/UmbMetrics/umb-metrics.js",
+      "elementName": "umbmetrics-package-view",
+      "meta": {
+        "packageName": "UmbMetrics",
+        "icon": "umbmetrics-logo"
+      }
     }
   ]
 }
