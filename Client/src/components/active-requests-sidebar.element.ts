@@ -13,7 +13,7 @@ import { UMB_AUTH_CONTEXT, UmbAuthContext } from '@umbraco-cms/backoffice/auth';
 import { MetricsPerformanceService } from '../services/metrics-performance.service';
 import { UUITagLook } from '../types/uui-tag-look';
 import { UUIModalElement } from '@umbraco-cms/backoffice/external/uui';
-import styles from './active-requests-sidebar.styles.css?inline';
+import styles from '../css/active-requests-sidebar.styles.css?inline';
 
 
 

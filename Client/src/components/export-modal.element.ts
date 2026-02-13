@@ -1,19 +1,20 @@
 import {
-  LitElement,
   css,
   html,
   customElement,
   state,
 } from "@umbraco-cms/backoffice/external/lit";
-import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { UMB_MODAL_CONTEXT } from "@umbraco-cms/backoffice/modal";
+import { UmbModalElement } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { MetricsExportService } from "../services/metrics-export.service.js";
 import { ExportFormat, ExportScope, ExportOptions } from "../types/export-options.js";
+import { UUIModalElement } from "@umbraco-cms/backoffice/external/uui";
 
 @customElement("umbmetrics-export-modal")
-export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
+export class UmbMetricsExportModalElement extends UmbModalElement {
+  modalContext: any;
+
   @state()
   private _isExporting: boolean = false;
 
@@ -31,24 +32,16 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
   };
 
   @state()
-  private _showAdvancedOptions: boolean = false;
-
-  @state()
   private _estimatedSize: string = '';
 
   #exportService?: MetricsExportService;
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
-  #modalContext?: typeof UMB_MODAL_CONTEXT.TYPE;
 
   constructor() {
     super();
 
     this.consumeContext(UMB_NOTIFICATION_CONTEXT, (notificationContext) => {
       this.#notificationContext = notificationContext;
-    });
-
-    this.consumeContext(UMB_MODAL_CONTEXT, (modalContext) => {
-      this.#modalContext = modalContext;
     });
 
     this.consumeContext(UMB_AUTH_CONTEXT, (authContext) => {
@@ -63,6 +56,14 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
 
     // Calculate initial estimated size
     this.#updateEstimatedSize();
+  }
+
+  _rejectModal(): void {
+    this.modalContext?.reject();
+  }
+
+  _submitModal(): void {
+    this.modalContext?.submit();
   }
 
   #updateEstimatedSize() {
@@ -151,8 +152,8 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
 
       // Close modal after short delay
       setTimeout(() => {
-        if (this.#modalContext) {
-          this.#modalContext.submit();
+        if (this.modalContext) {
+          this.modalContext.submit();
         }
       }, 1000);
 
@@ -195,8 +196,8 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
       }
 
       // Close modal
-      if (this.#modalContext) {
-        this.#modalContext.submit();
+      if (this.modalContext) {
+        this.modalContext.submit();
       }
 
     } catch (error) {
@@ -218,13 +219,9 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
   };
 
   #handleCancel = () => {
-    if (this.#modalContext) {
-      this.#modalContext.reject();
+    if (this.modalContext) {
+      this.modalContext.reject();
     }
-  };
-
-  #toggleAdvancedOptions = () => {
-    this._showAdvancedOptions = !this._showAdvancedOptions;
   };
 
   #renderQuickExportButtons() {
@@ -255,15 +252,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(LitElement) {
         </div>
       </div>
   `;
-}
-
-export default UmbMetricsExportModalElement;
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "umbmetrics-export-modal": UmbMetricsExportModalElement;
   }
-}
 
   #renderExportOptions() {
     const formatOptions = this.#exportService?.getSupportedFormats() || [];
@@ -447,7 +436,7 @@ declare global {
     `;
   }
 
-  static styles = css`
+  static styles = [...UUIModalElement.styles, css`
     :host {
       display: block;
       min-width: 500px;
@@ -627,5 +616,13 @@ declare global {
         flex-direction: column;
       }
     }
-  `;
+  `];
+}
+
+export default UmbMetricsExportModalElement;
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "umbmetrics-export-modal": UmbMetricsExportModalElement;
+  }
 }

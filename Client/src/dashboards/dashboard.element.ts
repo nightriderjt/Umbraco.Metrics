@@ -23,7 +23,7 @@ import "../components/metric-card.element.js";
 import "../components/metrics-grid.element.js";
 import "../components/stat-card.element.js";
 import "../components/active-requests-sidebar.element.js";
-import stylesString from './dashboard.element.css?inline';
+import stylesString from '../css/dashboard.element.css?inline';
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
 import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
@@ -493,6 +493,90 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     `;
   }
 
+  #renderUtilsTab() {
+    return html`
+      <div class="utils-tab">
+        <h3>Utility Tools</h3>
+        <p class="description">Additional tools for managing and exporting metrics data</p>
+        
+        <div class="utils-grid">
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-download"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Export Metrics</h4>
+              <p>Export performance and Umbraco metrics in various formats (CSV, JSON)</p>
+              <uui-button 
+                look="primary" 
+                color="positive"
+                @click="${this.#openExportModal}"
+                style="margin-top: 1rem;"
+              >
+                <uui-icon name="icon-download"></uui-icon>
+                Open Export Dialog
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-settings"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Data Management</h4>
+              <p>Manage historical metrics data and cleanup options</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-trash"></uui-icon>
+                Cleanup Old Data
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-chart"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Advanced Analytics</h4>
+              <p>Generate detailed reports and analytics from collected metrics</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-chart"></uui-icon>
+                Generate Report
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-alarm-clock"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Scheduled Tasks</h4>
+              <p>Schedule automatic exports and data collection tasks</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-time"></uui-icon>
+                Schedule Export
+              </uui-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   #renderTabContent() {
     switch (this._activeTab) {
       case 'overview':
@@ -501,6 +585,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         return this.#renderHeapTab();
       case 'umbraco':
         return this.#renderUmbracoTab();
+      case 'utils':
+        return this.#renderUtilsTab();
       default:
         return this.#renderOverviewTab();
     }
@@ -514,10 +600,6 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         <div class="metrics-controls">
           <uui-button color="default" look="primary" @click="${this.#onClickRefreshMetrics}">
             <uui-icon name="icon-refresh"></uui-icon> Refresh Metrics
-          </uui-button>
-
-          <uui-button color="default" look="outline" @click="${this.#openExportModal}">
-            <uui-icon name="icon-download"></uui-icon> Export Metrics
           </uui-button>
 
           <uui-toggle
@@ -558,6 +640,13 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             @click="${() => this.#switchTab('umbraco')}"
           >
             <uui-icon name="icon-umbraco"></uui-icon> Umbraco
+          </uui-button>
+          <uui-button 
+            look="${this._activeTab === 'utils' ? 'primary' : 'default'}"
+            color="${this._activeTab === 'utils' ? 'positive' : 'default'}"
+            @click="${() => this.#switchTab('utils')}"
+          >
+            <uui-icon name="icon-settings"></uui-icon> Utils
           </uui-button>
         </div>
 

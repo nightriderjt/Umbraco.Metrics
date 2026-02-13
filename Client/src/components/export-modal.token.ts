@@ -4,7 +4,7 @@ export const UMB_METRICS_EXPORT_MODAL = new UmbModalToken(
   "UmbMetrics.Modal.Export",
   {
     modal: {
-      type: "sidebar",
+      type: "dialog",
       size: "medium",
     },
   }

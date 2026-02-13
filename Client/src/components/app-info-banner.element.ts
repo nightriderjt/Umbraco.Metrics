@@ -4,10 +4,12 @@ import {
   html,
   customElement,
   property,
+  unsafeCSS,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import type { ApplicationInfo } from "../types/performance-metrics.js";
 import { formatUptime } from "../utils/format-utils.js";
+import styles from "../css/app-info-banner.styles.css?inline";
 
 @customElement("umbmetrics-app-info-banner")
 export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
@@ -49,46 +51,7 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
     `;
   }
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    .app-info-banner {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--uui-color-border);
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--uui-color-text);
-    }
-
-    .info-item strong {
-      color: var(--uui-color-text-alt);
-    }
-
-    .info-item.connected {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected strong {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected uui-icon {
-      color: var(--uui-color-positive);
-    }
-  `;
+  static styles = css`${unsafeCSS(styles)}`;
 }
 
 export default AppInfoBannerElement;

@@ -1,27 +1,28 @@
-import { LitElement as S, html as l, css as T, property as d, customElement as U, unsafeCSS as K, state as $ } from "@umbraco-cms/backoffice/external/lit";
-import { UmbElementMixin as k } from "@umbraco-cms/backoffice/element-api";
-import { UMB_NOTIFICATION_CONTEXT as Y } from "@umbraco-cms/backoffice/notification";
-import { UMB_CURRENT_USER_CONTEXT as Z } from "@umbraco-cms/backoffice/current-user";
-import { UMB_AUTH_CONTEXT as ee } from "@umbraco-cms/backoffice/auth";
-import { M as te } from "./active-requests-sidebar.element-CYvpeEM1.js";
-import { UMB_MODAL_MANAGER_CONTEXT as ie } from "@umbraco-cms/backoffice/modal";
-import { A as re } from "./bundle.manifests-BFkcBhE_.js";
-function L(e, t) {
+import { LitElement as S, html as l, unsafeCSS as V, css as k, property as d, customElement as T, state as $ } from "@umbraco-cms/backoffice/external/lit";
+import { UmbElementMixin as U } from "@umbraco-cms/backoffice/element-api";
+import { UMB_NOTIFICATION_CONTEXT as te } from "@umbraco-cms/backoffice/notification";
+import { UMB_CURRENT_USER_CONTEXT as ie } from "@umbraco-cms/backoffice/current-user";
+import { UMB_AUTH_CONTEXT as re } from "@umbraco-cms/backoffice/auth";
+import { M as ae } from "./active-requests-sidebar.element-DxrkQQUB.js";
+import { UMB_MODAL_MANAGER_CONTEXT as H } from "@umbraco-cms/backoffice/modal";
+import { A as oe, U as se } from "./bundle.manifests-DWVuRyEE.js";
+function j(e, t) {
   return e > t ? "danger" : e > t * 0.7 ? "warning" : "positive";
 }
-function n(e) {
+function c(e) {
   return e.toLocaleString();
 }
-function ae(e) {
-  const t = Math.floor(e / 86400), i = Math.floor(e % 86400 / 3600), s = Math.floor(e % 3600 / 60), r = Math.floor(e % 60);
-  return `${t}d ${i}h ${s}m ${r}s`;
+function ne(e) {
+  const t = Math.floor(e / 86400), i = Math.floor(e % 86400 / 3600), o = Math.floor(e % 3600 / 60), r = Math.floor(e % 60);
+  return `${t}d ${i}h ${o}m ${r}s`;
 }
-var se = Object.defineProperty, oe = Object.getOwnPropertyDescriptor, q = (e, t, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? oe(t, i) : t, o = e.length - 1, c; o >= 0; o--)
-    (c = e[o]) && (r = (s ? c(t, i, r) : c(r)) || r);
-  return s && r && se(t, i, r), r;
+const ce = ":host{display:block}.app-info-banner{display:flex;flex-wrap:wrap;gap:1rem;padding:1rem;background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);margin-bottom:1.5rem;border:1px solid var(--uui-color-border)}.info-item{display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--uui-color-text)}.info-item strong{color:var(--uui-color-text-alt)}.info-item.connected,.info-item.connected strong{color:var(--uui-color-positive)}.info-item.connected uui-icon{color:var(--uui-color-positive)}";
+var le = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, G = (e, t, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? ue(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (o ? n(t, i, r) : n(r)) || r);
+  return o && r && le(t, i, r), r;
 };
-let x = class extends k(S) {
+let w = class extends U(S) {
   constructor() {
     super(...arguments), this.isConnected = !1;
   }
@@ -41,7 +42,7 @@ let x = class extends k(S) {
           <strong>CPU Cores:</strong> ${this.applicationInfo.processorCount}
         </div>
         <div class="info-item">
-          <strong>Uptime:</strong> ${ae(this.applicationInfo.uptimeSeconds)}
+          <strong>Uptime:</strong> ${ne(this.applicationInfo.uptimeSeconds)}
         </div>
         ${this.isConnected ? l`
           <div class="info-item connected">
@@ -53,65 +54,26 @@ let x = class extends k(S) {
     ` : l``;
   }
 };
-x.styles = T`
-    :host {
-      display: block;
-    }
-
-    .app-info-banner {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--uui-color-border);
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--uui-color-text);
-    }
-
-    .info-item strong {
-      color: var(--uui-color-text-alt);
-    }
-
-    .info-item.connected {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected strong {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected uui-icon {
-      color: var(--uui-color-positive);
-    }
-  `;
-q([
+w.styles = k`${V(ce)}`;
+G([
   d({ type: Object })
-], x.prototype, "applicationInfo", 2);
-q([
+], w.prototype, "applicationInfo", 2);
+G([
   d({ type: Boolean })
-], x.prototype, "isConnected", 2);
-x = q([
-  U("umbmetrics-app-info-banner")
-], x);
-var ce = Object.defineProperty, ne = Object.getOwnPropertyDescriptor, H = (e) => {
+], w.prototype, "isConnected", 2);
+w = G([
+  T("umbmetrics-app-info-banner")
+], w);
+var de = Object.defineProperty, me = Object.getOwnPropertyDescriptor, X = (e) => {
   throw TypeError(e);
-}, f = (e, t, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? ne(t, i) : t, o = e.length - 1, c; o >= 0; o--)
-    (c = e[o]) && (r = (s ? c(t, i, r) : c(r)) || r);
-  return s && r && ce(t, i, r), r;
-}, le = (e, t, i) => t.has(e) || H("Cannot " + i), ue = (e, t, i) => (le(e, t, "read from private field"), i ? i.call(e) : t.get(e)), de = (e, t, i) => t.has(e) ? H("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), O;
-let h = class extends k(S) {
+}, f = (e, t, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? me(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (o ? n(t, i, r) : n(r)) || r);
+  return o && r && de(t, i, r), r;
+}, pe = (e, t, i) => t.has(e) || X("Cannot " + i), he = (e, t, i) => (pe(e, t, "read from private field"), i ? i.call(e) : t.get(e)), ve = (e, t, i) => t.has(e) ? X("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), I;
+let h = class extends U(S) {
   constructor() {
-    super(...arguments), this.icon = "icon-info", this.title = "", this.value = "", this.detail = "", this.color = "default", this.span = 1, this.clickable = !1, this.actionIcon = "icon-activity", this.actionLabel = "View Details", de(this, O, (e) => {
+    super(...arguments), this.icon = "icon-info", this.title = "", this.value = "", this.detail = "", this.color = "default", this.span = 1, this.clickable = !1, this.actionIcon = "icon-activity", this.actionLabel = "View Details", ve(this, I, (e) => {
       e.stopPropagation(), this.clickable && this.dispatchEvent(new CustomEvent("card-action", { bubbles: !0, composed: !0 }));
     });
   }
@@ -128,7 +90,7 @@ let h = class extends k(S) {
               class="action-button"
               look="secondary" 
               compact 
-              @click="${ue(this, O)}"
+              @click="${he(this, I)}"
               title="${this.actionLabel}"
             >
               <uui-icon name="${this.actionIcon}"></uui-icon>
@@ -147,8 +109,8 @@ let h = class extends k(S) {
     `;
   }
 };
-O = /* @__PURE__ */ new WeakMap();
-h.styles = T`
+I = /* @__PURE__ */ new WeakMap();
+h.styles = k`
     :host {
       display: block;
       height: 100%;
@@ -277,14 +239,14 @@ f([
   d({ type: String })
 ], h.prototype, "actionLabel", 2);
 h = f([
-  U("umbmetrics-metric-card")
+  T("umbmetrics-metric-card")
 ], h);
-var me = Object.defineProperty, pe = Object.getOwnPropertyDescriptor, j = (e, t, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? pe(t, i) : t, o = e.length - 1, c; o >= 0; o--)
-    (c = e[o]) && (r = (s ? c(t, i, r) : c(r)) || r);
-  return s && r && me(t, i, r), r;
+var be = Object.defineProperty, fe = Object.getOwnPropertyDescriptor, J = (e, t, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? fe(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (o ? n(t, i, r) : n(r)) || r);
+  return o && r && be(t, i, r), r;
 };
-let I = class extends k(S) {
+let O = class extends U(S) {
   constructor() {
     super(...arguments), this.columns = 4;
   }
@@ -296,7 +258,7 @@ let I = class extends k(S) {
     `;
   }
 };
-I.styles = T`
+O.styles = k`
     :host {
       display: block;
     }
@@ -333,18 +295,18 @@ I.styles = T`
       grid-column: span 4;
     }
   `;
-j([
+J([
   d({ type: Number })
-], I.prototype, "columns", 2);
-I = j([
-  U("umbmetrics-metrics-grid")
-], I);
-var he = Object.defineProperty, ve = Object.getOwnPropertyDescriptor, R = (e, t, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? ve(t, i) : t, o = e.length - 1, c; o >= 0; o--)
-    (c = e[o]) && (r = (s ? c(t, i, r) : c(r)) || r);
-  return s && r && he(t, i, r), r;
+], O.prototype, "columns", 2);
+O = J([
+  T("umbmetrics-metrics-grid")
+], O);
+var ge = Object.defineProperty, ye = Object.getOwnPropertyDescriptor, E = (e, t, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? ye(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (o ? n(t, i, r) : n(r)) || r);
+  return o && r && ge(t, i, r), r;
 };
-let y = class extends k(S) {
+let _ = class extends U(S) {
   constructor() {
     super(...arguments), this.icon = "icon-info", this.title = "", this.stats = [], this.span = 1;
   }
@@ -373,7 +335,7 @@ let y = class extends k(S) {
     `;
   }
 };
-y.styles = T`
+_.styles = k`
     :host {
       display: block;
       height: 100%;
@@ -478,32 +440,32 @@ y.styles = T`
       color: var(--uui-color-text);
     }
   `;
-R([
+E([
   d({ type: String })
-], y.prototype, "icon", 2);
-R([
+], _.prototype, "icon", 2);
+E([
   d({ type: String })
-], y.prototype, "title", 2);
-R([
+], _.prototype, "title", 2);
+E([
   d({ type: Array })
-], y.prototype, "stats", 2);
-R([
+], _.prototype, "stats", 2);
+E([
   d({ type: Number, reflect: !0 })
-], y.prototype, "span", 2);
-y = R([
-  U("umbmetrics-stat-card")
-], y);
-const fe = ":host{display:block;padding:1rem}uui-box.wide{width:100%}.metrics-controls{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}.connection-status{display:flex;align-items:center;gap:.25rem;font-size:.875rem;padding:.25rem .75rem;border-radius:var(--uui-border-radius)}.connection-status.connected{color:var(--uui-color-positive);background:var(--uui-color-positive-emphasis)}.connection-status.connecting{color:var(--uui-color-warning);background:var(--uui-color-warning-emphasis)}.tab-navigation{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--uui-color-border);padding-bottom:1rem}.tab-content{min-height:400px}";
-var be = Object.defineProperty, ge = Object.getOwnPropertyDescriptor, V = (e) => {
+], _.prototype, "span", 2);
+_ = E([
+  T("umbmetrics-stat-card")
+], _);
+const _e = ":host{display:block;padding:1rem}uui-box.wide{width:100%}.metrics-controls{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}.connection-status{display:flex;align-items:center;gap:.25rem;font-size:.875rem;padding:.25rem .75rem;border-radius:var(--uui-border-radius)}.connection-status.connected{color:var(--uui-color-positive);background:var(--uui-color-positive-emphasis)}.connection-status.connecting{color:var(--uui-color-warning);background:var(--uui-color-warning-emphasis)}.tab-navigation{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--uui-color-border);padding-bottom:1rem}.tab-content{min-height:400px}.utils-tab{padding:1rem 0}.utils-tab h3{margin:0 0 .5rem;font-size:1.5rem;font-weight:600;color:var(--uui-color-text)}.utils-tab .description{margin:0 0 2rem;color:var(--uui-color-text-alt);font-size:.875rem}.utils-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem}.util-card{background:var(--uui-color-surface);border:1px solid var(--uui-color-border);border-radius:var(--uui-border-radius);padding:1.5rem;transition:all .2s ease}.util-card:hover{border-color:var(--uui-color-interactive);box-shadow:0 4px 12px #0000001a}.util-icon{display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:var(--uui-color-surface-alt);border-radius:50%;margin-bottom:1rem}.util-icon uui-icon{font-size:1.5rem;color:var(--uui-color-interactive)}.util-content h4{margin:0 0 .5rem;font-size:1.125rem;font-weight:600;color:var(--uui-color-text)}.util-content p{margin:0 0 1rem;color:var(--uui-color-text-alt);font-size:.875rem;line-height:1.5}@media(max-width:768px){.utils-grid{grid-template-columns:1fr}.util-card{padding:1rem}}";
+var Me = Object.defineProperty, Ce = Object.getOwnPropertyDescriptor, Q = (e) => {
   throw TypeError(e);
-}, C = (e, t, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? ge(t, i) : t, o = e.length - 1, c; o >= 0; o--)
-    (c = e[o]) && (r = (s ? c(t, i, r) : c(r)) || r);
-  return s && r && be(t, i, r), r;
-}, W = (e, t, i) => t.has(e) || V("Cannot " + i), a = (e, t, i) => (W(e, t, "read from private field"), i ? i.call(e) : t.get(e)), p = (e, t, i) => t.has(e) ? V("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), M = (e, t, i, s) => (W(e, t, "write to private field"), t.set(e, i), i), _ = (e, t, i) => (W(e, t, "access private method"), i), m, E, u, b, B, z, g, A, G, D, F, P, w, N, X, Q, J;
-let v = class extends k(S) {
+}, M = (e, t, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? Ce(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (o ? n(t, i, r) : n(r)) || r);
+  return o && r && Me(t, i, r), r;
+}, W = (e, t, i) => t.has(e) || Q("Cannot " + i), a = (e, t, i) => (W(e, t, "read from private field"), i ? i.call(e) : t.get(e)), p = (e, t, i) => t.has(e) ? Q("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), C = (e, t, i, o) => (W(e, t, "write to private field"), t.set(e, i), i), y = (e, t, i) => (W(e, t, "access private method"), i), m, R, u, g, B, z, v, A, q, L, D, N, P, x, F, K, Y, Z, ee;
+let b = class extends U(S) {
   constructor() {
-    super(), p(this, g), this._autoRefresh = !1, this._activeTab = "overview", this._isConnected = !1, p(this, m), p(this, E), p(this, u), p(this, b), p(this, B, async (e) => {
+    super(), p(this, v), this._autoRefresh = !1, this._activeTab = "overview", this._isConnected = !1, p(this, m), p(this, R), p(this, u), p(this, g), p(this, B, async (e) => {
       if (!a(this, u)) {
         console.error("Metrics service not initialized");
         return;
@@ -511,9 +473,9 @@ let v = class extends k(S) {
       const t = e.target;
       t.state = "waiting";
       try {
-        this._autoRefresh && a(this, u).isConnected ? (await a(this, u).requestMetrics(), _(this, g, A).call(this)) : await Promise.all([
+        this._autoRefresh && a(this, u).isConnected ? (await a(this, u).requestMetrics(), y(this, v, A).call(this)) : await Promise.all([
           a(this, z).call(this),
-          _(this, g, A).call(this)
+          y(this, v, A).call(this)
         ]), t.state = "success";
       } catch (i) {
         console.error("Error refreshing metrics:", i), t.state = "failed";
@@ -533,14 +495,19 @@ let v = class extends k(S) {
           }
         });
       }
-    }), p(this, G, async () => {
-      (await this.getContext(ie))?.open(
+    }), p(this, q, async () => {
+      (await this.getContext(H))?.open(
         this,
-        re
+        oe
+      );
+    }), p(this, L, async () => {
+      (await this.getContext(H))?.open(
+        this,
+        se
       );
     }), p(this, D, async () => {
-      this._autoRefresh = !this._autoRefresh, this._autoRefresh ? await a(this, F).call(this) : await a(this, P).call(this);
-    }), p(this, F, async () => {
+      this._autoRefresh = !this._autoRefresh, this._autoRefresh ? await a(this, N).call(this) : await a(this, P).call(this);
+    }), p(this, N, async () => {
       if (!a(this, u)) {
         console.error("Metrics service not initialized"), this._autoRefresh = !1;
         return;
@@ -551,7 +518,7 @@ let v = class extends k(S) {
             headline: "Connecting...",
             message: "Establishing connection to metrics hub"
           }
-        }), M(this, b, a(this, u).onMetricsUpdate((e) => {
+        }), C(this, g, a(this, u).onMetricsUpdate((e) => {
           this._performanceMetrics = e, this._isConnected = !0;
         })), await a(this, u).connectToHub(), this._isConnected = a(this, u).isConnected, this._isConnected && a(this, m) && a(this, m).peek("positive", {
           data: {
@@ -565,12 +532,12 @@ let v = class extends k(S) {
             headline: "Connection Failed",
             message: e instanceof Error ? e.message : "Failed to connect to metrics hub. Try again."
           }
-        }), a(this, b) && (a(this, b).call(this), M(this, b, void 0));
+        }), a(this, g) && (a(this, g).call(this), C(this, g, void 0));
       }
     }), p(this, P, async () => {
       if (a(this, u))
         try {
-          a(this, b) && (a(this, b).call(this), M(this, b, void 0)), await a(this, u).disconnectFromHub(), this._isConnected = !1, a(this, m) && a(this, m).peek("default", {
+          a(this, g) && (a(this, g).call(this), C(this, g, void 0)), await a(this, u).disconnectFromHub(), this._isConnected = !1, a(this, m) && a(this, m).peek("default", {
             data: {
               headline: "Disconnected",
               message: "Real-time updates disabled"
@@ -579,11 +546,11 @@ let v = class extends k(S) {
         } catch (e) {
           console.error("Error stopping auto-refresh:", e);
         }
-    }), p(this, w, (e) => {
+    }), p(this, x, (e) => {
       this._activeTab = e;
-    }), this.consumeContext(Y, (e) => {
-      M(this, m, e);
-    }), this.consumeContext(Z, (e) => {
+    }), this.consumeContext(te, (e) => {
+      C(this, m, e);
+    }), this.consumeContext(ie, (e) => {
       this.observe(
         e?.currentUser,
         (t) => {
@@ -591,9 +558,9 @@ let v = class extends k(S) {
         },
         "_contextCurrentUser"
       );
-    }), this.consumeContext(ee, (e) => {
-      M(this, E, e), M(this, u, new te(async () => {
-        const t = await a(this, E)?.getLatestToken();
+    }), this.consumeContext(re, (e) => {
+      C(this, R, e), C(this, u, new ae(async () => {
+        const t = await a(this, R)?.getLatestToken();
         if (!t)
           throw new Error("No authentication token available");
         return t;
@@ -634,40 +601,47 @@ let v = class extends k(S) {
           <uui-button 
             look="${this._activeTab === "overview" ? "primary" : "default"}"
             color="${this._activeTab === "overview" ? "positive" : "default"}"
-            @click="${() => a(this, w).call(this, "overview")}"
+            @click="${() => a(this, x).call(this, "overview")}"
           >
             <uui-icon name="icon-chart"></uui-icon> Overview
           </uui-button>
           <uui-button 
             look="${this._activeTab === "heap" ? "primary" : "default"}"
             color="${this._activeTab === "heap" ? "positive" : "default"}"
-            @click="${() => a(this, w).call(this, "heap")}"
+            @click="${() => a(this, x).call(this, "heap")}"
           >
             <uui-icon name="icon-box"></uui-icon> Heap & GC
           </uui-button>
           <uui-button 
             look="${this._activeTab === "umbraco" ? "primary" : "default"}"
             color="${this._activeTab === "umbraco" ? "positive" : "default"}"
-            @click="${() => a(this, w).call(this, "umbraco")}"
+            @click="${() => a(this, x).call(this, "umbraco")}"
           >
             <uui-icon name="icon-umbraco"></uui-icon> Umbraco
+          </uui-button>
+          <uui-button 
+            look="${this._activeTab === "utils" ? "primary" : "default"}"
+            color="${this._activeTab === "utils" ? "positive" : "default"}"
+            @click="${() => a(this, x).call(this, "utils")}"
+          >
+            <uui-icon name="icon-settings"></uui-icon> Utils
           </uui-button>
         </div>
 
         <div class="tab-content">
-          ${_(this, g, J).call(this)}
+          ${y(this, v, ee).call(this)}
         </div>
       </uui-box>
           `;
   }
 };
 m = /* @__PURE__ */ new WeakMap();
-E = /* @__PURE__ */ new WeakMap();
+R = /* @__PURE__ */ new WeakMap();
 u = /* @__PURE__ */ new WeakMap();
-b = /* @__PURE__ */ new WeakMap();
+g = /* @__PURE__ */ new WeakMap();
 B = /* @__PURE__ */ new WeakMap();
 z = /* @__PURE__ */ new WeakMap();
-g = /* @__PURE__ */ new WeakSet();
+v = /* @__PURE__ */ new WeakSet();
 A = async function() {
   if (!a(this, u)) {
     console.error("Metrics service not initialized");
@@ -684,12 +658,13 @@ A = async function() {
     });
   }
 };
-G = /* @__PURE__ */ new WeakMap();
+q = /* @__PURE__ */ new WeakMap();
+L = /* @__PURE__ */ new WeakMap();
 D = /* @__PURE__ */ new WeakMap();
-F = /* @__PURE__ */ new WeakMap();
+N = /* @__PURE__ */ new WeakMap();
 P = /* @__PURE__ */ new WeakMap();
-w = /* @__PURE__ */ new WeakMap();
-N = function() {
+x = /* @__PURE__ */ new WeakMap();
+F = function() {
   if (!this._performanceMetrics)
     return l`<p>Click "Refresh Metrics" to load application performance data</p>`;
   const e = this._performanceMetrics;
@@ -705,7 +680,7 @@ N = function() {
           title="CPU Usage"
           value="${e.cpuUsage.toFixed(1)}%"
           detail="Process CPU"
-          color="${L(e.cpuUsage, 80)}"
+          color="${j(e.cpuUsage, 80)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
@@ -726,24 +701,24 @@ N = function() {
           icon="icon-timer"
           title="Avg Response"
           value="${e.requestMetrics.averageResponseTimeMs.toFixed(0)} ms"
-          detail="Last 1000 requests"
-          color="${L(e.requestMetrics.averageResponseTimeMs, 1e3)}"
+          detail="Last 100 requests"
+          color="${j(e.requestMetrics.averageResponseTimeMs, 1e3)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
           icon="icon-link"
           title="Active Requests"
           value="${e.requestMetrics.activeRequests}"
-          detail="Total: ${n(e.requestMetrics.totalRequests)}"
+          detail="Total: ${c(e.requestMetrics.totalRequests)}"
           ?clickable=${!0}
           actionLabel="View Details"
-          @card-action="${a(this, G)}"
+          @card-action="${a(this, q)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
           icon="icon-alert"
           title="Failed Requests"
-          value="${n(e.requestMetrics.failedRequests)}"
+          value="${c(e.requestMetrics.failedRequests)}"
           detail="4xx/5xx responses"
           color="${e.requestMetrics.failedRequests > 0 ? "danger" : "positive"}"
         ></umbmetrics-metric-card>
@@ -759,7 +734,7 @@ N = function() {
           icon="icon-list"
           title="Work Items"
           value="${e.threadInfo.pendingWorkItemCount}"
-          detail="Completed: ${n(e.threadInfo.completedWorkItemCount)}"
+          detail="Completed: ${c(e.threadInfo.completedWorkItemCount)}"
         ></umbmetrics-metric-card>
 
         <umbmetrics-metric-card
@@ -771,7 +746,7 @@ N = function() {
       </umbmetrics-metrics-grid>
     `;
 };
-X = function() {
+K = function() {
   if (!this._performanceMetrics)
     return l`<p>Click "Refresh Metrics" to load heap information</p>`;
   const e = this._performanceMetrics, t = [
@@ -779,10 +754,10 @@ X = function() {
     { label: "Gen 1", value: `${e.memoryUsage.gcGen1HeapSizeMB.toFixed(2)} MB` },
     { label: "Gen 2", value: `${e.memoryUsage.gcGen2HeapSizeMB.toFixed(2)} MB` }
   ], i = [
-    { label: "Gen 0", value: n(e.garbageCollectionStats.gen0Collections) },
-    { label: "Gen 1", value: n(e.garbageCollectionStats.gen1Collections) },
-    { label: "Gen 2", value: n(e.garbageCollectionStats.gen2Collections) }
-  ], s = [
+    { label: "Gen 0", value: c(e.garbageCollectionStats.gen0Collections) },
+    { label: "Gen 1", value: c(e.garbageCollectionStats.gen1Collections) },
+    { label: "Gen 2", value: c(e.garbageCollectionStats.gen2Collections) }
+  ], o = [
     { label: "GC Mode", value: e.garbageCollectionStats.isServerGC ? "Server" : "Workstation" },
     { label: "Total Heap Size", value: `${e.memoryUsage.totalHeapSizeMB.toFixed(2)} MB` },
     { label: "Fragmented Memory", value: `${e.memoryUsage.fragmentedMemoryMB.toFixed(2)} MB` },
@@ -811,35 +786,35 @@ X = function() {
           span="4"
           icon="icon-chart"
           title="Garbage Collector Details"
-          .stats=${s}
+          .stats=${o}
         ></umbmetrics-stat-card>
       </umbmetrics-metrics-grid>
     `;
 };
-Q = function() {
+Y = function() {
   if (!this._umbracoMetrics)
     return l`<p>Click "Refresh Metrics" to load Umbraco-specific data</p>`;
   const e = this._umbracoMetrics, t = [
-    { label: "Total Nodes", value: n(e.contentStatistics.totalContentNodes) },
-    { label: "Published", value: n(e.contentStatistics.publishedNodes), color: "positive" },
-    { label: "Unpublished", value: n(e.contentStatistics.unpublishedNodes), color: "warning" },
-    { label: "Trashed", value: n(e.contentStatistics.trashedNodes), color: e.contentStatistics.trashedNodes > 0 ? "danger" : "positive" },
+    { label: "Total Nodes", value: c(e.contentStatistics.totalContentNodes) },
+    { label: "Published", value: c(e.contentStatistics.publishedNodes), color: "positive" },
+    { label: "Unpublished", value: c(e.contentStatistics.unpublishedNodes), color: "warning" },
+    { label: "Trashed", value: c(e.contentStatistics.trashedNodes), color: e.contentStatistics.trashedNodes > 0 ? "danger" : "positive" },
     { label: "Content Types", value: e.contentStatistics.contentTypeCount }
   ], i = [
-    { label: "Total Items", value: n(e.mediaStatistics.totalMediaItems) },
+    { label: "Total Items", value: c(e.mediaStatistics.totalMediaItems) },
     { label: "Total Size", value: `${e.mediaStatistics.totalMediaSizeMB.toFixed(2)} MB` },
-    { label: "Images", value: n(e.mediaStatistics.imagesCount) },
-    { label: "Documents", value: n(e.mediaStatistics.documentsCount) },
+    { label: "Images", value: c(e.mediaStatistics.imagesCount) },
+    { label: "Documents", value: c(e.mediaStatistics.documentsCount) },
     { label: "Media Types", value: e.mediaStatistics.mediaTypeCount }
-  ], s = [
-    { label: "Runtime Cache", value: `${n(e.cacheStatistics.runtimeCacheCount)} items` },
-    { label: "NuCache", value: `${n(e.cacheStatistics.nuCacheCount)} items` },
+  ], o = [
+    { label: "Runtime Cache", value: `${c(e.cacheStatistics.runtimeCacheCount)} items` },
+    { label: "NuCache", value: `${c(e.cacheStatistics.nuCacheCount)} items` },
     { label: "Total Size", value: e.cacheStatistics.totalCacheSize }
   ], r = [
-    { label: "Total Users", value: n(e.backofficeUsers.totalUsers) },
-    { label: "Active Users", value: n(e.backofficeUsers.activeUsers), color: "positive" },
-    { label: "Administrators", value: n(e.backofficeUsers.adminUsers) },
-    { label: "Current Sessions", value: n(e.backofficeUsers.currentSessions), color: e.backofficeUsers.currentSessions > 0 ? "positive" : "default" }
+    { label: "Total Users", value: c(e.backofficeUsers.totalUsers) },
+    { label: "Active Users", value: c(e.backofficeUsers.activeUsers), color: "positive" },
+    { label: "Administrators", value: c(e.backofficeUsers.adminUsers) },
+    { label: "Current Sessions", value: c(e.backofficeUsers.currentSessions), color: e.backofficeUsers.currentSessions > 0 ? "positive" : "default" }
   ];
   return l`
       <umbmetrics-metrics-grid columns="4">
@@ -861,7 +836,7 @@ Q = function() {
           span="2"
           icon="icon-server-alt"
           title="Cache Performance"
-          .stats=${s}
+          .stats=${o}
         ></umbmetrics-stat-card>
 
         <umbmetrics-stat-card
@@ -873,43 +848,128 @@ Q = function() {
       </umbmetrics-metrics-grid>
     `;
 };
-J = function() {
+Z = function() {
+  return l`
+      <div class="utils-tab">
+        <h3>Utility Tools</h3>
+        <p class="description">Additional tools for managing and exporting metrics data</p>
+        
+        <div class="utils-grid">
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-download"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Export Metrics</h4>
+              <p>Export performance and Umbraco metrics in various formats (CSV, JSON)</p>
+              <uui-button 
+                look="primary" 
+                color="positive"
+                @click="${a(this, L)}"
+                style="margin-top: 1rem;"
+              >
+                <uui-icon name="icon-download"></uui-icon>
+                Open Export Dialog
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-settings"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Data Management</h4>
+              <p>Manage historical metrics data and cleanup options</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-trash"></uui-icon>
+                Cleanup Old Data
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-chart"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Advanced Analytics</h4>
+              <p>Generate detailed reports and analytics from collected metrics</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-chart"></uui-icon>
+                Generate Report
+              </uui-button>
+            </div>
+          </div>
+
+          <div class="util-card">
+            <div class="util-icon">
+              <uui-icon name="icon-alarm-clock"></uui-icon>
+            </div>
+            <div class="util-content">
+              <h4>Scheduled Tasks</h4>
+              <p>Schedule automatic exports and data collection tasks</p>
+              <uui-button 
+                look="outline"
+                style="margin-top: 1rem;"
+                disabled
+              >
+                <uui-icon name="icon-time"></uui-icon>
+                Schedule Export
+              </uui-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+};
+ee = function() {
   switch (this._activeTab) {
     case "overview":
-      return _(this, g, N).call(this);
+      return y(this, v, F).call(this);
     case "heap":
-      return _(this, g, X).call(this);
+      return y(this, v, K).call(this);
     case "umbraco":
-      return _(this, g, Q).call(this);
+      return y(this, v, Y).call(this);
+    case "utils":
+      return y(this, v, Z).call(this);
     default:
-      return _(this, g, N).call(this);
+      return y(this, v, F).call(this);
   }
 };
-v.styles = T`${K(fe)}`;
-C([
+b.styles = k`${V(_e)}`;
+M([
   $()
-], v.prototype, "_contextCurrentUser", 2);
-C([
+], b.prototype, "_contextCurrentUser", 2);
+M([
   $()
-], v.prototype, "_performanceMetrics", 2);
-C([
+], b.prototype, "_performanceMetrics", 2);
+M([
   $()
-], v.prototype, "_autoRefresh", 2);
-C([
+], b.prototype, "_autoRefresh", 2);
+M([
   $()
-], v.prototype, "_activeTab", 2);
-C([
+], b.prototype, "_activeTab", 2);
+M([
   $()
-], v.prototype, "_isConnected", 2);
-C([
+], b.prototype, "_isConnected", 2);
+M([
   $()
-], v.prototype, "_umbracoMetrics", 2);
-v = C([
-  U("umbmetrics-dashboard")
-], v);
-const Te = v;
+], b.prototype, "_umbracoMetrics", 2);
+b = M([
+  T("umbmetrics-dashboard")
+], b);
+const Re = b;
 export {
-  v as UmbMetrcisDashboardElement,
-  Te as default
+  b as UmbMetrcisDashboardElement,
+  Re as default
 };
-//# sourceMappingURL=dashboard.element-VVhuZ0i7.js.map
+//# sourceMappingURL=dashboard.element-rL4uqz_q.js.map

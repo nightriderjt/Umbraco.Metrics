@@ -1,6 +1,6 @@
 import { UmbModalToken as m } from "@umbraco-cms/backoffice/modal";
-import { LitElement as c, html as l, css as u, customElement as b } from "@umbraco-cms/backoffice/external/lit";
-import { UmbElementMixin as p } from "@umbraco-cms/backoffice/element-api";
+import { LitElement as c, html as l, css as u, customElement as p } from "@umbraco-cms/backoffice/external/lit";
+import { UmbElementMixin as b } from "@umbraco-cms/backoffice/element-api";
 const d = [
   {
     name: "Umb Metrics Entrypoint",
@@ -13,7 +13,7 @@ const d = [
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-DL5vTwJj.js"),
+    js: () => import("./dashboard.element-rL4uqz_q.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -25,7 +25,7 @@ const d = [
       }
     ]
   }
-], v = new m(
+], M = new m(
   "UmbMetrics.Modal.ActiveRequestsSidebar",
   {
     modal: {
@@ -33,28 +33,45 @@ const d = [
       size: "medium"
     }
   }
-), g = [
+), g = new m(
+  "UmbMetrics.Modal.Export",
+  {
+    modal: {
+      type: "dialog",
+      size: "medium"
+    }
+  }
+), v = [
   {
     type: "modal",
     alias: "UmbMetrics.Modal.ActiveRequestsSidebar",
     name: "Active Requests Sidebar Modal",
     js: () => import("./active-requests-sidebar.element-DxrkQQUB.js").then((e) => e.a),
     meta: {
-      modal: v
+      modal: M
+    }
+  },
+  {
+    type: "modal",
+    alias: "UmbMetrics.Modal.ExportMetrics",
+    name: "Export Metrics Modal",
+    js: () => import("./export-modal.element-DcrR6XWv.js"),
+    meta: {
+      modal: g
     }
   }
-], f = {
+], U = {
   type: "icons",
   alias: "UmbMetrics.Icons",
   name: "UmbMetrics Icons",
   js: () => import("./icons-DaMqJOw9.js")
 };
-var y = Object.getOwnPropertyDescriptor, U = (e, s, n, o) => {
+var y = Object.getOwnPropertyDescriptor, f = (e, s, n, o) => {
   for (var i = o > 1 ? void 0 : o ? y(s, n) : s, t = e.length - 1, r; t >= 0; t--)
     (r = e[t]) && (i = r(i) || i);
   return i;
 };
-let a = class extends p(c) {
+let a = class extends b(c) {
   render() {
     return l`
       <div class="package-header">
@@ -130,17 +147,18 @@ a.styles = u`
       gap: var(--uui-size-space-4);
     }
   `;
-a = U([
-  b("umbmetrics-package-view")
+a = f([
+  p("umbmetrics-package-view")
 ], a);
-const E = [
+const z = [
   ...d,
   ...h,
-  ...g,
-  f
+  ...v,
+  U
 ];
 export {
-  v as A,
-  E as m
+  M as A,
+  g as U,
+  z as m
 };
-//# sourceMappingURL=bundle.manifests-BV8RrVWw.js.map
+//# sourceMappingURL=bundle.manifests-DWVuRyEE.js.map

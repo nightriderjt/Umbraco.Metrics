@@ -15,6 +15,7 @@ public class MetricsComposer : IComposer
         // Register metrics service
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
+        builder.Services.AddScoped<IMetricsExportService, MetricsExportService>();
         // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
 

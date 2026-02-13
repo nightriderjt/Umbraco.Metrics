@@ -1,0 +1,128 @@
+/* Dashboard Element Styles */
+:host {
+  display: block;
+  padding: 1rem;
+}
+
+uui-box.wide {
+  width: 100%;
+}
+
+/* Controls */
+.metrics-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--uui-border-radius);
+}
+
+.connection-status.connected {
+  color: var(--uui-color-positive);
+  background: var(--uui-color-positive-emphasis);
+}
+
+.connection-status.connecting {
+  color: var(--uui-color-warning);
+  background: var(--uui-color-warning-emphasis);
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--uui-color-border);
+  padding-bottom: 1rem;
+}
+
+.tab-content {
+  min-height: 400px;
+}
+
+/* Utils Tab Styles */
+.utils-tab {
+  padding: 1rem 0;
+}
+
+.utils-tab h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--uui-color-text);
+}
+
+.utils-tab .description {
+  margin: 0 0 2rem 0;
+  color: var(--uui-color-text-alt);
+  font-size: 0.875rem;
+}
+
+.utils-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.util-card {
+  background: var(--uui-color-surface);
+  border: 1px solid var(--uui-color-border);
+  border-radius: var(--uui-border-radius);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.util-card:hover {
+  border-color: var(--uui-color-interactive);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.util-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--uui-color-surface-alt);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.util-icon uui-icon {
+  font-size: 1.5rem;
+  color: var(--uui-color-interactive);
+}
+
+.util-content h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--uui-color-text);
+}
+
+.util-content p {
+  margin: 0 0 1rem 0;
+  color: var(--uui-color-text-alt);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .utils-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .util-card {
+    padding: 1rem;
+  }
+}

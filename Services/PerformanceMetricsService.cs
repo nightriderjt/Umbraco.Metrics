@@ -47,7 +47,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
             var startTime = DateTime.UtcNow;
             var startCpuUsage = _currentProcess.TotalProcessorTime;
             
-            await Task.Delay(100);
+            await Task.Delay(500);
             
             var endTime = DateTime.UtcNow;
             var endCpuUsage = _currentProcess.TotalProcessorTime;
