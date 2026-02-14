@@ -7,7 +7,7 @@ import {
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import {  ExportScope, ExportOptions } from "../types/export-options.js";
+import {   ExportOptions } from "../types/export-options.js";
 import styles from '../css/export-options.styles.css?inline';
 
 @customElement("umbmetrics-export-options")
@@ -15,7 +15,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   @property({ type: Object })
   exportOptions: ExportOptions = {
     format: 'csv',
-    scope: ExportScope.Current,
+    scope: 'current',
     includePerformanceMetrics: true,
     includeUmbracoMetrics: true,
     includeActiveRequests: false,
