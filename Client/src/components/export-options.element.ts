@@ -36,7 +36,8 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   ];
 
 
-  scopeOptions: Array<Option> = [{ value: 'current', name: this.localize?.term('exportOptions_currentSnapshot') || 'Current Snapshot' },
+  scopeOptions: Array<Option> = [
+    { value: 'current', name: this.localize?.term('exportOptions_currentSnapshot') || 'Current Snapshot' },
     { value: 'historical', name: this.localize?.term('exportOptions_historicalData') || 'Historical Data' },
     { value: 'custom', name: this.localize?.term('exportOptions_customRange') || 'Custom Range'}];
 
@@ -117,6 +118,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
               .value="${this.exportOptions.scope}"
               @change="${this.#handleScopeChange}"
               ?disabled="${this.disabled}"
+              .options="${this.scopeOptions}"
             >            
             </uui-select>
           </div>
