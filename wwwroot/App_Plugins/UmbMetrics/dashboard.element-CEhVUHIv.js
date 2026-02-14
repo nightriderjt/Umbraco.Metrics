@@ -4,9 +4,9 @@ import { UMB_NOTIFICATION_CONTEXT as te } from "@umbraco-cms/backoffice/notifica
 import { UMB_CURRENT_USER_CONTEXT as ie } from "@umbraco-cms/backoffice/current-user";
 import { UMB_AUTH_CONTEXT as ae } from "@umbraco-cms/backoffice/auth";
 import { M as re } from "./active-requests-sidebar.element-CuDfZ5L2.js";
-import "./export-modal.element-GFrPUlCo.js";
+import "./export-modal.element-DyvmmFy3.js";
 import { UMB_MODAL_MANAGER_CONTEXT as j } from "@umbraco-cms/backoffice/modal";
-import { A as oe, U as se } from "./bundle.manifests-BIANB2UE.js";
+import { A as oe, U as se } from "./bundle.manifests-8zwSDxjj.js";
 function V(e, t) {
   return e > t ? "danger" : e > t * 0.7 ? "warning" : "positive";
 }
@@ -736,4 +736,4 @@ export {
   b as UmbMetrcisDashboardElement,
   Oe as default
 };
-//# sourceMappingURL=dashboard.element-CPW35PpY.js.map
+//# sourceMappingURL=dashboard.element-CEhVUHIv.js.map

@@ -30,7 +30,15 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
 { value: 'xml', name: this.localize?.term('formats_xml') || 'XML' }
   ];
 
+  timeZones:Array<Option>=[
+    { value: 'UTC', name: this.localize?.term('timezones_utc') || 'UTC' },
+    { value: 'Local', name: this.localize?.term('timezones_local') || 'Local Time' },
+    { value: 'Europe/London', name: this.localize?.term('timezones_europeLondon') || 'Europe/London' },
+    { value: 'America/New_York', name: this.localize?.term('timezones_americaNewYork') || 'America/New_York' },
+    { value: 'Asia/Tokyo', name: this.localize?.term('timezones_asiaTokyo') || 'Asia/Tokyo' }
+  ]
 
+ 
   scopeOptions: Array<Option> = [
     { value: 'current', name: this.localize?.term('exportOptions_currentSnapshot') || 'Current Snapshot' },
     { value: 'historical', name: this.localize?.term('exportOptions_historicalData') || 'Historical Data' },
@@ -152,12 +160,9 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
               .value="${this.exportOptions.timezone}"
               @change="${this.#handleTimezoneChange}"
               ?disabled="${this.disabled}"
+              .options="${this.timeZones}"
             >
-              <uui-option value="UTC">${this.localize?.term('timezones_utc') || 'UTC'}</uui-option>
-              <uui-option value="Local">${this.localize?.term('timezones_local') || 'Local Time'}</uui-option>
-              <uui-option value="Europe/London">${this.localize?.term('timezones_europeLondon') || 'Europe/London'}</uui-option>
-              <uui-option value="America/New_York">${this.localize?.term('timezones_americaNewYork') || 'America/New_York'}</uui-option>
-              <uui-option value="Asia/Tokyo">${this.localize?.term('timezones_asiaTokyo') || 'Asia/Tokyo'}</uui-option>
+             
             </uui-select>
           </div>
         </div>
