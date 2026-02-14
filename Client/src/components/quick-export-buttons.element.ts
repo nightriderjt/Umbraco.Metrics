@@ -1,11 +1,13 @@
 import {
   LitElement,
   css,
+  unsafeCSS,
   html,
   customElement,
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import styles from '../css/quick-export-buttons.styles.css?inline';
 
 @customElement("umbmetrics-quick-export-buttons")
 export class QuickExportButtonsElement extends UmbElementMixin(LitElement) {
@@ -60,36 +62,7 @@ export class QuickExportButtonsElement extends UmbElementMixin(LitElement) {
     }
   };
 
-  static styles = css`
-    .quick-export-section {
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    h4 {
-      margin: 0 0 var(--uui-size-space-2) 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--uui-color-text);
-    }
-
-    .description {
-      margin: 0 0 var(--uui-size-space-4) 0;
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .quick-export-buttons {
-      display: flex;
-      gap: var(--uui-size-space-3);
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 600px) {
-      .quick-export-buttons {
-        flex-direction: column;
-      }
-    }
-  `;
+  static styles = css`${unsafeCSS(styles)}`;
 }
 
 export default QuickExportButtonsElement;
