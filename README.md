@@ -64,7 +64,6 @@ Deep dive into .NET's memory management: see how the garbage collector is perfor
 
 - Umbraco CMS 17 or higher
 - .NET 10
-- Any hosting environment (works on Windows, Linux, Azure, AWS, etc.)
 
 ## Installation & Configuration
 
