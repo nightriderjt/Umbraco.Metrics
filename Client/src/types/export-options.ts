@@ -1,18 +1,10 @@
-export enum ExportFormat {
-  Json = 'json',
-  Csv = 'csv',
-  Xml = 'xml'
-}
 
-export enum ExportScope {
-  Current = 'current',
-  Historical = 'historical',
-  Custom = 'custom'
-}
+
+
 
 export interface ExportOptions {
-  format: ExportFormat;
-  scope: ExportScope;
+  format: string; // e.g. 'csv', 'json', 'xml'
+  scope: string;
   startDate?: string; // ISO string
   endDate?: string; // ISO string
   includePerformanceMetrics: boolean;

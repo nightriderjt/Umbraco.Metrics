@@ -1,4 +1,4 @@
-import type { UmbLocalizationDictionary } from "@umbraco-cms/backoffice/localization-api";
+
 
 export default {
   // Dashboard
@@ -222,4 +222,4 @@ export default {
     "about": "About",
     "or": "or"
   }
-} as UmbLocalizationDictionary;
+} 

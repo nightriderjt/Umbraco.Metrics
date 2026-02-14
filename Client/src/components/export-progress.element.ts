@@ -28,7 +28,7 @@ export class ExportProgressElement extends UmbElementMixin(LitElement) {
           <div class="progress-fill" style="width: ${this.progress}%"></div>
         </div>
         <div class="progress-text">
-          ${this.localize?.term('export.exporting') || 'Exporting...'} ${this.progress}%
+          ${this.localize?.term('export_exporting') || 'Exporting...'} ${this.progress}%
         </div>
       </div>
     `;

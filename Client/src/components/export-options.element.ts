@@ -7,14 +7,14 @@ import {
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { ExportFormat, ExportScope, ExportOptions } from "../types/export-options.js";
+import {  ExportScope, ExportOptions } from "../types/export-options.js";
 import styles from '../css/export-options.styles.css?inline';
 
 @customElement("umbmetrics-export-options")
 export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   @property({ type: Object })
   exportOptions: ExportOptions = {
-    format: ExportFormat.Csv,
+    format: 'csv',
     scope: ExportScope.Current,
     includePerformanceMetrics: true,
     includeUmbracoMetrics: true,
@@ -28,14 +28,20 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   @property({ type: String })
   estimatedSize: string = '';
 
-  @property({ type: Array })
-  formatOptions: Array<{ value: ExportFormat; label: string; description: string }> = [];
 
-  @property({ type: Array })
-  scopeOptions: Array<{ value: ExportScope; label: string; description: string }> = [];
+  formatOptions: Array<Option> = [
+ { value: 'csv', name: this.localize?.term('formats_csv') || 'CSV' },
+ { value: 'json', name: this.localize?.term('formats_json') || 'JSON' },
+{ value: 'xml', name: this.localize?.term('formats_xml') || 'XML' }
+  ];
+
+
+  scopeOptions: Array<Option> = [{ value: 'current', name: this.localize?.term('exportOptions_currentSnapshot') || 'Current Snapshot' },
+    { value: 'historical', name: this.localize?.term('exportOptions_historicalData') || 'Historical Data' },
+    { value: 'custom', name: this.localize?.term('exportOptions_customRange') || 'Custom Range'}];
 
   @property({ type: Function })
-  onFormatChange?: (format: ExportFormat) => void;
+  onFormatChange?: (format: string) => void;
 
   @property({ type: Function })
   onScopeChange?: (scope: ExportScope) => void;
@@ -52,7 +58,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   #handleFormatChange = (e: Event) => {
     const select = e.target as HTMLSelectElement;
     if (this.onFormatChange) {
-      this.onFormatChange(select.value as ExportFormat);
+      this.onFormatChange(select.value as string);
     }
   };
 
@@ -86,62 +92,53 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   render() {
     return html`
       <div class="export-options-section">
-        <h4>${this.localize?.term('export.customExport') || 'Custom Export'}</h4>
-        <p class="description">${this.localize?.term('export.customExportDescription') || 'Configure export options'}</p>
+        <h4>${this.localize?.term('export_customExport') || 'Custom Export'}</h4>
+        <p class="description">${this.localize?.term('export_customExportDescription') || 'Configure export options'}</p>
         
         <div class="form-grid">
           <!-- Format Selection -->
           <div class="form-group">
-            <label for="export-format">${this.localize?.term('exportOptions.format') || 'Format'}</label>
+            <label for="export-format">${this.localize?.term('exportOptions_format') || 'Format'}</label>
             <uui-select 
               id="export-format"
               .value="${this.exportOptions.format}"
               @change="${this.#handleFormatChange}"
               ?disabled="${this.disabled}"
-            >
-              ${this.formatOptions.map(option => html`
-                <uui-option value="${option.value}">
-                  ${option.label} - ${option.description}
-                </uui-option>
-              `)}
+              .options="${this.formatOptions}"
+            >           
             </uui-select>
           </div>
 
           <!-- Scope Selection -->
           <div class="form-group">
-            <label for="export-scope">${this.localize?.term('exportOptions.scope') || 'Scope'}</label>
+            <label for="export-scope">${this.localize?.term('exportOptions_scope') || 'Scope'}</label>
             <uui-select 
               id="export-scope"
               .value="${this.exportOptions.scope}"
               @change="${this.#handleScopeChange}"
               ?disabled="${this.disabled}"
-            >
-              ${this.scopeOptions.map(option => html`
-                <uui-option value="${option.value}">
-                  ${option.label}
-                </uui-option>
-              `)}
+            >            
             </uui-select>
           </div>
 
           <!-- Date Range (only for custom scope) -->
           ${this.exportOptions.scope === ExportScope.Custom ? html`
             <div class="form-group span-2">
-              <label>${this.localize?.term('exportOptions.dateRange') || 'Date Range'}</label>
+              <label>${this.localize?.term('exportOptions_dateRange') || 'Date Range'}</label>
               <div class="date-range">
                 <uui-input
                   type="date"
-                  label="${this.localize?.term('exportOptions.startDate') || 'Start Date'}"
+                  label="${this.localize?.term('exportOptions_startDate') || 'Start Date'}"
                   .value="${this.exportOptions.startDate || ''}"
                   @change="${(e: Event) => this.#handleDateChange('startDate', e)}"
                   ?disabled="${this.disabled}"
                 ></uui-input>
                 
-                <span class="date-separator">${this.localize?.term('exportOptions.to') || 'to'}</span>
+                <span class="date-separator">${this.localize?.term('exportOptions_to') || 'to'}</span>
                 
                 <uui-input
                   type="date"
-                  label="${this.localize?.term('exportOptions.endDate') || 'End Date'}"
+                  label="${this.localize?.term('exportOptions_endDate') || 'End Date'}"
                   .value="${this.exportOptions.endDate || ''}"
                   @change="${(e: Event) => this.#handleDateChange('endDate', e)}"
                   ?disabled="${this.disabled}"
@@ -152,42 +149,42 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
 
           <!-- Timezone -->
           <div class="form-group">
-            <label for="export-timezone">${this.localize?.term('exportOptions.timezone') || 'Timezone'}</label>
+            <label for="export-timezone">${this.localize?.term('exportOptions_timezone') || 'Timezone'}</label>
             <uui-select 
               id="export-timezone"
               .value="${this.exportOptions.timezone}"
               @change="${this.#handleTimezoneChange}"
               ?disabled="${this.disabled}"
             >
-              <uui-option value="UTC">${this.localize?.term('timezones.utc') || 'UTC'}</uui-option>
-              <uui-option value="Local">${this.localize?.term('timezones.local') || 'Local Time'}</uui-option>
-              <uui-option value="Europe/London">${this.localize?.term('timezones.europeLondon') || 'Europe/London'}</uui-option>
-              <uui-option value="America/New_York">${this.localize?.term('timezones.americaNewYork') || 'America/New_York'}</uui-option>
-              <uui-option value="Asia/Tokyo">${this.localize?.term('timezones.asiaTokyo') || 'Asia/Tokyo'}</uui-option>
+              <uui-option value="UTC">${this.localize?.term('timezones_utc') || 'UTC'}</uui-option>
+              <uui-option value="Local">${this.localize?.term('timezones_local') || 'Local Time'}</uui-option>
+              <uui-option value="Europe/London">${this.localize?.term('timezones_europeLondon') || 'Europe/London'}</uui-option>
+              <uui-option value="America/New_York">${this.localize?.term('timezones_americaNewYork') || 'America/New_York'}</uui-option>
+              <uui-option value="Asia/Tokyo">${this.localize?.term('timezones_asiaTokyo') || 'Asia/Tokyo'}</uui-option>
             </uui-select>
           </div>
         </div>
 
         <!-- Metric Selection -->
         <div class="metric-selection">
-          <h5>${this.localize?.term('exportOptions.includeMetrics') || 'Include Metrics'}</h5>
+          <h5>${this.localize?.term('exportOptions_includeMetrics') || 'Include Metrics'}</h5>
           <div class="metric-toggles">
             <uui-toggle 
-              label="${this.localize?.term('exportOptions.performanceMetrics') || 'Performance Metrics'}"
+              label="${this.localize?.term('exportOptions_performanceMetrics') || 'Performance Metrics'}"
               .checked="${this.exportOptions.includePerformanceMetrics}"
               @change="${() => this.#handleMetricToggle('includePerformanceMetrics')}"
               ?disabled="${this.disabled}"
             ></uui-toggle>
             
             <uui-toggle 
-              label="${this.localize?.term('exportOptions.umbracoMetrics') || 'Umbraco Metrics'}"
+              label="${this.localize?.term('exportOptions_umbracoMetrics') || 'Umbraco Metrics'}"
               .checked="${this.exportOptions.includeUmbracoMetrics}"
               @change="${() => this.#handleMetricToggle('includeUmbracoMetrics')}"
               ?disabled="${this.disabled}"
             ></uui-toggle>
             
             <uui-toggle 
-              label="${this.localize?.term('exportOptions.activeRequests') || 'Active Requests'}"
+              label="${this.localize?.term('exportOptions_activeRequests') || 'Active Requests'}"
               .checked="${this.exportOptions.includeActiveRequests}"
               @change="${() => this.#handleMetricToggle('includeActiveRequests')}"
               ?disabled="${this.disabled}"
@@ -198,7 +195,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
         <!-- Estimated Size -->
         <div class="estimated-size">
           <uui-icon name="icon-info"></uui-icon>
-          ${this.localize?.term('export.estimatedFileSize') || 'Estimated file size'}: <strong>${this.estimatedSize}</strong>
+          ${this.localize?.term('export_estimatedFileSize') || 'Estimated file size'}: <strong>${this.estimatedSize}</strong>
         </div>
       </div>
     `;

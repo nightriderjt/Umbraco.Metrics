@@ -10,7 +10,34 @@ const e = {
     lastUpdated: "Τελευταία ενημέρωση",
     loading: "Φόρτωση...",
     noData: "Δεν υπάρχουν διαθέσιμα δεδομένα",
-    errorLoading: "Σφάλμα φόρτωσης δεδομένων"
+    errorLoading: "Σφάλμα φόρτωσης δεδομένων",
+    applicationPerformanceMetrics: "Μετρικές Απόδοσης Εφαρμογής",
+    dotnetApplication: "Εφαρμογή .NET",
+    realTimeMetrics: "Μετρικές σε Πραγματικό Χρόνο",
+    refreshMetrics: "Ανανέωση Μετρικών",
+    realTimeUpdates: "Ενημερώσεις σε Πραγματικό Χρόνο (SignalR)",
+    connected: "Συνδεδεμένο",
+    connecting: "Σύνδεση...",
+    overview: "Επισκόπηση",
+    heapAndGC: "Σωρός & GC",
+    utils: "Βοηθητικά",
+    clickToLoadPerformance: 'Κάντε κλικ στο "Ανανέωση Μετρικών" για φόρτωση δεδομένων απόδοσης εφαρμογής',
+    clickToLoadHeap: 'Κάντε κλικ στο "Ανανέωση Μετρικών" για φόρτωση πληροφοριών σωρού',
+    clickToLoadUmbraco: 'Κάντε κλικ στο "Ανανέωση Μετρικών" για φόρτωση δεδομένων Umbraco',
+    utilityTools: "Βοηθητικά Εργαλεία",
+    utilityToolsDescription: "Πρόσθετα εργαλεία για διαχείριση και εξαγωγή δεδομένων μετρικών",
+    exportMetricsCard: "Εξαγωγή Μετρικών",
+    exportMetricsDescription: "Εξαγωγή μετρικών απόδοσης και Umbraco σε διάφορες μορφές (CSV, JSON)",
+    openExportDialog: "Άνοιγμα Διαλόγου Εξαγωγής",
+    dataManagement: "Διαχείριση Δεδομένων",
+    dataManagementDescription: "Διαχείριση ιστορικών δεδομένων μετρικών και επιλογών καθαρισμού",
+    cleanupOldData: "Καθαρισμός Παλαιών Δεδομένων",
+    advancedAnalytics: "Προχωρημένη Ανάλυση",
+    advancedAnalyticsDescription: "Δημιουργία λεπτομερών αναφορών και αναλύσεων από συλλεγμένα δεδομένα",
+    generateReport: "Δημιουργία Αναφοράς",
+    scheduledTasks: "Προγραμματισμένες Εργασίες",
+    scheduledTasksDescription: "Προγραμματισμός αυτόματων εξαγωγών και εργασιών συλλογής δεδομένων",
+    scheduleExport: "Προγραμματισμός Εξαγωγής"
   },
   // Export Modal
   export: {
@@ -28,7 +55,9 @@ const e = {
     exportFailed: "Αποτυχία Εξαγωγής",
     metricsExportedSuccessfully: "Οι μετρικές εξήχθησαν επιτυχώς",
     failedToExportMetrics: "Αποτυχία εξαγωγής μετρικών",
-    estimatedFileSize: "Εκτιμώμενο μέγεθος αρχείου"
+    estimatedFileSize: "Εκτιμώμενο μέγεθος αρχείου",
+    quickExportCompleted: "Γρήγορη εξαγωγή σε",
+    completed: "ολοκληρώθηκε"
   },
   // Export Options
   exportOptions: {
@@ -111,6 +140,17 @@ const e = {
     hours: "ώρες",
     days: "ημέρες"
   },
+  // App Info Banner
+  appInfo: {
+    process: "Διεργασία",
+    runtime: "Χρόνος εκτέλεσης",
+    architecture: "Αρχιτεκτονική",
+    cpuCores: "Πυρήνες CPU",
+    uptime: "Χρόνος λειτουργίας",
+    signalRConnected: "SignalR Συνδεδεμένο",
+    "64bit": "64-bit",
+    "32bit": "32-bit"
+  },
   // Active Requests Sidebar
   activeRequests: {
     title: "Ενεργές Αιτήσεις",
@@ -166,10 +206,11 @@ const e = {
     import: "Εισαγωγή",
     settings: "Ρυθμίσεις",
     help: "Βοήθεια",
-    about: "Σχετικά"
+    about: "Σχετικά",
+    or: "ή"
   }
 };
 export {
   e as default
 };
-//# sourceMappingURL=el-GR-BBwEzhch.js.map
+//# sourceMappingURL=el-An6eITLL.js.map

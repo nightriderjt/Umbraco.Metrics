@@ -8,7 +8,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     meta: {
       culture: "el-GR",
     },
-    js: () => import("./el-GR.ts"),
+    js: () => import("./el.ts"),
   },{
     type: "localization",
     alias: "UmbMetrics.Localization.en-US",
@@ -16,6 +16,6 @@ export const manifests: Array<UmbExtensionManifest> = [
     meta: {
       culture: "en-US",
     },
-    js: () => import("./en-US.ts"),
+    js: () => import("./en.ts"),
   } 
 ];

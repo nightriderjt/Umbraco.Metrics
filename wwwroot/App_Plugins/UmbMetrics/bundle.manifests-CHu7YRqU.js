@@ -13,7 +13,7 @@ const d = [
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-7UWrucyu.js"),
+    js: () => import("./dashboard.element-Q6RR2D3e.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -46,7 +46,7 @@ const d = [
     type: "modal",
     alias: "UmbMetrics.Modal.ActiveRequestsSidebar",
     name: "Active Requests Sidebar Modal",
-    js: () => import("./active-requests-sidebar.element-DxrkQQUB.js").then((e) => e.a),
+    js: () => import("./active-requests-sidebar.element-CuDfZ5L2.js").then((e) => e.a),
     meta: {
       modal: h
     }
@@ -55,7 +55,7 @@ const d = [
     type: "modal",
     alias: "UmbMetrics.Modal.ExportMetrics",
     name: "Export Metrics Modal",
-    js: () => import("./export-modal.element-BQYYZef6.js"),
+    js: () => import("./export-modal.element-CIyC8NG-.js"),
     meta: {
       modal: U
     }
@@ -65,30 +65,30 @@ const d = [
   alias: "UmbMetrics.Icons",
   name: "UmbMetrics Icons",
   js: () => import("./icons-DaMqJOw9.js")
-}, f = {
-  type: "localization",
-  alias: "UmbMetrics.Localization.en-US",
-  name: "English (United States)",
-  meta: {
-    culture: "en-US"
+}, y = [
+  {
+    type: "localization",
+    alias: "UmbMetrics.Localization.el-GR",
+    name: "Greek (Greece)",
+    meta: {
+      culture: "el-GR"
+    },
+    js: () => import("./el-An6eITLL.js")
   },
-  js: () => import("./en-US-CsUQZQSy.js")
-}, y = [f], E = {
-  type: "localization",
-  alias: "UmbMetrics.Localization.el-GR",
-  name: "Greek (Greece)",
-  meta: {
-    culture: "el-GR"
-  },
-  js: () => import("./el-GR-BBwEzhch.js")
-}, z = [E], k = [
-  ...y,
-  ...z
+  {
+    type: "localization",
+    alias: "UmbMetrics.Localization.en-US",
+    name: "English (United States)",
+    meta: {
+      culture: "en-US"
+    },
+    js: () => import("./en-Bzb-k-Mr.js")
+  }
 ];
-var x = Object.getOwnPropertyDescriptor, S = (e, s, m, o) => {
-  for (var t = o > 1 ? void 0 : o ? x(s, m) : s, i = e.length - 1, r; i >= 0; i--)
-    (r = e[i]) && (t = r(t) || t);
-  return t;
+var f = Object.getOwnPropertyDescriptor, E = (e, s, m, o) => {
+  for (var i = o > 1 ? void 0 : o ? f(s, m) : s, t = e.length - 1, r; t >= 0; t--)
+    (r = e[t]) && (i = r(i) || i);
+  return i;
 };
 let a = class extends b(c) {
   render() {
@@ -166,19 +166,19 @@ a.styles = u`
       gap: var(--uui-size-space-4);
     }
   `;
-a = S([
+a = E([
   p("umbmetrics-package-view")
 ], a);
-const w = [
+const S = [
   ...d,
   ...M,
   ...g,
   v,
-  ...k
+  ...y
 ];
 export {
   h as A,
   U,
-  w as m
+  S as m
 };
-//# sourceMappingURL=bundle.manifests-BbUZzlgB.js.map
+//# sourceMappingURL=bundle.manifests-CHu7YRqU.js.map

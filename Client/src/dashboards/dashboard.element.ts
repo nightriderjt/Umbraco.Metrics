@@ -287,7 +287,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   #renderOverviewTab() {
     if (!this._performanceMetrics) {
-      return html`<p>${this.localize?.term('dashboard.clickToLoadPerformance') || 'Click "Refresh Metrics" to load application performance data'}</p>`;
+      return html`<p>${this.localize?.term('dashboard_clickToLoadPerformance') || 'Click "Refresh Metrics" to load application performance data'}</p>`;
     }
 
     const m = this._performanceMetrics;
@@ -301,7 +301,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       <umbmetrics-metrics-grid columns="4">
         <umbmetrics-metric-card
           icon="icon-dashboard"
-          title="${this.localize?.term('metrics.cpuUsage') || 'CPU Usage'}"
+          title="${this.localize?.term('metrics_cpuUsage') || 'CPU Usage'}"
           value="${m.cpuUsage.toFixed(1)}%"
           detail="Process CPU"
           color="${getStatusColor(m.cpuUsage, 80)}"
@@ -309,7 +309,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
         <umbmetrics-metric-card
           icon="icon-memory"
-          title="${this.localize?.term('metrics.memoryUsage') || 'Memory Usage'}"
+          title="${this.localize?.term('metrics_memoryUsage') || 'Memory Usage'}"
           value="${m.memoryUsage.workingSetMB.toFixed(0)} MB"
           detail="Private: ${m.memoryUsage.privateMemoryMB.toFixed(0)} MB"
         ></umbmetrics-metric-card>
@@ -331,7 +331,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
         <umbmetrics-metric-card
           icon="icon-link"
-          title="${this.localize?.term('metrics.activeRequests') || 'Active Requests'}"
+          title="${this.localize?.term('metrics_activeRequests') || 'Active Requests'}"
           value="${m.requestMetrics.activeRequests}"
           detail="Total: ${formatNumber(m.requestMetrics.totalRequests)}"
           ?clickable=${true}
@@ -349,7 +349,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
         <umbmetrics-metric-card
           icon="icon-nodes"
-          title="${this.localize?.term('metrics.threadCount') || 'Thread Count'}"
+          title="${this.localize?.term('metrics_threadCount') || 'Thread Count'}"
           value="${m.threadInfo.threadCount}"
           detail="Pool: ${m.threadInfo.threadPoolThreadCount}"
         ></umbmetrics-metric-card>
@@ -364,7 +364,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         <umbmetrics-metric-card
           span="4"
           icon="icon-calendar"
-          title="${this.localize?.term('dashboard.lastUpdated') || 'Last updated'}"
+          title="${this.localize?.term('dashboard_lastUpdated') || 'Last updated'}"
           value="${new Date(m.timestamp).toLocaleString()}"
         ></umbmetrics-metric-card>
       </umbmetrics-metrics-grid>
@@ -373,7 +373,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   #renderHeapTab() {
     if (!this._performanceMetrics) {
-      return html`<p>${this.localize?.term('dashboard.clickToLoadHeap') || 'Click "Refresh Metrics" to load heap information'}</p>`;
+      return html`<p>${this.localize?.term('dashboard_clickToLoadHeap') || 'Click "Refresh Metrics" to load heap information'}</p>`;
     }
 
     const m = this._performanceMetrics;
@@ -428,7 +428,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   #renderUmbracoTab() {
     if (!this._umbracoMetrics) {
-      return html`<p>${this.localize?.term('dashboard.clickToLoadUmbraco') || 'Click "Refresh Metrics" to load Umbraco-specific data'}</p>`;
+      return html`<p>${this.localize?.term('dashboard_clickToLoadUmbraco') || 'Click "Refresh Metrics" to load Umbraco-specific data'}</p>`;
     }
 
     const m = this._umbracoMetrics;
@@ -498,8 +498,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   #renderUtilsTab() {
     return html`
       <div class="utils-tab">
-        <h3>${this.localize?.term('dashboard.utilityTools') || 'Utility Tools'}</h3>
-        <p class="description">${this.localize?.term('dashboard.utilityToolsDescription') || 'Additional tools for managing and exporting metrics data'}</p>
+        <h3>${this.localize?.term('dashboard_utilityTools') || 'Utility Tools'}</h3>
+        <p class="description">${this.localize?.term('dashboard_utilityToolsDescription') || 'Additional tools for managing and exporting metrics data'}</p>
         
         <div class="utils-grid">
           <div class="util-card">
@@ -507,8 +507,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-icon name="icon-download"></uui-icon>
             </div>
             <div class="util-content">
-              <h4>${this.localize?.term('dashboard.exportMetricsCard') || 'Export Metrics'}</h4>
-              <p>${this.localize?.term('dashboard.exportMetricsDescription') || 'Export performance and Umbraco metrics in various formats (CSV, JSON)'}</p>
+              <h4>${this.localize?.term('dashboard_exportMetricsCard') || 'Export Metrics'}</h4>
+              <p>${this.localize?.term('dashboard_exportMetricsDescription') || 'Export performance and Umbraco metrics in various formats (CSV, JSON)'}</p>
               <uui-button 
                 look="primary" 
                 color="positive"
@@ -516,7 +516,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                 style="margin-top: 1rem;"
               >
                 <uui-icon name="icon-download"></uui-icon>
-                ${this.localize?.term('dashboard.openExportDialog') || 'Open Export Dialog'}
+                ${this.localize?.term('dashboard_openExportDialog') || 'Open Export Dialog'}
               </uui-button>
             </div>
           </div>
@@ -526,15 +526,15 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-icon name="icon-settings"></uui-icon>
             </div>
             <div class="util-content">
-              <h4>${this.localize?.term('dashboard.dataManagement') || 'Data Management'}</h4>
-              <p>${this.localize?.term('dashboard.dataManagementDescription') || 'Manage historical metrics data and cleanup options'}</p>
+              <h4>${this.localize?.term('dashboard_dataManagement') || 'Data Management'}</h4>
+              <p>${this.localize?.term('dashboard_dataManagementDescription') || 'Manage historical metrics data and cleanup options'}</p>
               <uui-button 
                 look="outline"
                 style="margin-top: 1rem;"
                 disabled
               >
                 <uui-icon name="icon-trash"></uui-icon>
-                ${this.localize?.term('dashboard.cleanupOldData') || 'Cleanup Old Data'}
+                ${this.localize?.term('dashboard_cleanupOldData') || 'Cleanup Old Data'}
               </uui-button>
             </div>
           </div>
@@ -544,15 +544,15 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-icon name="icon-chart"></uui-icon>
             </div>
             <div class="util-content">
-              <h4>${this.localize?.term('dashboard.advancedAnalytics') || 'Advanced Analytics'}</h4>
-              <p>${this.localize?.term('dashboard.advancedAnalyticsDescription') || 'Generate detailed reports and analytics from collected metrics'}</p>
+              <h4>${this.localize?.term('dashboard_advancedAnalytics') || 'Advanced Analytics'}</h4>
+              <p>${this.localize?.term('dashboard_advancedAnalyticsDescription') || 'Generate detailed reports and analytics from collected metrics'}</p>
               <uui-button 
                 look="outline"
                 style="margin-top: 1rem;"
                 disabled
               >
                 <uui-icon name="icon-chart"></uui-icon>
-                ${this.localize?.term('dashboard.generateReport') || 'Generate Report'}
+                ${this.localize?.term('dashboard_generateReport') || 'Generate Report'}
               </uui-button>
             </div>
           </div>
@@ -562,15 +562,15 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-icon name="icon-alarm-clock"></uui-icon>
             </div>
             <div class="util-content">
-              <h4>${this.localize?.term('dashboard.scheduledTasks') || 'Scheduled Tasks'}</h4>
-              <p>${this.localize?.term('dashboard.scheduledTasksDescription') || 'Schedule automatic exports and data collection tasks'}</p>
+              <h4>${this.localize?.term('dashboard_scheduledTasks') || 'Scheduled Tasks'}</h4>
+              <p>${this.localize?.term('dashboard_scheduledTasksDescription') || 'Schedule automatic exports and data collection tasks'}</p>
               <uui-button 
                 look="outline"
                 style="margin-top: 1rem;"
                 disabled
               >
                 <uui-icon name="icon-time"></uui-icon>
-                ${this.localize?.term('dashboard.scheduleExport') || 'Schedule Export'}
+                ${this.localize?.term('dashboard_scheduleExport') || 'Schedule Export'}
               </uui-button>
             </div>
           </div>
@@ -596,27 +596,27 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   render() {
     return html`
-      <uui-box headline="${this.localize?.term('dashboard.applicationPerformanceMetrics') || 'Application Performance Metrics'}" class="wide">
-        <div slot="header">[${this.localize?.term('dashboard.dotnetApplication') || '.NET Application'} - ${this.localize?.term('dashboard.realTimeMetrics') || 'Real-time Metrics'}${this._contextCurrentUser?.name ? ` - ${this._contextCurrentUser.name}` : ''}]</div>
+      <uui-box headline="${this.localize?.term('dashboard_applicationPerformanceMetrics') || 'Application Performance Metrics'}" class="wide">
+        <div slot="header">[${this.localize?.term('dashboard_dotnetApplication') || '.NET Application'} - ${this.localize?.term('dashboard_realTimeMetrics') || 'Real-time Metrics'}${this._contextCurrentUser?.name ? ` - ${this._contextCurrentUser.name}` : ''}]</div>
 
         <div class="metrics-controls">
           <uui-button color="default" look="primary" @click="${this.#onClickRefreshMetrics}">
-            <uui-icon name="icon-refresh"></uui-icon> ${this.localize?.term('dashboard.refreshMetrics') || 'Refresh Metrics'}
+            <uui-icon name="icon-refresh"></uui-icon> ${this.localize?.term('dashboard_refreshMetrics') || 'Refresh Metrics'}
           </uui-button>
 
           <uui-toggle
-            label="${this.localize?.term('dashboard.realTimeUpdates') || 'Real-time Updates (SignalR)'}"
+            label="${this.localize?.term('dashboard_realTimeUpdates') || 'Real-time Updates (SignalR)'}"
             .checked="${this._autoRefresh}"
             @change="${this.#toggleAutoRefresh}"
           ></uui-toggle>
 
           ${this._isConnected ? html`
             <span class="connection-status connected">
-              <uui-icon name="icon-check"></uui-icon> ${this.localize?.term('dashboard.connected') || 'Connected'}
+              <uui-icon name="icon-check"></uui-icon> ${this.localize?.term('dashboard_connected') || 'Connected'}
             </span>
           ` : this._autoRefresh ? html`
             <span class="connection-status connecting">
-              <uui-icon name="icon-time"></uui-icon> ${this.localize?.term('dashboard.connecting') || 'Connecting...'}
+              <uui-icon name="icon-time"></uui-icon> ${this.localize?.term('dashboard_connecting') || 'Connecting...'}
             </span>
           ` : ''}
         </div>
@@ -627,28 +627,28 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             color="${this._activeTab === 'overview' ? 'positive' : 'default'}"
             @click="${() => this.#switchTab('overview')}"
           >
-            <uui-icon name="icon-chart"></uui-icon> ${this.localize?.term('dashboard.overview') || 'Overview'}
+            <uui-icon name="icon-chart"></uui-icon> ${this.localize?.term('dashboard_overview') || 'Overview'}
           </uui-button>
           <uui-button 
             look="${this._activeTab === 'heap' ? 'primary' : 'default'}"
             color="${this._activeTab === 'heap' ? 'positive' : 'default'}"
             @click="${() => this.#switchTab('heap')}"
           >
-            <uui-icon name="icon-box"></uui-icon> ${this.localize?.term('dashboard.heapAndGC') || 'Heap & GC'}
+            <uui-icon name="icon-box"></uui-icon> ${this.localize?.term('dashboard_heapAndGC') || 'Heap & GC'}
           </uui-button>
           <uui-button 
             look="${this._activeTab === 'umbraco' ? 'primary' : 'default'}"
             color="${this._activeTab === 'umbraco' ? 'positive' : 'default'}"
             @click="${() => this.#switchTab('umbraco')}"
           >
-            <uui-icon name="icon-umbraco"></uui-icon> ${this.localize?.term('dashboard.umbracoMetrics') || 'Umbraco Metrics'}
+            <uui-icon name="icon-umbraco"></uui-icon> ${this.localize?.term('dashboard_umbracoMetrics') || 'Umbraco Metrics'}
           </uui-button>
           <uui-button 
             look="${this._activeTab === 'utils' ? 'primary' : 'default'}"
             color="${this._activeTab === 'utils' ? 'positive' : 'default'}"
             @click="${() => this.#switchTab('utils')}"
           >
-            <uui-icon name="icon-settings"></uui-icon> ${this.localize?.term('dashboard.utils') || 'Utils'}
+            <uui-icon name="icon-settings"></uui-icon> ${this.localize?.term('dashboard_utils') || 'Utils'}
           </uui-button>
         </div>
 

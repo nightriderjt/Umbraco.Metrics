@@ -10,7 +10,34 @@ const e = {
     lastUpdated: "Last updated",
     loading: "Loading...",
     noData: "No data available",
-    errorLoading: "Error loading data"
+    errorLoading: "Error loading data",
+    applicationPerformanceMetrics: "Application Performance Metrics",
+    dotnetApplication: ".NET Application",
+    realTimeMetrics: "Real-time Metrics",
+    refreshMetrics: "Refresh Metrics",
+    realTimeUpdates: "Real-time Updates (SignalR)",
+    connected: "Connected",
+    connecting: "Connecting...",
+    overview: "Overview",
+    heapAndGC: "Heap & GC",
+    utils: "Utils",
+    clickToLoadPerformance: 'Click "Refresh Metrics" to load application performance data',
+    clickToLoadHeap: 'Click "Refresh Metrics" to load heap information',
+    clickToLoadUmbraco: 'Click "Refresh Metrics" to load Umbraco-specific data',
+    utilityTools: "Utility Tools",
+    utilityToolsDescription: "Additional tools for managing and exporting metrics data",
+    exportMetricsCard: "Export Metrics",
+    exportMetricsDescription: "Export performance and Umbraco metrics in various formats (CSV, JSON)",
+    openExportDialog: "Open Export Dialog",
+    dataManagement: "Data Management",
+    dataManagementDescription: "Manage historical metrics data and cleanup options",
+    cleanupOldData: "Cleanup Old Data",
+    advancedAnalytics: "Advanced Analytics",
+    advancedAnalyticsDescription: "Generate detailed reports and analytics from collected metrics",
+    generateReport: "Generate Report",
+    scheduledTasks: "Scheduled Tasks",
+    scheduledTasksDescription: "Schedule automatic exports and data collection tasks",
+    scheduleExport: "Schedule Export"
   },
   // Export Modal
   export: {
@@ -28,7 +55,9 @@ const e = {
     exportFailed: "Export Failed",
     metricsExportedSuccessfully: "Metrics exported successfully",
     failedToExportMetrics: "Failed to export metrics",
-    estimatedFileSize: "Estimated file size"
+    estimatedFileSize: "Estimated file size",
+    quickExportCompleted: "Quick export to",
+    completed: "completed"
   },
   // Export Options
   exportOptions: {
@@ -111,6 +140,17 @@ const e = {
     hours: "hours",
     days: "days"
   },
+  // App Info Banner
+  appInfo: {
+    process: "Process",
+    runtime: "Runtime",
+    architecture: "Architecture",
+    cpuCores: "CPU Cores",
+    uptime: "Uptime",
+    signalRConnected: "SignalR Connected",
+    "64bit": "64-bit",
+    "32bit": "32-bit"
+  },
   // Active Requests Sidebar
   activeRequests: {
     title: "Active Requests",
@@ -166,10 +206,11 @@ const e = {
     import: "Import",
     settings: "Settings",
     help: "Help",
-    about: "About"
+    about: "About",
+    or: "or"
   }
 };
 export {
   e as default
 };
-//# sourceMappingURL=en-US-CsUQZQSy.js.map
+//# sourceMappingURL=en-Bzb-k-Mr.js.map

@@ -1,4 +1,6 @@
-import type { UmbLocalizationDictionary } from "@umbraco-cms/backoffice/localization-api";
+
+
+
 
 export default {
   // Dashboard
@@ -58,7 +60,9 @@ export default {
     "exportFailed": "Αποτυχία Εξαγωγής",
     "metricsExportedSuccessfully": "Οι μετρικές εξήχθησαν επιτυχώς",
     "failedToExportMetrics": "Αποτυχία εξαγωγής μετρικών",
-    "estimatedFileSize": "Εκτιμώμενο μέγεθος αρχείου"
+    "estimatedFileSize": "Εκτιμώμενο μέγεθος αρχείου",
+    "quickExportCompleted": "Γρήγορη εξαγωγή σε",
+    "completed": "ολοκληρώθηκε"
   },
 
   // Export Options
@@ -149,6 +153,18 @@ export default {
     "days": "ημέρες"
   },
 
+  // App Info Banner
+  "appInfo": {
+    "process": "Διεργασία",
+    "runtime": "Χρόνος εκτέλεσης",
+    "architecture": "Αρχιτεκτονική",
+    "cpuCores": "Πυρήνες CPU",
+    "uptime": "Χρόνος λειτουργίας",
+    "signalRConnected": "SignalR Συνδεδεμένο",
+    "64bit": "64-bit",
+    "32bit": "32-bit"
+  },
+
   // Active Requests Sidebar
   "activeRequests": {
     "title": "Ενεργές Αιτήσεις",
@@ -205,6 +221,7 @@ export default {
     "import": "Εισαγωγή",
     "settings": "Ρυθμίσεις",
     "help": "Βοήθεια",
-    "about": "Σχετικά"
+    "about": "Σχετικά",
+    "or": "ή"
   }
-} as UmbLocalizationDictionary;
+} 

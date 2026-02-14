@@ -1,4 +1,4 @@
-import { ExportOptions, ExportFormat, ExportScope } from '../types/export-options.js';
+import { ExportOptions } from '../types/export-options.js';
 
 export class MetricsExportService {
   private readonly API_BASE_URL = '/umbraco/management/api/v1/metrics';
@@ -42,7 +42,7 @@ export class MetricsExportService {
   /**
    * Export performance metrics only
    */
-  async exportPerformanceMetrics(format: ExportFormat = ExportFormat.Json): Promise<void> {
+  async exportPerformanceMetrics(format: string = 'json'): Promise<void> {
     const token = await this.tokenProvider();
     
     const response = await fetch(
@@ -65,7 +65,7 @@ export class MetricsExportService {
   /**
    * Export Umbraco metrics only
    */
-  async exportUmbracoMetrics(format: ExportFormat = ExportFormat.Json): Promise<void> {
+  async exportUmbracoMetrics(format: string='json'): Promise<void> {
     const token = await this.tokenProvider();
     
     const response = await fetch(
@@ -91,11 +91,11 @@ export class MetricsExportService {
   async quickExport(
     includePerformance: boolean = true,
     includeUmbraco: boolean = true,
-    format: ExportFormat = ExportFormat.Csv
+    format: string ='csv'
   ): Promise<void> {
     const options: ExportOptions = {
       format,
-      scope: ExportScope.Current,
+      scope: 'current',
       includePerformanceMetrics: includePerformance,
       includeUmbracoMetrics: includeUmbraco,
       includeActiveRequests: false,
@@ -148,14 +148,14 @@ export class MetricsExportService {
     if (options.includeActiveRequests) estimatedSize += 2; // ~2KB for active requests
     
     // Adjust for historical data
-    if (options.scope === ExportScope.Historical || options.scope === ExportScope.Custom) {
+    if (options.scope === 'historical' || options.scope === 'custom') {
       // Historical data is much larger - estimate based on number of records
       // Assume ~1KB per performance metric record for historical data
       if (options.includePerformanceMetrics) {
         // For historical scope, estimate last 30 days with 5-second intervals
-        if (options.scope === ExportScope.Historical) {
+        if (options.scope === 'historical') {
           estimatedSize += 30 * 24 * 60 * 60 / 5 * 1; // 30 days * 24 hours * 60 minutes * 60 seconds / 5 second intervals * 1KB
-        } else if (options.scope === ExportScope.Custom && options.startDate && options.endDate) {
+        } else if (options.scope === 'custom' && options.startDate && options.endDate) {
           // For custom scope, estimate based on date range
           const start = new Date(options.startDate);
           const end = new Date(options.endDate);
@@ -172,13 +172,13 @@ export class MetricsExportService {
     
     // Format multipliers
     switch (options.format) {
-      case ExportFormat.Json:
+      case 'json':
         estimatedSize *= 1.2; // JSON is slightly larger
         break;
-      case ExportFormat.Csv:
+      case 'csv':
         estimatedSize *= 0.8; // CSV is more compact
         break;
-      case ExportFormat.Xml:
+      case 'xml':
         estimatedSize *= 1.5; // XML has more markup
         break;
     }
@@ -194,49 +194,6 @@ export class MetricsExportService {
     }
   }
 
-  /**
-   * Get supported formats for display
-   */
-  getSupportedFormats(): Array<{ value: ExportFormat; label: string; description: string }> {
-    return [
-      {
-        value: ExportFormat.Json,
-        label: 'JSON',
-        description: 'Structured data format, good for APIs and programming'
-      },
-      {
-        value: ExportFormat.Csv,
-        label: 'CSV',
-        description: 'Spreadsheet format, good for Excel and data analysis'
-      },
-      {
-        value: ExportFormat.Xml,
-        label: 'XML',
-        description: 'Markup format, good for legacy systems'
-      }
-    ];
-  }
 
-  /**
-   * Get export scope options
-   */
-  getScopeOptions(): Array<{ value: ExportScope; label: string; description: string }> {
-    return [
-      {
-        value: ExportScope.Current,
-        label: 'Current Snapshot',
-        description: 'Export current metrics only'
-      },
-      {
-        value: ExportScope.Historical,
-        label: 'Historical Data',
-        description: 'Export historical metrics (requires storage)'
-      },
-      {
-        value: ExportScope.Custom,
-        label: 'Custom Range',
-        description: 'Export metrics from specific date range'
-      }
-    ];
-  }
+
 }
