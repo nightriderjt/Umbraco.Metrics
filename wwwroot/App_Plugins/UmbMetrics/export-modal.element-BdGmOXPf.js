@@ -1,5 +1,5 @@
-import { LitElement as A, html as d, css as w, property as l, customElement as E, unsafeCSS as q, state as R } from "@umbraco-cms/backoffice/external/lit";
-import { UmbElementMixin as y } from "@umbraco-cms/backoffice/element-api";
+import { LitElement as q, html as d, unsafeCSS as w, css as E, property as l, customElement as y, state as R } from "@umbraco-cms/backoffice/external/lit";
+import { UmbElementMixin as O } from "@umbraco-cms/backoffice/element-api";
 import { UmbModalElement as G } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT as X } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT as Y } from "@umbraco-cms/backoffice/auth";
@@ -89,8 +89,8 @@ class K {
     const i = e.headers.get("Content-Disposition");
     let r = "metrics-export";
     if (i) {
-      const k = i.match(/filename="?([^"]+)"?/);
-      k && k[1] && (r = k[1]);
+      const M = i.match(/filename="?([^"]+)"?/);
+      M && M[1] && (r = M[1]);
     }
     const o = await e.blob(), a = window.URL.createObjectURL(o), s = document.createElement("a");
     s.href = a, s.target = "_blank", s.download = r, document.body.appendChild(s), s.click(), window.URL.revokeObjectURL(a), document.body.removeChild(s);
@@ -125,19 +125,19 @@ class K {
     return i < 1 ? "< 1 KB" : i < 1024 ? `${Math.round(i)} KB` : i < 1024 * 1024 ? `${(i / 1024).toFixed(1)} MB` : `${(i / (1024 * 1024)).toFixed(1)} GB`;
   }
 }
-const V = '#main{padding:var(--uui-size-space-5)}.quick-export-section,.export-options-section{margin-bottom:var(--uui-size-space-5)}h4{margin:0 0 var(--uui-size-space-2) 0;font-size:1.25rem;font-weight:600;color:var(--uui-color-text)}h5{margin:var(--uui-size-space-4) 0 var(--uui-size-space-2) 0;font-size:1rem;font-weight:600;color:var(--uui-color-text-alt)}.description{margin:0 0 var(--uui-size-space-4) 0;color:var(--uui-color-text-alt);font-size:.875rem}.quick-export-buttons{display:flex;gap:var(--uui-size-space-3);flex-wrap:wrap}.divider{display:flex;align-items:center;margin:var(--uui-size-space-5) 0;text-align:center;color:var(--uui-color-text-alt)}.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--uui-color-border)}.divider span{padding:0 var(--uui-size-space-3);font-size:.875rem}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-4)}.form-group.span-2{grid-column:span 2}.form-group label{display:block;margin-bottom:var(--uui-size-space-1);font-size:.875rem;font-weight:600;color:var(--uui-color-text-alt)}.date-range{display:flex;align-items:center;gap:var(--uui-size-space-3)}.date-separator{color:var(--uui-color-text-alt);font-size:.875rem}.metric-selection{background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);padding:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-4)}.metric-toggles{display:flex;flex-direction:column;gap:var(--uui-size-space-3)}.estimated-size{display:flex;align-items:center;gap:var(--uui-size-space-2);padding:var(--uui-size-space-3) var(--uui-size-space-4);background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);font-size:.875rem;color:var(--uui-color-text-alt)}.estimated-size uui-icon{color:var(--uui-color-interactive)}.estimated-size strong{color:var(--uui-color-text)}.export-progress{margin-top:var(--uui-size-space-5);padding:var(--uui-size-space-4);background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius)}.progress-bar{height:8px;background:var(--uui-color-border);border-radius:4px;overflow:hidden;margin-bottom:var(--uui-size-space-2)}.progress-fill{height:100%;background:var(--uui-color-positive);border-radius:4px;transition:width .3s ease}.progress-text{text-align:center;font-size:.875rem;color:var(--uui-color-text-alt)}@media(max-width:600px){.form-grid{grid-template-columns:1fr}.form-group.span-2{grid-column:span 1}.date-range{flex-direction:column;align-items:stretch}.date-separator{text-align:center}.quick-export-buttons{flex-direction:column}}';
-var Z = Object.defineProperty, ee = Object.getOwnPropertyDescriptor, I = (t) => {
+const V = '#main{padding:var(--uui-size-space-5)}.quick-export-section,.export-options-section{margin-bottom:var(--uui-size-space-5)}h4{margin:0 0 var(--uui-size-space-2) 0;font-size:1.25rem;font-weight:600;color:var(--uui-color-text)}h5{margin:var(--uui-size-space-4) 0 var(--uui-size-space-2) 0;font-size:1rem;font-weight:600;color:var(--uui-color-text-alt)}.description{margin:0 0 var(--uui-size-space-4) 0;color:var(--uui-color-text-alt);font-size:.875rem}.quick-export-buttons{display:flex;gap:var(--uui-size-space-3);flex-wrap:wrap}.divider{display:flex;align-items:center;margin:var(--uui-size-space-5) 0;text-align:center;color:var(--uui-color-text-alt)}.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--uui-color-border)}.divider span{padding:0 var(--uui-size-space-3);font-size:.875rem}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-4)}.form-group.span-2{grid-column:span 2}.form-group label{display:block;margin-bottom:var(--uui-size-space-1);font-size:.875rem;font-weight:600;color:var(--uui-color-text-alt)}.date-range{display:flex;align-items:center;gap:var(--uui-size-space-3)}.date-separator{color:var(--uui-color-text-alt);font-size:.875rem}.metric-selection{background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);padding:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-4)}.metric-toggles{display:flex;flex-direction:column;gap:var(--uui-size-space-3)}.estimated-size{display:flex;align-items:center;gap:var(--uui-size-space-2);padding:var(--uui-size-space-3) var(--uui-size-space-4);background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);font-size:.875rem;color:var(--uui-color-text-alt)}.estimated-size uui-icon{color:var(--uui-color-interactive)}.estimated-size strong{color:var(--uui-color-text)}.export-progress{margin-top:var(--uui-size-space-5);padding:var(--uui-size-space-4);background:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius)}.progress-bar{height:8px;background:var(--uui-color-border);border-radius:4px;overflow:hidden;margin-bottom:var(--uui-size-space-2)}.progress-fill{height:100%;background:var(--uui-color-positive);border-radius:4px;transition:width .3s ease}.progress-text{text-align:center;font-size:.875rem;color:var(--uui-color-text-alt)}@media(max-width:600px){.form-grid{grid-template-columns:1fr}.form-group.span-2{grid-column:span 1}.date-range{flex-direction:column;align-items:stretch}.date-separator{text-align:center}.quick-export-buttons{flex-direction:column}}', Z = ".quick-export-section{margin-bottom:var(--uui-size-space-5)}h4{margin:0 0 var(--uui-size-space-2) 0;font-size:1.25rem;font-weight:600;color:var(--uui-color-text)}.description{margin:0 0 var(--uui-size-space-4) 0;color:var(--uui-color-text-alt);font-size:.875rem}.quick-export-buttons{display:flex;gap:var(--uui-size-space-3);flex-wrap:wrap}@media(max-width:600px){.quick-export-buttons{flex-direction:column}}";
+var ee = Object.defineProperty, te = Object.getOwnPropertyDescriptor, I = (t) => {
   throw TypeError(t);
-}, O = (t, e, i, r) => {
-  for (var o = r > 1 ? void 0 : r ? ee(e, i) : e, a = t.length - 1, s; a >= 0; a--)
+}, C = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? te(e, i) : e, a = t.length - 1, s; a >= 0; a--)
     (s = t[a]) && (o = (r ? s(e, i, o) : s(o)) || o);
-  return r && o && Z(e, i, o), o;
-}, te = (t, e, i) => e.has(t) || I("Cannot " + i), L = (t, e, i) => (te(t, e, "read from private field"), i ? i.call(t) : e.get(t)), W = (t, e, i) => e.has(t) ? I("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), M, P;
-let g = class extends y(A) {
+  return r && o && ee(e, i, o), o;
+}, ie = (t, e, i) => e.has(t) || I("Cannot " + i), L = (t, e, i) => (ie(t, e, "read from private field"), i ? i.call(t) : e.get(t)), W = (t, e, i) => e.has(t) ? I("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), P, D;
+let g = class extends O(q) {
   constructor() {
-    super(...arguments), this.disabled = !1, W(this, M, () => {
+    super(...arguments), this.disabled = !1, W(this, P, () => {
       this.onCsvExport && this.onCsvExport();
-    }), W(this, P, () => {
+    }), W(this, D, () => {
       this.onJsonExport && this.onJsonExport();
     });
   }
@@ -151,7 +151,7 @@ let g = class extends y(A) {
           <uui-button 
             look="primary" 
             color="positive"
-            @click="${L(this, M)}"
+            @click="${L(this, P)}"
             ?disabled="${this.disabled}"
           >
             <uui-icon name="icon-download"></uui-icon>
@@ -160,7 +160,7 @@ let g = class extends y(A) {
           
           <uui-button 
             look="outline"
-            @click="${L(this, P)}"
+            @click="${L(this, D)}"
             ?disabled="${this.disabled}"
           >
             <uui-icon name="icon-download"></uui-icon>
@@ -171,59 +171,30 @@ let g = class extends y(A) {
     `;
   }
 };
-M = /* @__PURE__ */ new WeakMap();
 P = /* @__PURE__ */ new WeakMap();
-g.styles = w`
-    .quick-export-section {
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    h4 {
-      margin: 0 0 var(--uui-size-space-2) 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--uui-color-text);
-    }
-
-    .description {
-      margin: 0 0 var(--uui-size-space-4) 0;
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .quick-export-buttons {
-      display: flex;
-      gap: var(--uui-size-space-3);
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 600px) {
-      .quick-export-buttons {
-        flex-direction: column;
-      }
-    }
-  `;
-O([
+D = /* @__PURE__ */ new WeakMap();
+g.styles = E`${w(Z)}`;
+C([
   l({ type: Boolean })
 ], g.prototype, "disabled", 2);
-O([
+C([
   l({ type: Function })
 ], g.prototype, "onCsvExport", 2);
-O([
+C([
   l({ type: Function })
 ], g.prototype, "onJsonExport", 2);
-g = O([
-  E("umbmetrics-quick-export-buttons")
+g = C([
+  y("umbmetrics-quick-export-buttons")
 ], g);
-const ie = ".export-options-section{margin-bottom:var(--uui-size-space-5)}h4{margin:0 0 var(--uui-size-space-2) 0;font-size:1.25rem;font-weight:600;color:var(--uui-color-text)}.description{margin:0 0 var(--uui-size-space-4) 0;color:var(--uui-color-text-alt);font-size:.875rem}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-5)}.form-group{display:flex;flex-direction:column;gap:var(--uui-size-space-2)}.form-group.span-2{grid-column:span 2}label{font-weight:600;color:var(--uui-color-text);font-size:.875rem}.date-range{display:flex;align-items:center;gap:var(--uui-size-space-3)}.date-separator{color:var(--uui-color-text-alt);font-size:.875rem}.metric-selection{margin-bottom:var(--uui-size-space-5)}h5{margin:0 0 var(--uui-size-space-3) 0;font-size:1rem;font-weight:600;color:var(--uui-color-text)}.metric-toggles{display:flex;flex-direction:column;gap:var(--uui-size-space-3)}.estimated-size{display:flex;align-items:center;gap:var(--uui-size-space-2);padding:var(--uui-size-space-3);background-color:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);color:var(--uui-color-text-alt);font-size:.875rem}.estimated-size strong{color:var(--uui-color-text)}@media(max-width:768px){.form-grid{grid-template-columns:1fr}.form-group.span-2{grid-column:span 1}.date-range{flex-direction:column;align-items:stretch}.date-separator{text-align:center}}";
-var re = Object.defineProperty, oe = Object.getOwnPropertyDescriptor, J = (t) => {
+const re = ".export-options-section{margin-bottom:var(--uui-size-space-5)}h4{margin:0 0 var(--uui-size-space-2) 0;font-size:1.25rem;font-weight:600;color:var(--uui-color-text)}.description{margin:0 0 var(--uui-size-space-4) 0;color:var(--uui-color-text-alt);font-size:.875rem}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--uui-size-space-4);margin-bottom:var(--uui-size-space-5)}.form-group{display:flex;flex-direction:column;gap:var(--uui-size-space-2)}.form-group.span-2{grid-column:span 2}label{font-weight:600;color:var(--uui-color-text);font-size:.875rem}.date-range{display:flex;align-items:center;gap:var(--uui-size-space-3)}.date-separator{color:var(--uui-color-text-alt);font-size:.875rem}.metric-selection{margin-bottom:var(--uui-size-space-5)}h5{margin:0 0 var(--uui-size-space-3) 0;font-size:1rem;font-weight:600;color:var(--uui-color-text)}.metric-toggles{display:flex;flex-direction:column;gap:var(--uui-size-space-3)}.estimated-size{display:flex;align-items:center;gap:var(--uui-size-space-2);padding:var(--uui-size-space-3);background-color:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius);color:var(--uui-color-text-alt);font-size:.875rem}.estimated-size strong{color:var(--uui-color-text)}@media(max-width:768px){.form-grid{grid-template-columns:1fr}.form-group.span-2{grid-column:span 1}.date-range{flex-direction:column;align-items:stretch}.date-separator{text-align:center}}";
+var oe = Object.defineProperty, se = Object.getOwnPropertyDescriptor, J = (t) => {
   throw TypeError(t);
 }, x = (t, e, i, r) => {
-  for (var o = r > 1 ? void 0 : r ? oe(e, i) : e, a = t.length - 1, s; a >= 0; a--)
+  for (var o = r > 1 ? void 0 : r ? se(e, i) : e, a = t.length - 1, s; a >= 0; a--)
     (s = t[a]) && (o = (r ? s(e, i, o) : s(o)) || o);
-  return r && o && re(e, i, o), o;
-}, se = (t, e, i) => e.has(t) || J("Cannot " + i), u = (t, e, i) => (se(t, e, "read from private field"), i ? i.call(t) : e.get(t)), v = (t, e, i) => e.has(t) ? J("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), D, T, _, z, S;
-let p = class extends y(A) {
+  return r && o && oe(e, i, o), o;
+}, ae = (t, e, i) => e.has(t) || J("Cannot " + i), u = (t, e, i) => (ae(t, e, "read from private field"), i ? i.call(t) : e.get(t)), v = (t, e, i) => e.has(t) ? J("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), T, S, _, z, U;
+let p = class extends O(q) {
   constructor() {
     super(...arguments), this.exportOptions = {
       format: "csv",
@@ -246,10 +217,10 @@ let p = class extends y(A) {
       { value: "current", name: this.localize?.term("exportOptions_currentSnapshot") || "Current Snapshot" },
       { value: "historical", name: this.localize?.term("exportOptions_historicalData") || "Historical Data" },
       { value: "custom", name: this.localize?.term("exportOptions_customRange") || "Custom Range" }
-    ], v(this, D, (t) => {
+    ], v(this, T, (t) => {
       const e = t.target;
       this.onFormatChange && this.onFormatChange(e.value);
-    }), v(this, T, (t) => {
+    }), v(this, S, (t) => {
       const e = t.target;
       this.onScopeChange && this.onScopeChange(e.value);
     }), v(this, _, (t) => {
@@ -257,7 +228,7 @@ let p = class extends y(A) {
     }), v(this, z, (t, e) => {
       const i = e.target;
       this.onDateChange && this.onDateChange(t, i.value);
-    }), v(this, S, (t) => {
+    }), v(this, U, (t) => {
       const e = t.target;
       this.onTimezoneChange && this.onTimezoneChange(e.value);
     });
@@ -275,7 +246,7 @@ let p = class extends y(A) {
             <uui-select 
               id="export-format"
               .value="${this.exportOptions.format}"
-              @change="${u(this, D)}"
+              @change="${u(this, T)}"
               ?disabled="${this.disabled}"
               .options="${this.formatOptions}"
             >           
@@ -288,7 +259,7 @@ let p = class extends y(A) {
             <uui-select 
               id="export-scope"
               .value="${this.exportOptions.scope}"
-              @change="${u(this, T)}"
+              @change="${u(this, S)}"
               ?disabled="${this.disabled}"
               .options="${this.scopeOptions}"
             >            
@@ -327,7 +298,7 @@ let p = class extends y(A) {
             <uui-select 
               id="export-timezone"
               .value="${this.exportOptions.timezone}"
-              @change="${u(this, S)}"
+              @change="${u(this, U)}"
               ?disabled="${this.disabled}"
               .options="${this.timeZones}"
             >
@@ -366,12 +337,12 @@ let p = class extends y(A) {
     `;
   }
 };
-D = /* @__PURE__ */ new WeakMap();
 T = /* @__PURE__ */ new WeakMap();
+S = /* @__PURE__ */ new WeakMap();
 _ = /* @__PURE__ */ new WeakMap();
 z = /* @__PURE__ */ new WeakMap();
-S = /* @__PURE__ */ new WeakMap();
-p.styles = w`${q(ie)}`;
+U = /* @__PURE__ */ new WeakMap();
+p.styles = E`${w(re)}`;
 x([
   l({ type: Boolean })
 ], p.prototype, "disabled", 2);
@@ -391,15 +362,15 @@ x([
   l({ type: Function })
 ], p.prototype, "onTimezoneChange", 2);
 p = x([
-  E("umbmetrics-export-options")
+  y("umbmetrics-export-options")
 ], p);
-const ae = '.export-progress{margin-top:var(--uui-size-space-5);padding:var(--uui-size-space-4);background-color:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius)}.progress-bar{height:8px;background-color:var(--uui-color-surface);border-radius:4px;overflow:hidden;margin-bottom:var(--uui-size-space-2)}.progress-fill{height:100%;background-color:var(--uui-color-positive);border-radius:4px;transition:width .3s ease}.progress-text{display:flex;justify-content:space-between;align-items:center;font-size:.875rem;color:var(--uui-color-text-alt)}.progress-text:before{content:"⏳";margin-right:var(--uui-size-space-2)}';
-var ne = Object.defineProperty, ce = Object.getOwnPropertyDescriptor, B = (t, e, i, r) => {
-  for (var o = r > 1 ? void 0 : r ? ce(e, i) : e, a = t.length - 1, s; a >= 0; a--)
+const ne = '.export-progress{margin-top:var(--uui-size-space-5);padding:var(--uui-size-space-4);background-color:var(--uui-color-surface-alt);border-radius:var(--uui-border-radius)}.progress-bar{height:8px;background-color:var(--uui-color-surface);border-radius:4px;overflow:hidden;margin-bottom:var(--uui-size-space-2)}.progress-fill{height:100%;background-color:var(--uui-color-positive);border-radius:4px;transition:width .3s ease}.progress-text{display:flex;justify-content:space-between;align-items:center;font-size:.875rem;color:var(--uui-color-text-alt)}.progress-text:before{content:"⏳";margin-right:var(--uui-size-space-2)}';
+var ce = Object.defineProperty, le = Object.getOwnPropertyDescriptor, B = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? le(e, i) : e, a = t.length - 1, s; a >= 0; a--)
     (s = t[a]) && (o = (r ? s(e, i, o) : s(o)) || o);
-  return r && o && ne(e, i, o), o;
+  return r && o && ce(e, i, o), o;
 };
-let b = class extends y(A) {
+let b = class extends O(q) {
   constructor() {
     super(...arguments), this.isExporting = !1, this.progress = 0;
   }
@@ -416,7 +387,7 @@ let b = class extends y(A) {
     ` : d``;
   }
 };
-b.styles = w`${q(ae)}`;
+b.styles = E`${w(ne)}`;
 B([
   l({ type: Boolean })
 ], b.prototype, "isExporting", 2);
@@ -424,16 +395,16 @@ B([
   l({ type: Number })
 ], b.prototype, "progress", 2);
 b = B([
-  E("umbmetrics-export-progress")
+  y("umbmetrics-export-progress")
 ], b);
-var le = Object.defineProperty, pe = Object.getOwnPropertyDescriptor, j = (t) => {
+var pe = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, j = (t) => {
   throw TypeError(t);
-}, C = (t, e, i, r) => {
-  for (var o = r > 1 ? void 0 : r ? pe(e, i) : e, a = t.length - 1, s; a >= 0; a--)
+}, k = (t, e, i, r) => {
+  for (var o = r > 1 ? void 0 : r ? ue(e, i) : e, a = t.length - 1, s; a >= 0; a--)
     (s = t[a]) && (o = (r ? s(e, i, o) : s(o)) || o);
-  return r && o && le(e, i, o), o;
-}, Q = (t, e, i) => e.has(t) || j("Cannot " + i), n = (t, e, i) => (Q(t, e, "read from private field"), i ? i.call(t) : e.get(t)), f = (t, e, i) => e.has(t) ? j("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), N = (t, e, i, r) => (Q(t, e, "write to private field"), e.set(t, i), i), m, c, U, $, F;
-let h = class extends y(G) {
+  return r && o && pe(e, i, o), o;
+}, Q = (t, e, i) => e.has(t) || j("Cannot " + i), n = (t, e, i) => (Q(t, e, "read from private field"), i ? i.call(t) : e.get(t)), f = (t, e, i) => e.has(t) ? j("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), N = (t, e, i, r) => (Q(t, e, "write to private field"), e.set(t, i), i), m, c, F, $, A;
+let h = class extends O(G) {
   constructor() {
     super(), this._isExporting = !1, this._exportProgress = 0, this._exportOptions = {
       format: "csv",
@@ -442,7 +413,7 @@ let h = class extends y(G) {
       includeUmbracoMetrics: !0,
       includeActiveRequests: !1,
       timezone: "UTC"
-    }, f(this, m), f(this, c), f(this, U, async () => {
+    }, f(this, m), f(this, c), f(this, F, async () => {
       if (!(!n(this, m) || this._isExporting)) {
         this._isExporting = !0, this._exportProgress = 10;
         try {
@@ -491,7 +462,7 @@ let h = class extends y(G) {
           this._isExporting = !1;
         }
       }
-    }), f(this, F, () => {
+    }), f(this, A, () => {
       this.modalContext && this.modalContext.reject();
     }), this.consumeContext(X, (t) => {
       N(this, c, t);
@@ -554,7 +525,7 @@ let h = class extends y(G) {
           <div slot="actions">
             <uui-button 
               look="secondary"
-              @click="${n(this, F)}"
+              @click="${n(this, A)}"
               ?disabled="${this._isExporting}"
             >
               ${this.localize?.term("export_cancel") || "Cancel"}
@@ -563,7 +534,7 @@ let h = class extends y(G) {
             <uui-button 
               look="primary"
               color="positive"
-              @click="${n(this, U)}"
+              @click="${n(this, F)}"
               ?disabled="${this._isExporting || !this._exportOptions.includePerformanceMetrics && !this._exportOptions.includeUmbracoMetrics}"
             >
               ${this._isExporting ? d`
@@ -582,25 +553,25 @@ let h = class extends y(G) {
 };
 m = /* @__PURE__ */ new WeakMap();
 c = /* @__PURE__ */ new WeakMap();
-U = /* @__PURE__ */ new WeakMap();
-$ = /* @__PURE__ */ new WeakMap();
 F = /* @__PURE__ */ new WeakMap();
-h.styles = [...H.styles, w`${q(V)}`];
-C([
+$ = /* @__PURE__ */ new WeakMap();
+A = /* @__PURE__ */ new WeakMap();
+h.styles = [...H.styles, E`${w(V)}`];
+k([
   R()
 ], h.prototype, "_isExporting", 2);
-C([
+k([
   R()
 ], h.prototype, "_exportProgress", 2);
-C([
+k([
   R()
 ], h.prototype, "_exportOptions", 2);
-h = C([
-  E("umbmetrics-export-modal")
+h = k([
+  y("umbmetrics-export-modal")
 ], h);
-const ve = h;
+const fe = h;
 export {
   h as UmbMetricsExportModalElement,
-  ve as default
+  fe as default
 };
-//# sourceMappingURL=export-modal.element-DyvmmFy3.js.map
+//# sourceMappingURL=export-modal.element-BdGmOXPf.js.map
