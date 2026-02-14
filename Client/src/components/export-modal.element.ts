@@ -1,5 +1,6 @@
 import {
   css,
+  unsafeCSS,
   html,
   customElement,
   state,
@@ -10,6 +11,7 @@ import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { MetricsExportService } from "../services/metrics-export.service.js";
 import { ExportFormat, ExportScope, ExportOptions } from "../types/export-options.js";
 import { UUIModalElement } from "@umbraco-cms/backoffice/external/uui";
+import stylesString from '../css/export-modal.styles.css?inline';
 
 @customElement("umbmetrics-export-modal")
 export class UmbMetricsExportModalElement extends UmbModalElement {
@@ -430,183 +432,7 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
     `;
   }
 
-  static styles = [...UUIModalElement.styles, css`
-   
-
-    #main {
-      padding: var(--uui-size-space-5);
-    }
-
-    .quick-export-section,
-    .export-options-section {
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    h4 {
-      margin: 0 0 var(--uui-size-space-2) 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--uui-color-text);
-    }
-
-    h5 {
-      margin: var(--uui-size-space-4) 0 var(--uui-size-space-2) 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--uui-color-text-alt);
-    }
-
-    .description {
-      margin: 0 0 var(--uui-size-space-4) 0;
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .quick-export-buttons {
-      display: flex;
-      gap: var(--uui-size-space-3);
-      flex-wrap: wrap;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: var(--uui-size-space-5) 0;
-      text-align: center;
-      color: var(--uui-color-text-alt);
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--uui-color-border);
-    }
-
-    .divider span {
-      padding: 0 var(--uui-size-space-3);
-      font-size: 0.875rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--uui-size-space-4);
-      margin-bottom: var(--uui-size-space-4);
-    }
-
-    .form-group.span-2 {
-      grid-column: span 2;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: var(--uui-size-space-1);
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--uui-color-text-alt);
-    }
-
-    .date-range {
-      display: flex;
-      align-items: center;
-      gap: var(--uui-size-space-3);
-    }
-
-    .date-separator {
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .metric-selection {
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      padding: var(--uui-size-space-4);
-      margin-bottom: var(--uui-size-space-4);
-    }
-
-    .metric-toggles {
-      display: flex;
-      flex-direction: column;
-      gap: var(--uui-size-space-3);
-    }
-
-    .estimated-size {
-      display: flex;
-      align-items: center;
-      gap: var(--uui-size-space-2);
-      padding: var(--uui-size-space-3) var(--uui-size-space-4);
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      font-size: 0.875rem;
-      color: var(--uui-color-text-alt);
-    }
-
-    .estimated-size uui-icon {
-      color: var(--uui-color-interactive);
-    }
-
-    .estimated-size strong {
-      color: var(--uui-color-text);
-    }
-
-    .export-progress {
-      margin-top: var(--uui-size-space-5);
-      padding: var(--uui-size-space-4);
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-    }
-
-    .progress-bar {
-      height: 8px;
-      background: var(--uui-color-border);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: var(--uui-size-space-2);
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--uui-color-positive);
-      border-radius: 4px;
-      transition: width 0.3s ease;
-    }
-
-    .progress-text {
-      text-align: center;
-      font-size: 0.875rem;
-      color: var(--uui-color-text-alt);
-    }
-
-    @media (max-width: 600px) {
-      :host {
-        min-width: auto;
-        max-width: 100%;
-      }
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-group.span-2 {
-        grid-column: span 1;
-      }
-
-      .date-range {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .date-separator {
-        text-align: center;
-      }
-
-      .quick-export-buttons {
-        flex-direction: column;
-      }
-    }
-  `];
+  static styles = [...UUIModalElement.styles, css`${unsafeCSS(stylesString)}`];
 }
 
 export default UmbMetricsExportModalElement;
