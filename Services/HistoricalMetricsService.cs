@@ -173,7 +173,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             async _ => await SaveMetricsAsync(),
             null,
             TimeSpan.Zero,
-            TimeSpan.FromMinutes(_options.SaveIntervalMinutes));
+            TimeSpan.FromSeconds(_options.SaveIntervalSeconds));
 
         // Start cleanup timer if enabled
         if (_options.EnableAutoCleanup)
@@ -202,6 +202,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         {
             _timer?.Dispose();
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -288,7 +289,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         }
     }
 
-    private IEnumerable<string> GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
+    private List<string> GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
     {
         var files = new List<string>();
         
@@ -422,7 +423,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 public class HistoricalMetricsOptions
 {
     public string StoragePath { get; set; } = "Data/MetricsHistory";
-    public int SaveIntervalMinutes { get; set; } = 5;
+    public int SaveIntervalSeconds { get; set; } = 5;
     public int RetentionDays { get; set; } = 30;
     public long MaxFileSizeBytes { get; set; } = 100 * 1024 * 1024; // 100 MB default
     public bool EnableAutoCleanup { get; set; } = true;
