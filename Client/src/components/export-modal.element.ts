@@ -10,7 +10,7 @@ import { UmbModalElement } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { MetricsExportService } from "../services/metrics-export.service.js";
-import {  ExportScope, ExportOptions } from "../types/export-options.js";
+import {   ExportOptions } from "../types/export-options.js";
 import { UUIModalElement } from "@umbraco-cms/backoffice/external/uui";
 import stylesString from '../css/export-modal.styles.css?inline';
 

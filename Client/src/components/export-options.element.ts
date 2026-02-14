@@ -44,7 +44,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   onFormatChange?: (format: string) => void;
 
   @property({ type: Function })
-  onScopeChange?: (scope: ExportScope) => void;
+  onScopeChange?: (scope: string) => void;
 
   @property({ type: Function })
   onMetricToggle?: (metric: keyof ExportOptions) => void;
@@ -65,7 +65,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   #handleScopeChange = (e: Event) => {
     const select = e.target as HTMLSelectElement;
     if (this.onScopeChange) {
-      this.onScopeChange(select.value as ExportScope);
+      this.onScopeChange(select.value as string);
     }
   };
 
@@ -122,7 +122,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
           </div>
 
           <!-- Date Range (only for custom scope) -->
-          ${this.exportOptions.scope === ExportScope.Custom ? html`
+          ${this.exportOptions.scope === 'custom' ? html`
             <div class="form-group span-2">
               <label>${this.localize?.term('exportOptions_dateRange') || 'Date Range'}</label>
               <div class="date-range">
