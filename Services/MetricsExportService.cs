@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using UmbMetrics.Models;
+using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
 
@@ -10,15 +11,18 @@ public class MetricsExportService : IMetricsExportService
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly IUmbracoMetricsService _umbracoMetricsService;
+    private readonly IHistoricalMetricsExportService _historicalExportService;
     private readonly ILogger<MetricsExportService> _logger;
 
     public MetricsExportService(
         IPerformanceMetricsService performanceMetricsService,
         IUmbracoMetricsService umbracoMetricsService,
+        IHistoricalMetricsExportService historicalExportService,
         ILogger<MetricsExportService> logger)
     {
         _performanceMetricsService = performanceMetricsService;
         _umbracoMetricsService = umbracoMetricsService;
+        _historicalExportService = historicalExportService;
         _logger = logger;
     }
 
@@ -26,6 +30,13 @@ public class MetricsExportService : IMetricsExportService
     {
         try
         {
+            // Check if this is a historical export
+            if (options.Scope == ExportScope.Historical || options.Scope == ExportScope.Custom)
+            {
+                return await _historicalExportService.ExportHistoricalMetricsAsync(options);
+            }
+            
+            // Current snapshot export
             if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
             {
                 return await ExportCombinedMetricsAsync(options);

@@ -1,5 +1,5 @@
-import { UmbModalToken as m } from "@umbraco-cms/backoffice/modal";
-import { LitElement as c, html as l, css as p, customElement as u } from "@umbraco-cms/backoffice/external/lit";
+import { UmbModalToken as n } from "@umbraco-cms/backoffice/modal";
+import { LitElement as c, html as l, css as u, customElement as p } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin as b } from "@umbraco-cms/backoffice/element-api";
 const d = [
   {
@@ -8,12 +8,12 @@ const d = [
     type: "backofficeEntryPoint",
     js: () => import("./entrypoint-BdY19EoO.js")
   }
-], h = [
+], M = [
   {
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-vqzXiDgz.js"),
+    js: () => import("./dashboard.element-7UWrucyu.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -25,7 +25,7 @@ const d = [
       }
     ]
   }
-], M = new m(
+], h = new n(
   "UmbMetrics.Modal.ActiveRequestsSidebar",
   {
     modal: {
@@ -33,43 +33,62 @@ const d = [
       size: "medium"
     }
   }
-), g = new m(
+), U = new n(
   "UmbMetrics.Modal.ExportMetrics",
   {
     modal: {
       type: "sidebar",
-      size: "large"
+      size: "medium"
     }
   }
-), v = [
+), g = [
   {
     type: "modal",
     alias: "UmbMetrics.Modal.ActiveRequestsSidebar",
     name: "Active Requests Sidebar Modal",
     js: () => import("./active-requests-sidebar.element-DxrkQQUB.js").then((e) => e.a),
     meta: {
-      modal: M
+      modal: h
     }
   },
   {
     type: "modal",
     alias: "UmbMetrics.Modal.ExportMetrics",
     name: "Export Metrics Modal",
-    js: () => import("./export-modal.element-DtLSTZXh.js"),
+    js: () => import("./export-modal.element-BQYYZef6.js"),
     meta: {
-      modal: g
+      modal: U
     }
   }
-], U = {
+], v = {
   type: "icons",
   alias: "UmbMetrics.Icons",
   name: "UmbMetrics Icons",
   js: () => import("./icons-DaMqJOw9.js")
-};
-var y = Object.getOwnPropertyDescriptor, f = (e, s, n, o) => {
-  for (var i = o > 1 ? void 0 : o ? y(s, n) : s, t = e.length - 1, r; t >= 0; t--)
-    (r = e[t]) && (i = r(i) || i);
-  return i;
+}, f = {
+  type: "localization",
+  alias: "UmbMetrics.Localization.en-US",
+  name: "English (United States)",
+  meta: {
+    culture: "en-US"
+  },
+  js: () => import("./en-US-CsUQZQSy.js")
+}, y = [f], E = {
+  type: "localization",
+  alias: "UmbMetrics.Localization.el-GR",
+  name: "Greek (Greece)",
+  meta: {
+    culture: "el-GR"
+  },
+  js: () => import("./el-GR-BBwEzhch.js")
+}, z = [E], k = [
+  ...y,
+  ...z
+];
+var x = Object.getOwnPropertyDescriptor, S = (e, s, m, o) => {
+  for (var t = o > 1 ? void 0 : o ? x(s, m) : s, i = e.length - 1, r; i >= 0; i--)
+    (r = e[i]) && (t = r(t) || t);
+  return t;
 };
 let a = class extends b(c) {
   render() {
@@ -107,7 +126,7 @@ let a = class extends b(c) {
     `;
   }
 };
-a.styles = p`
+a.styles = u`
     :host {
       display: block;
       padding: var(--uui-size-layout-1);
@@ -147,18 +166,19 @@ a.styles = p`
       gap: var(--uui-size-space-4);
     }
   `;
-a = f([
-  u("umbmetrics-package-view")
+a = S([
+  p("umbmetrics-package-view")
 ], a);
-const z = [
+const w = [
   ...d,
-  ...h,
-  ...v,
-  U
+  ...M,
+  ...g,
+  v,
+  ...k
 ];
 export {
-  M as A,
-  g as U,
-  z as m
+  h as A,
+  U,
+  w as m
 };
-//# sourceMappingURL=bundle.manifests-PzZDyP-T.js.map
+//# sourceMappingURL=bundle.manifests-BbUZzlgB.js.map

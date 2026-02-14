@@ -66,46 +66,6 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
     }
   }
 
-  #handleFormatChange = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    this._exportOptions = {
-      ...this._exportOptions,
-      format: select.value as ExportFormat
-    };
-    this.#updateEstimatedSize();
-  };
-
-  #handleScopeChange = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    this._exportOptions = {
-      ...this._exportOptions,
-      scope: select.value as ExportScope
-    };
-  };
-
-  #handleMetricToggle = (metric: keyof ExportOptions) => {
-    this._exportOptions = {
-      ...this._exportOptions,
-      [metric]: !this._exportOptions[metric]
-    };
-    this.#updateEstimatedSize();
-  };
-
-  #handleDateChange = (dateField: 'startDate' | 'endDate', value: string) => {
-    this._exportOptions = {
-      ...this._exportOptions,
-      [dateField]: value || undefined
-    };
-  };
-
-  #handleTimezoneChange = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    this._exportOptions = {
-      ...this._exportOptions,
-      timezone: select.value
-    };
-  };
-
   #handleExport = async () => {
     if (!this.#exportService || this._isExporting) {
       return;
@@ -218,189 +178,69 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
     }
   };
 
-  #renderQuickExportButtons() {
-    return html`
-      <div class="quick-export-section">
-        <h4>Quick Export</h4>
-        <p class="description">Export all metrics with one click</p>
-        
-        <div class="quick-export-buttons">
-          <uui-button 
-            look="primary" 
-            color="positive"
-            @click="${() => this.#handleQuickExport(ExportFormat.Csv)}"
-            ?disabled="${this._isExporting}"
-          >
-            <uui-icon name="icon-download"></uui-icon>
-            Export as CSV
-          </uui-button>
-          
-          <uui-button 
-            look="outline"
-            @click="${() => this.#handleQuickExport(ExportFormat.Json)}"
-            ?disabled="${this._isExporting}"
-          >
-            <uui-icon name="icon-download"></uui-icon>
-            Export as JSON
-          </uui-button>
-        </div>
-      </div>
-  `;
-  }
-
-  #renderExportOptions() {
-    const formatOptions = this.#exportService?.getSupportedFormats() || [];
-    const scopeOptions = this.#exportService?.getScopeOptions() || [];
-
-    return html`
-      <div class="export-options-section">
-        <h4>Custom Export</h4>
-        <p class="description">Configure export options</p>
-        
-        <div class="form-grid">
-          <!-- Format Selection -->
-          <div class="form-group">
-            <label for="export-format">Format</label>
-            <uui-select 
-              id="export-format"
-              .value="${this._exportOptions.format}"
-              @change="${this.#handleFormatChange}"
-              ?disabled="${this._isExporting}"
-            >
-              ${formatOptions.map(option => html`
-                <uui-option value="${option.value}">
-                  ${option.label} - ${option.description}
-                </uui-option>
-              `)}
-            </uui-select>
-          </div>
-
-          <!-- Scope Selection -->
-          <div class="form-group">
-            <label for="export-scope">Scope</label>
-            <uui-select 
-              id="export-scope"
-              .value="${this._exportOptions.scope}"
-              @change="${this.#handleScopeChange}"
-              ?disabled="${this._isExporting}"
-            >
-              ${scopeOptions.map(option => html`
-                <uui-option value="${option.value}">
-                  ${option.label}
-                </uui-option>
-              `)}
-            </uui-select>
-          </div>
-
-          <!-- Date Range (only for custom scope) -->
-          ${this._exportOptions.scope === ExportScope.Custom ? html`
-            <div class="form-group span-2">
-              <label>Date Range</label>
-              <div class="date-range">
-                <uui-input
-                  type="date"
-                  label="Start Date"
-                  .value="${this._exportOptions.startDate || ''}"
-                  @change="${(e: Event) => this.#handleDateChange('startDate', (e.target as HTMLInputElement).value)}"
-                  ?disabled="${this._isExporting}"
-                ></uui-input>
-                
-                <span class="date-separator">to</span>
-                
-                <uui-input
-                  type="date"
-                  label="End Date"
-                  .value="${this._exportOptions.endDate || ''}"
-                  @change="${(e: Event) => this.#handleDateChange('endDate', (e.target as HTMLInputElement).value)}"
-                  ?disabled="${this._isExporting}"
-                ></uui-input>
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Timezone -->
-          <div class="form-group">
-            <label for="export-timezone">Timezone</label>
-            <uui-select 
-              id="export-timezone"
-              .value="${this._exportOptions.timezone}"
-              @change="${this.#handleTimezoneChange}"
-              ?disabled="${this._isExporting}"
-            >
-              <uui-option value="UTC">UTC</uui-option>
-              <uui-option value="Local">Local Time</uui-option>
-              <uui-option value="Europe/London">Europe/London</uui-option>
-              <uui-option value="America/New_York">America/New_York</uui-option>
-              <uui-option value="Asia/Tokyo">Asia/Tokyo</uui-option>
-            </uui-select>
-          </div>
-        </div>
-
-        <!-- Metric Selection -->
-        <div class="metric-selection">
-          <h5>Include Metrics</h5>
-          <div class="metric-toggles">
-            <uui-toggle 
-              label="Performance Metrics"
-              .checked="${this._exportOptions.includePerformanceMetrics}"
-              @change="${() => this.#handleMetricToggle('includePerformanceMetrics')}"
-              ?disabled="${this._isExporting}"
-            ></uui-toggle>
-            
-            <uui-toggle 
-              label="Umbraco Metrics"
-              .checked="${this._exportOptions.includeUmbracoMetrics}"
-              @change="${() => this.#handleMetricToggle('includeUmbracoMetrics')}"
-              ?disabled="${this._isExporting}"
-            ></uui-toggle>
-            
-            <uui-toggle 
-              label="Active Requests"
-              .checked="${this._exportOptions.includeActiveRequests}"
-              @change="${() => this.#handleMetricToggle('includeActiveRequests')}"
-              ?disabled="${this._isExporting}"
-            ></uui-toggle>
-          </div>
-        </div>
-
-        <!-- Estimated Size -->
-        <div class="estimated-size">
-          <uui-icon name="icon-info"></uui-icon>
-          Estimated file size: <strong>${this._estimatedSize}</strong>
-        </div>
-      </div>
-    `;
-  }
-
-  #renderProgressBar() {
-    if (!this._isExporting) return '';
-
-    return html`
-      <div class="export-progress">
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${this._exportProgress}%"></div>
-        </div>
-        <div class="progress-text">
-          Exporting... ${this._exportProgress}%
-        </div>
-      </div>
-    `;
-  }
-
   render() {
+    // Get format and scope options from service or use defaults
+    const formatOptions = this.#exportService?.getSupportedFormats() || [
+      { value: ExportFormat.Json, label: 'JSON', description: 'Structured data format' },
+      { value: ExportFormat.Csv, label: 'CSV', description: 'Spreadsheet format' },
+      { value: ExportFormat.Xml, label: 'XML', description: 'Markup format' }
+    ];
+    
+    const scopeOptions = this.#exportService?.getScopeOptions() || [
+      { value: ExportScope.Current, label: 'Current Snapshot', description: 'Export current metrics only' },
+      { value: ExportScope.Historical, label: 'Historical Data', description: 'Export historical metrics' },
+      { value: ExportScope.Custom, label: 'Custom Range', description: 'Export metrics from specific date range' }
+    ];
+
     return html`
       <umb-modal-sidebar>
         <umb-body-layout headline="Export Metrics">
           <div id="main">
-            ${this.#renderQuickExportButtons()}
+            <umbmetrics-quick-export-buttons
+              .disabled="${this._isExporting}"
+              .onCsvExport="${() => this.#handleQuickExport(ExportFormat.Csv)}"
+              .onJsonExport="${() => this.#handleQuickExport(ExportFormat.Json)}"
+            ></umbmetrics-quick-export-buttons>
             
             <div class="divider">
               <span>or</span>
             </div>
             
-            ${this.#renderExportOptions()}
+            <umbmetrics-export-options
+              .exportOptions="${this._exportOptions}"
+              .disabled="${this._isExporting}"
+              .estimatedSize="${this._estimatedSize}"
+              .formatOptions="${formatOptions}"
+              .scopeOptions="${scopeOptions}"
+              .onFormatChange="${(format: ExportFormat) => {
+                this._exportOptions = { ...this._exportOptions, format };
+                this.#updateEstimatedSize();
+              }}"
+              .onScopeChange="${(scope: ExportScope) => {
+                this._exportOptions = { ...this._exportOptions, scope };
+              }}"
+              .onMetricToggle="${(metric: keyof ExportOptions) => {
+                this._exportOptions = {
+                  ...this._exportOptions,
+                  [metric]: !this._exportOptions[metric]
+                };
+                this.#updateEstimatedSize();
+              }}"
+              .onDateChange="${(dateField: 'startDate' | 'endDate', value: string) => {
+                this._exportOptions = {
+                  ...this._exportOptions,
+                  [dateField]: value || undefined
+                };
+              }}"
+              .onTimezoneChange="${(timezone: string) => {
+                this._exportOptions = { ...this._exportOptions, timezone };
+              }}"
+            ></umbmetrics-export-options>
             
-            ${this.#renderProgressBar()}
+            <umbmetrics-export-progress
+              .isExporting="${this._isExporting}"
+              .progress="${this._exportProgress}"
+            ></umbmetrics-export-progress>
           </div>
           
           <div slot="actions">

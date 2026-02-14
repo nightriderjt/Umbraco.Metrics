@@ -18,8 +18,9 @@ public class MetricsComposer : IComposer
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         builder.Services.AddScoped<IMetricsExportService, MetricsExportService>();
         
-        // Register historical metrics service
+        // Register historical metrics services
         builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
+        builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
