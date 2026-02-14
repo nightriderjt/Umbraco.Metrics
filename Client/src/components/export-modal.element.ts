@@ -32,7 +32,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
   @state()
   private _exportOptions: ExportOptions = {
     format: "csv",
-    scope: ExportScope.Current,
+    scope: 'current',
     includePerformanceMetrics: true,
     includeUmbracoMetrics: true,
     includeActiveRequests: false,
@@ -82,7 +82,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
 
     try {
       // Validate date range if custom scope
-      if (this._exportOptions.scope === ExportScope.Custom) {
+      if (this._exportOptions.scope === 'custom') {
         if (!this._exportOptions.startDate || !this._exportOptions.endDate) {
           throw new Error(this.localize?.term('validation_bothDatesRequired') || 'Both start and end dates are required for custom range');
         }
@@ -207,7 +207,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
                 this._exportOptions = { ...this._exportOptions, format };
                 this.#updateEstimatedSize();
               }}"
-              .onScopeChange="${(scope: ExportScope) => {
+              .onScopeChange="${(scope: string) => {
                 this._exportOptions = { ...this._exportOptions, scope };
               }}"
               .onMetricToggle="${(metric: keyof ExportOptions) => {
