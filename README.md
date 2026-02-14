@@ -64,7 +64,6 @@ Deep dive into .NET's memory management: see how the garbage collector is perfor
 
 - Umbraco CMS 17 or higher
 - .NET 10
-- Any hosting environment (works on Windows, Linux, Azure, AWS, etc.)
 
 ## Installation & Configuration
 
@@ -132,14 +131,141 @@ All metrics stay within your environment. Nothing is sent to external services. 
 - GitHub: https://github.com/nightriderjt/Umbraco.Metrics
 - Report issues: https://github.com/nightriderjt/Umbraco.Metrics/issues
 
+## Export Functionality
+
+UmbMetrics includes powerful export capabilities, allowing you to download your metrics data for offline analysis, reporting, or archiving. The export system provides both quick one-click exports and customizable export options.
+
+### Available Export Formats
+
+1. **CSV (Comma-Separated Values)**
+   - Perfect for spreadsheet analysis in Excel, Google Sheets, or data visualization tools
+   - Includes proper escaping for Excel compatibility
+   - Structured with clear column headers
+   - Ideal for data analysis and reporting
+
+2. **JSON (JavaScript Object Notation)**
+   - Ideal for programmatic analysis and integration with other systems
+   - Preserves the complete data structure with nested objects
+   - Easy to parse with any programming language
+   - Suitable for API integrations and custom dashboards
+
+3. **XML (eXtensible Markup Language)**
+   - Suitable for enterprise systems and legacy integrations
+   - Well-structured hierarchical format with proper schema
+   - Includes comprehensive metadata
+   - Compatible with enterprise reporting systems
+
+### Export Scopes
+
+- **Current Snapshot**: Export only the currently displayed real-time metrics
+- **Historical Data**: Export metrics collected over time from the historical database
+- **Custom Range**: Export metrics from a specific date range with precise control
+
+### What You Can Export
+
+- **Performance Metrics**: 
+  - CPU usage percentages and trends
+  - Memory consumption (working set, private bytes, heap size)
+  - Thread information (count, pool statistics)
+  - Garbage collection statistics (gen0, gen1, gen2 collections)
+  - Request metrics (active, total, failed requests)
+
+- **Umbraco Metrics**:
+  - Content statistics (total nodes, published nodes, by content type)
+  - Media library information (total items, storage usage)
+  - Cache performance (runtime cache items, cache hit ratios)
+  - User data (total users, active sessions)
+  - Database statistics
+
+- **Active Requests**:
+  - Detailed information about currently processing requests
+  - Request methods, paths, durations, and status codes
+  - Client IP addresses and user agents
+  - Query string parameters
+
+- **Application Information**:
+  - Server details (process ID, architecture, runtime version)
+  - Uptime information
+  - Environment configuration
+  - SignalR connection status
+
+### How to Export
+
+#### Quick Export (One-Click)
+1. Navigate to the UmbMetrics dashboard in your Umbraco backoffice
+2. Click the "Export Metrics" button in the dashboard controls
+3. Use the quick export buttons for instant CSV or JSON exports
+4. Download will start immediately with default settings
+
+#### Custom Export (Advanced Options)
+1. Open the Export Metrics modal from the dashboard
+2. Choose between **Quick Export** (one-click) or **Custom Export** (configured)
+3. For custom exports:
+   - Select your preferred format (CSV, JSON, XML)
+   - Choose the export scope (Current, Historical, Custom Range)
+   - Configure date range if selecting custom scope
+   - Select which metric types to include
+   - Choose timezone for timestamp formatting
+4. Review the estimated file size
+5. Click "Export Metrics" to generate and download your data
+
+### Export Modal Features
+
+- **Real-time File Size Estimation**: See estimated download size before exporting
+- **Progress Tracking**: Visual progress bar during export generation
+- **Format Descriptions**: Clear explanations of each export format
+- **Timezone Support**: Export timestamps in UTC, local time, or specific timezones
+- **Metric Selection**: Choose exactly which data to include
+- **Date Range Picker**: Intuitive calendar interface for custom date ranges
+
+### Quick Export Buttons
+
+For maximum convenience, the dashboard includes dedicated quick export buttons:
+- **Export as CSV**: One-click export of all current metrics in CSV format
+- **Export as JSON**: One-click export of all current metrics in JSON format
+
+### File Size Optimization
+
+The export system automatically optimizes file sizes by:
+- Compressing redundant data structures
+- Using efficient serialization formats
+- Supporting partial exports (select specific metric types only)
+
+### Use Cases
+
+- **Performance Analysis**: Export metrics for detailed performance troubleshooting
+- **Capacity Planning**: Analyze historical trends to plan infrastructure upgrades
+- **Compliance Reporting**: Generate audit reports for regulatory requirements
+- **Development Testing**: Capture metrics during load testing and optimization
+- **Client Reporting**: Share performance data with stakeholders
+- **System Monitoring**: Integrate with external monitoring systems
+
+### Integration Options
+
+Exported data can be easily integrated with:
+- Business Intelligence tools (Power BI, Tableau)
+- Monitoring systems (Grafana, Prometheus)
+- Custom dashboards and reporting tools
+- Data analysis platforms
+- Archival systems for compliance
+
+### Best Practices
+
+1. **For Quick Analysis**: Use CSV format with current snapshot
+2. **For System Integration**: Use JSON format with historical data
+3. **For Enterprise Reporting**: Use XML format with custom date ranges
+4. **For Large Datasets**: Use custom ranges to limit data volume
+5. **For Regular Reporting**: Schedule exports during off-peak hours
+
+The export functionality is designed to be both powerful and user-friendly, providing enterprise-grade data export capabilities with an intuitive interface.
+
 ## What's Next?
 
 Future enhancements planned:
-- Historical metrics storage
 - Alerting and notifications
 - Custom metric thresholds
-- Export metrics data
 - Multi-server monitoring
+- Advanced analytics and visualization
 
 ---
 

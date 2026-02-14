@@ -4,10 +4,12 @@ import {
   html,
   customElement,
   property,
+  unsafeCSS,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import type { ApplicationInfo } from "../types/performance-metrics.js";
 import { formatUptime } from "../utils/format-utils.js";
+import styles from "../css/app-info-banner.styles.css?inline";
 
 @customElement("umbmetrics-app-info-banner")
 export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
@@ -25,70 +27,31 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
     return html`
       <div class="app-info-banner">
         <div class="info-item">
-          <strong>Process:</strong> ${this.applicationInfo.processName} (PID: ${this.applicationInfo.processId})
+          <strong>${this.localize?.term('appInfo_process') || 'Process'}:</strong> ${this.applicationInfo.processName} (PID: ${this.applicationInfo.processId})
         </div>
         <div class="info-item">
-          <strong>Runtime:</strong> ${this.applicationInfo.runtimeVersion}
+          <strong>${this.localize?.term('appInfo_runtime') || 'Runtime'}:</strong> ${this.applicationInfo.runtimeVersion}
         </div>
         <div class="info-item">
-          <strong>Architecture:</strong> ${this.applicationInfo.is64BitProcess ? "64-bit" : "32-bit"}
+          <strong>${this.localize?.term('appInfo_architecture') || 'Architecture'}:</strong> ${this.applicationInfo.is64BitProcess ? this.localize?.term('appInfo_64bit') || '64-bit' : this.localize?.term('appInfo_32bit') || '32-bit'}
         </div>
         <div class="info-item">
-          <strong>CPU Cores:</strong> ${this.applicationInfo.processorCount}
+          <strong>${this.localize?.term('appInfo_cpuCores') || 'CPU Cores'}:</strong> ${this.applicationInfo.processorCount}
         </div>
         <div class="info-item">
-          <strong>Uptime:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
+          <strong>${this.localize?.term('appInfo_uptime') || 'Uptime'}:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
         </div>
         ${this.isConnected ? html`
           <div class="info-item connected">
             <uui-icon name="icon-check"></uui-icon>
-            <strong>SignalR Connected</strong>
+            <strong>${this.localize?.term('appInfo_signalRConnected') || 'SignalR Connected'}</strong>
           </div>
         ` : ''}
       </div>
     `;
   }
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    .app-info-banner {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--uui-color-border);
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: var(--uui-color-text);
-    }
-
-    .info-item strong {
-      color: var(--uui-color-text-alt);
-    }
-
-    .info-item.connected {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected strong {
-      color: var(--uui-color-positive);
-    }
-
-    .info-item.connected uui-icon {
-      color: var(--uui-color-positive);
-    }
-  `;
+  static styles = css`${unsafeCSS(styles)}`;
 }
 
 export default AppInfoBannerElement;

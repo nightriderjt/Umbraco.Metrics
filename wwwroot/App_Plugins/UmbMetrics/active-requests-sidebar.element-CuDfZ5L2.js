@@ -1,4 +1,4 @@
-import { html as C, unsafeCSS as ne, css as Q, state as B, customElement as oe } from "@umbraco-cms/backoffice/external/lit";
+import { html as C, unsafeCSS as ne, css as Q, state as L, customElement as oe } from "@umbraco-cms/backoffice/external/lit";
 import { UmbModalElement as se } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT as ie } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT as re } from "@umbraco-cms/backoffice/auth";
@@ -14,7 +14,7 @@ class k extends Error {
     super(`${e}: Status code '${t}'`), this.statusCode = t, this.__proto__ = n;
   }
 }
-class z extends Error {
+class B extends Error {
   /** Constructs a new instance of {@link @microsoft/signalr.TimeoutError}.
    *
    * @param {string} errorMessage A descriptive error message.
@@ -93,7 +93,7 @@ class Y {
     this.statusCode = e, this.statusText = t, this.content = n;
   }
 }
-class U {
+class N {
   get(e, t) {
     return this.send({
       ...t,
@@ -201,7 +201,7 @@ async function Z(o, e, t, n, s, i) {
   o.log(r.Trace, `(${e} transport) request complete. Response status: ${d.statusCode}.`);
 }
 function fe(o) {
-  return o === void 0 ? new N(r.Information) : o === null ? x.instance : o.log !== void 0 ? o : new N(o);
+  return o === void 0 ? new H(r.Information) : o === null ? x.instance : o.log !== void 0 ? o : new H(o);
 }
 class _e {
   constructor(e, t) {
@@ -213,7 +213,7 @@ class _e {
     });
   }
 }
-class N {
+class H {
   constructor(e) {
     this._minLevel = e, this.out = console;
   }
@@ -269,7 +269,7 @@ function we() {
 function be() {
   return f.isNode ? "NodeJS" : "Browser";
 }
-function W(o) {
+function z(o) {
   return o.stack ? o.stack : o.message ? o.message : `${o}`;
 }
 function ve() {
@@ -283,7 +283,7 @@ function ve() {
     return global;
   throw new Error("could not find global");
 }
-class ye extends U {
+class ye extends N {
   constructor(e) {
     if (super(), this._logger = e, typeof fetch > "u" || f.isNode) {
       const t = typeof __webpack_require__ == "function" ? __non_webpack_require__ : require;
@@ -313,7 +313,7 @@ class ye extends U {
     if (e.timeout) {
       const l = e.timeout;
       s = setTimeout(() => {
-        t.abort(), this._logger.log(r.Warning, "Timeout from HTTP request."), n = new z();
+        t.abort(), this._logger.log(r.Warning, "Timeout from HTTP request."), n = new B();
       }, l);
     }
     e.content === "" && (e.content = void 0), e.content && (e.headers = e.headers || {}, I(e.content) ? e.headers["Content-Type"] = "application/octet-stream" : e.headers["Content-Type"] = "text/plain;charset=UTF-8");
@@ -368,7 +368,7 @@ function X(o, e) {
   }
   return t;
 }
-class Se extends U {
+class Se extends N {
   constructor(e) {
     super(), this._logger = e;
   }
@@ -387,12 +387,12 @@ class Se extends U {
       }, s.onerror = () => {
         this._logger.log(r.Warning, `Error from HTTP request. ${s.status}: ${s.statusText}.`), n(new k(s.statusText, s.status));
       }, s.ontimeout = () => {
-        this._logger.log(r.Warning, "Timeout from HTTP request."), n(new z());
+        this._logger.log(r.Warning, "Timeout from HTTP request."), n(new B());
       }, s.send(e.content);
     }) : Promise.reject(new Error("No url defined.")) : Promise.reject(new Error("No method defined."));
   }
 }
-class Ce extends U {
+class Ce extends N {
   /** Creates a new instance of the {@link @microsoft/signalr.DefaultHttpClient}, using the provided {@link @microsoft/signalr.ILogger} to log messages. */
   constructor(e) {
     if (super(), typeof fetch < "u" || f.isNode)
@@ -797,7 +797,7 @@ class j {
           switch (n.type) {
             case h.Invocation:
               this._invokeClientMethod(n).catch((s) => {
-                this._logger.log(r.Error, `Invoke client method threw error: ${W(s)}`);
+                this._logger.log(r.Error, `Invoke client method threw error: ${z(s)}`);
               });
               break;
             case h.StreamItem:
@@ -808,7 +808,7 @@ class j {
                 try {
                   s(n);
                 } catch (i) {
-                  this._logger.log(r.Error, `Stream callback threw error: ${W(i)}`);
+                  this._logger.log(r.Error, `Stream callback threw error: ${z(i)}`);
                 }
               }
               break;
@@ -964,7 +964,7 @@ class j {
       try {
         s(null, e);
       } catch (i) {
-        this._logger.log(r.Error, `Stream 'error' callback called with '${e}' threw error: ${W(i)}`);
+        this._logger.log(r.Error, `Stream 'error' callback called with '${e}' threw error: ${z(i)}`);
       }
     });
   }
@@ -1097,7 +1097,7 @@ class E {
 }
 E.Authorization = "Authorization";
 E.Cookie = "Cookie";
-class De extends U {
+class De extends N {
   constructor(e, t) {
     super(), this._innerClient = e, this._accessTokenFactory = t;
   }
@@ -1168,7 +1168,7 @@ class V {
           const s = await this._httpClient.get(n, t);
           s.statusCode === 204 ? (this._logger.log(r.Information, "(LongPolling transport) Poll terminated by server."), this._running = !1) : s.statusCode !== 200 ? (this._logger.log(r.Error, `(LongPolling transport) Unexpected response code: ${s.statusCode}.`), this._closeError = new k(s.statusText || "", s.statusCode), this._running = !1) : s.content ? (this._logger.log(r.Trace, `(LongPolling transport) data received. ${D(s.content, this._options.logMessageContent)}.`), this.onreceive && this.onreceive(s.content)) : this._logger.log(r.Trace, "(LongPolling transport) Poll timed out, reissuing.");
         } catch (n) {
-          this._running ? n instanceof z ? this._logger.log(r.Trace, "(LongPolling transport) Poll timed out, reissuing.") : (this._closeError = n, this._running = !1) : this._logger.log(r.Trace, `(LongPolling transport) Poll errored after shutdown: ${n.message}`);
+          this._running ? n instanceof B ? this._logger.log(r.Trace, "(LongPolling transport) Poll timed out, reissuing.") : (this._closeError = n, this._running = !1) : this._logger.log(r.Trace, `(LongPolling transport) Poll errored after shutdown: ${n.message}`);
         }
     } finally {
       this._logger.log(r.Trace, "(LongPolling transport) Polling complete."), this.pollAborted || this._raiseOnClose();
@@ -1256,7 +1256,7 @@ class Me {
     this._eventSource && (this._eventSource.close(), this._eventSource = void 0, this.onclose && this.onclose(e));
   }
 }
-class He {
+class qe {
   constructor(e, t, n, s, i, a) {
     this._logger = n, this._accessTokenFactory = t, this._logMessageContent = s, this._webSocketConstructor = i, this._httpClient = e, this.onreceive = null, this.onclose = null, this._headers = a;
   }
@@ -1315,7 +1315,7 @@ class He {
   }
 }
 const G = 100;
-class Ne {
+class He {
   constructor(e, t = {}) {
     if (this._stopPromiseResolver = () => {
     }, this.features = {}, this._negotiateVersion = 1, _.isRequired(e, "url"), this._logger = fe(t.logger), this.baseUrl = this._resolveUrl(e), t = t || {}, t.logMessageContent = t.logMessageContent === void 0 ? !1 : t.logMessageContent, typeof t.withCredentials == "boolean" || t.withCredentials === void 0)
@@ -1466,7 +1466,7 @@ class Ne {
       case p.WebSockets:
         if (!this._options.WebSocket)
           throw new Error("'WebSocket' is not supported in your environment.");
-        return new He(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent, this._options.WebSocket, this._options.headers || {});
+        return new qe(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent, this._options.WebSocket, this._options.headers || {});
       case p.ServerSentEvents:
         if (!this._options.EventSource)
           throw new Error("'EventSource' is not supported in your environment.");
@@ -1497,7 +1497,7 @@ class Ne {
     const i = p[e.transport];
     if (i == null)
       return this._logger.log(r.Debug, `Skipping transport '${e.transport}' because it is not supported by this client.`), new Error(`Skipping transport '${e.transport}' because it is not supported by this client.`);
-    if (Ue(t, i))
+    if (Ne(t, i))
       if (e.transferFormats.map((c) => m[c]).indexOf(n) >= 0) {
         if (i === p.WebSockets && !this._options.WebSocket || i === p.ServerSentEvents && !this._options.EventSource)
           return this._logger.log(r.Debug, `Skipping transport '${p[i]}' because it is not supported in your environment.'`), new ce(`'${p[i]}' is not supported in your environment.`, i);
@@ -1548,7 +1548,7 @@ class Ne {
     return n.has("negotiateVersion") || n.append("negotiateVersion", this._negotiateVersion.toString()), n.has("useStatefulReconnect") ? n.get("useStatefulReconnect") === "true" && (this._options._useStatefulReconnect = !0) : this._options._useStatefulReconnect === !0 && n.append("useStatefulReconnect", "true"), t.search = n.toString(), t.toString();
   }
 }
-function Ue(o, e) {
+function Ne(o, e) {
   return !o || (e & o) !== 0;
 }
 class O {
@@ -1603,10 +1603,10 @@ class A {
     this._rejecter(e);
   }
 }
-const qe = "json";
-class We {
+const Ue = "json";
+class ze {
   constructor() {
-    this.name = qe, this.version = 2, this.transferFormat = m.Text;
+    this.name = Ue, this.version = 2, this.transferFormat = m.Text;
   }
   /** Creates an array of {@link @microsoft/signalr.HubMessage} objects from the specified serialized representation.
    *
@@ -1685,7 +1685,7 @@ class We {
       throw new Error(t);
   }
 }
-const Le = {
+const We = {
   trace: r.Trace,
   debug: r.Debug,
   info: r.Information,
@@ -1696,21 +1696,21 @@ const Le = {
   critical: r.Critical,
   none: r.None
 };
-function Be(o) {
-  const e = Le[o.toLowerCase()];
+function Le(o) {
+  const e = We[o.toLowerCase()];
   if (typeof e < "u")
     return e;
   throw new Error(`Unknown log level: ${o}`);
 }
-class ze {
+class Be {
   configureLogging(e) {
     if (_.isRequired(e, "logging"), je(e))
       this.logger = e;
     else if (typeof e == "string") {
-      const t = Be(e);
-      this.logger = new N(t);
+      const t = Le(e);
+      this.logger = new H(t);
     } else
-      this.logger = new N(e);
+      this.logger = new H(e);
     return this;
   }
   withUrl(e, t) {
@@ -1760,8 +1760,8 @@ class ze {
     const e = this.httpConnectionOptions || {};
     if (e.logger === void 0 && (e.logger = this.logger), !this.url)
       throw new Error("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
-    const t = new Ne(this.url, e);
-    return j.create(t, this.logger || x.instance, this.protocol || new We(), this.reconnectPolicy, this._serverTimeoutInMilliseconds, this._keepAliveIntervalInMilliseconds, this._statefulReconnectBufferSize);
+    const t = new He(this.url, e);
+    return j.create(t, this.logger || x.instance, this.protocol || new ze(), this.reconnectPolicy, this._serverTimeoutInMilliseconds, this._keepAliveIntervalInMilliseconds, this._statefulReconnectBufferSize);
   }
 }
 function je(o) {
@@ -1809,7 +1809,7 @@ class Oe {
     }
     this.#e && await this.disconnectFromHub(), this.#t = !0;
     try {
-      console.log("Building SignalR connection..."), this.#e = new ze().withUrl(this.HUB_URL, {
+      console.log("Building SignalR connection..."), this.#e = new Be().withUrl(this.HUB_URL, {
         accessTokenFactory: async () => await this.#n()
       }).withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (t) => t.previousRetryCount === 0 ? 0 : t.previousRetryCount === 1 ? 2e3 : t.previousRetryCount === 2 ? 5e3 : t.previousRetryCount === 3 ? 1e4 : 3e4
@@ -1948,14 +1948,14 @@ class Oe {
 const Fe = ".align-center-self{align-self:center}.modal-content{height:100%;display:flex;flex-direction:column;min-height:0}.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--uui-size-space-4);padding:var(--uui-size-space-12);color:var(--uui-color-text-alt);flex:1}.loading-state p{margin:0;font-size:var(--uui-font-size-3)}.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--uui-size-space-12);text-align:center;color:var(--uui-color-text-alt);flex:1}.empty-state uui-icon{font-size:var(--uui-font-size-12);color:var(--uui-color-positive);margin-bottom:var(--uui-size-space-4)}.empty-state h3{margin:0 0 var(--uui-size-space-1);font-size:var(--uui-font-size-4);font-weight:600}.empty-state p{margin:0;font-size:var(--uui-font-size-2);opacity:.7}.requests-summary{padding:var(--uui-size-space-4);border-bottom:1px solid var(--uui-color-border);background:var(--uui-color-surface)}.summary-text{font-size:var(--uui-font-size-3);font-weight:600;color:var(--uui-color-text)}.requests-container{flex:1;overflow-y:auto;padding:var(--uui-size-space-4);display:flex;flex-direction:column;gap:var(--uui-size-space-3)}.request-item{background:var(--uui-color-surface);border:1px solid var(--uui-color-border);border-radius:var(--uui-border-radius);overflow:hidden}.request-header{display:flex;align-items:flex-start;gap:var(--uui-size-space-3);padding:var(--uui-size-space-3) var(--uui-size-space-4);background:var(--uui-color-surface-alt);border-bottom:1px solid var(--uui-color-border)}.method-tag{font-weight:700;text-transform:uppercase;min-width:60px;justify-content:center;flex-shrink:0}.request-main-info{flex:1;display:flex;flex-direction:column;gap:var(--uui-size-space-1);min-width:0}.request-path{font-family:var(--uui-font-family-monospace);font-size:var(--uui-font-size-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.request-duration{font-size:var(--uui-font-size-1);font-weight:600;color:var(--uui-color-interactive)}.request-details{padding:var(--uui-size-space-3) var(--uui-size-space-4);display:flex;flex-direction:column;gap:var(--uui-size-space-2)}.detail-item{display:flex;align-items:center;gap:var(--uui-size-space-2);font-size:var(--uui-font-size-2);color:var(--uui-color-text-alt)}.detail-item uui-icon{font-size:var(--uui-font-size-3);opacity:.7;flex-shrink:0;width:16px}.query-string{font-family:var(--uui-font-family-monospace);font-size:var(--uui-font-size-1);word-break:break-all}";
 var Ke = Object.defineProperty, Xe = Object.getOwnPropertyDescriptor, ee = (o) => {
   throw TypeError(o);
-}, q = (o, e, t, n) => {
+}, U = (o, e, t, n) => {
   for (var s = n > 1 ? void 0 : n ? Xe(e, t) : e, i = o.length - 1, a; i >= 0; i--)
     (a = o[i]) && (s = (n ? a(e, t, s) : a(s)) || s);
   return n && s && Ke(e, t, s), s;
-}, te = (o, e, t) => e.has(o) || ee("Cannot " + t), S = (o, e, t) => (te(o, e, "read from private field"), t ? t.call(o) : e.get(o)), M = (o, e, t) => e.has(o) ? ee("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(o) : e.set(o, t), L = (o, e, t, n) => (te(o, e, "write to private field"), e.set(o, t), t), R, H, P, $;
+}, te = (o, e, t) => e.has(o) || ee("Cannot " + t), S = (o, e, t) => (te(o, e, "read from private field"), t ? t.call(o) : e.get(o)), M = (o, e, t) => e.has(o) ? ee("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(o) : e.set(o, t), W = (o, e, t, n) => (te(o, e, "write to private field"), e.set(o, t), t), R, q, P, $;
 let v = class extends se {
   constructor() {
-    super(), this._requests = [], this._loading = !1, M(this, R), M(this, H), M(this, P), this._autoRefresh = !1, M(this, $, async () => {
+    super(), this._requests = [], this._loading = !1, M(this, R), M(this, q), M(this, P), this._autoRefresh = !1, M(this, $, async () => {
       if (!S(this, P)) {
         console.error("Metrics service not initialized");
         return;
@@ -1974,10 +1974,10 @@ let v = class extends se {
         this._loading = !1;
       }
     }), this.consumeContext(ie, (o) => {
-      L(this, R, o);
+      W(this, R, o);
     }), this.consumeContext(re, (o) => {
-      L(this, H, o), L(this, P, new Oe(async () => {
-        const e = await S(this, H)?.getLatestToken();
+      W(this, q, o), W(this, P, new Oe(async () => {
+        const e = await S(this, q)?.getLatestToken();
         if (!e)
           throw new Error("No authentication token available");
         return e;
@@ -2018,7 +2018,7 @@ let v = class extends se {
     this._refreshInterval && (clearInterval(this._refreshInterval), this._refreshInterval = void 0);
   }
   _formatDuration(o) {
-    return o < 1e3 ? `${o.toFixed(0)} ms` : o < 6e4 ? `${(o / 1e3).toFixed(1)} s` : `${(o / 6e4).toFixed(1)} min`;
+    return o < 1e3 ? `${o.toFixed(0)} ${this.localize?.term("activeRequests_milliseconds") || "ms"}` : o < 6e4 ? `${(o / 1e3).toFixed(1)} ${this.localize?.term("activeRequests_seconds") || "s"}` : `${(o / 6e4).toFixed(1)} ${this.localize?.term("activeRequests_minutes") || "min"}`;
   }
   _getMethodLook(o) {
     switch (o.toUpperCase()) {
@@ -2054,26 +2054,26 @@ let v = class extends se {
       <umb-modal-container>
 <umb-modal-sidebar>
 
-<umb-body-layout headline="Active Requests">    
+<umb-body-layout headline="${this.localize?.term("activeRequests_title") || "Active Requests"}">    
 
         <!-- Modal content -->
         <div class="modal-content">
           ${this._loading ? C`
             <div class="loading-state">
               <uui-loader></uui-loader>
-              <p>Loading active requests...</p>
+              <p>${this.localize?.term("activeRequests_loading") || "Loading active requests..."}</p>
             </div>
           ` : this._requests.length === 0 ? C`
             <div class="empty-state">
               <uui-icon name="icon-check"></uui-icon>
-              <h3>No active requests</h3>
-              <p>All requests have completed</p>
+              <h3>${this.localize?.term("activeRequests_noRequests") || "No active requests"}</h3>
+              <p>${this.localize?.term("activeRequests_allRequestsCompleted") || "All requests have completed"}</p>
             </div>
           ` : C`
             <!-- Requests summary -->
             <div class="requests-summary">
               <span class="summary-text">
-                ${this._requests.length} active request${this._requests.length !== 1 ? "s" : ""}
+                ${this.localize ? this.localize.term("activeRequests.activeRequestsCount", this._requests.length, this._requests.length) : `${this._requests.length} active request${this._requests.length !== 1 ? "s" : ""}`}
               </span>
             </div>
 
@@ -2131,14 +2131,14 @@ let v = class extends se {
           `}
         </div>
         <umb-footer-layout  slot="footer">  <uui-toggle class="align-center-self" slot="actions"
-              label="Auto-refresh"
+              label="${this.localize?.term("activeRequests_autoRefresh") || "Auto-refresh"}"
             .checked="${this._autoRefresh}"
             @change="${this._toggleAutoRefresh}"
           ></uui-toggle>    <uui-button slot="actions" color="positive" look="primary" @click="${S(this, $)}">
-            <uui-icon name="icon-refresh"></uui-icon>Refresh
+            <uui-icon name="icon-refresh"></uui-icon>${this.localize?.term("activeRequests_refresh") || "Refresh"}
           </uui-button>
          
-<uui-button slot="actions" look="primary" color="danger" type="button" @click=${this._rejectModal}>Close</uui-button> 
+<uui-button slot="actions" look="primary" color="danger" type="button" @click=${this._rejectModal}>${this.localize?.term("activeRequests_close") || "Close"}</uui-button> 
         
            
         </umb-footer-layout>
@@ -2151,21 +2151,21 @@ let v = class extends se {
   }
 };
 R = /* @__PURE__ */ new WeakMap();
-H = /* @__PURE__ */ new WeakMap();
+q = /* @__PURE__ */ new WeakMap();
 P = /* @__PURE__ */ new WeakMap();
 $ = /* @__PURE__ */ new WeakMap();
 v.customstyles = Q`${ne(Fe)}`;
 v.styles = [...ae.styles, v.customstyles, Q``];
-q([
-  B()
+U([
+  L()
 ], v.prototype, "_requests", 2);
-q([
-  B()
+U([
+  L()
 ], v.prototype, "_loading", 2);
-q([
-  B()
+U([
+  L()
 ], v.prototype, "_autoRefresh", 2);
-v = q([
+v = U([
   oe("umbmetrics-active-requests-sidebar")
 ], v);
 const Je = v, tt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -2179,4 +2179,4 @@ export {
   Oe as M,
   tt as a
 };
-//# sourceMappingURL=active-requests-sidebar.element-DxrkQQUB.js.map
+//# sourceMappingURL=active-requests-sidebar.element-CuDfZ5L2.js.map

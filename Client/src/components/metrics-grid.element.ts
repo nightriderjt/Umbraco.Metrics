@@ -1,11 +1,13 @@
 import {
   LitElement,
   css,
+  unsafeCSS,
   html,
   customElement,
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import stylesString from '../css/metrics-grid.styles.css?inline';
 
 @customElement("umbmetrics-metrics-grid")
 export class MetricsGridElement extends UmbElementMixin(LitElement) {
@@ -20,43 +22,7 @@ export class MetricsGridElement extends UmbElementMixin(LitElement) {
     `;
   }
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-      grid-auto-rows: 1fr;
-      gap: 1rem;
-    }
-
-    @media (max-width: 1200px) {
-      .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Handle span classes for slotted elements */
-    ::slotted([span="2"]) {
-      grid-column: span 2;
-    }
-
-    ::slotted([span="3"]) {
-      grid-column: span 3;
-    }
-
-    ::slotted([span="4"]) {
-      grid-column: span 4;
-    }
-  `;
+  static styles = css`${unsafeCSS(stylesString)}`;
 }
 
 export default MetricsGridElement;

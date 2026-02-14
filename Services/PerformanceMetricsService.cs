@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UmbMetrics.Middleware;
+using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
 
@@ -46,7 +47,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
             var startTime = DateTime.UtcNow;
             var startCpuUsage = _currentProcess.TotalProcessorTime;
             
-            await Task.Delay(100);
+            await Task.Delay(500);
             
             var endTime = DateTime.UtcNow;
             var endCpuUsage = _currentProcess.TotalProcessorTime;
@@ -180,76 +181,4 @@ public class PerformanceMetricsService : IPerformanceMetricsService
             return new ApplicationInfo();
         }
     }
-}
-
-public class PerformanceMetrics
-{
-    public DateTime Timestamp { get; set; }
-    public double CpuUsage { get; set; }
-    public MemoryMetrics MemoryUsage { get; set; } = new();
-    public ThreadInfo ThreadInfo { get; set; } = new();
-    public GarbageCollectionMetrics GarbageCollectionStats { get; set; } = new();
-    public RequestMetrics RequestMetrics { get; set; } = new();
-    public ApplicationInfo ApplicationInfo { get; set; } = new();
-}
-
-public class MemoryMetrics
-{
-    public double WorkingSetMB { get; set; }
-    public double PrivateMemoryMB { get; set; }
-    public double VirtualMemoryMB { get; set; }
-    public double GcTotalMemoryMB { get; set; }
-    public double GcGen0HeapSizeMB { get; set; }
-    public double GcGen1HeapSizeMB { get; set; }
-    public double GcGen2HeapSizeMB { get; set; }
-    public double TotalHeapSizeMB { get; set; }
-    public double FragmentedMemoryMB { get; set; }
-}
-
-public class ThreadInfo
-{
-    public int ThreadCount { get; set; }
-    public int ThreadPoolThreadCount { get; set; }
-    public long CompletedWorkItemCount { get; set; }
-    public long PendingWorkItemCount { get; set; }
-}
-
-public class GarbageCollectionMetrics
-{
-    public int Gen0Collections { get; set; }
-    public int Gen1Collections { get; set; }
-    public int Gen2Collections { get; set; }
-    public double TotalMemoryMB { get; set; }
-    public double FragmentedMemoryMB { get; set; }
-    public double TotalAvailableMemoryMB { get; set; }
-    public double HighMemoryLoadThresholdMB { get; set; }
-    public double MemoryLoadMB { get; set; }
-    public bool IsServerGC { get; set; }
-    public string GCLatencyMode { get; set; } = string.Empty;
-    public double TotalPauseTimeMs { get; set; }
-}
-
-public class RequestMetrics
-{
-    public long TotalRequests { get; set; }
-    public double RequestsPerSecond { get; set; }
-    public double AverageResponseTimeMs { get; set; }
-    public int ActiveRequests { get; set; }
-    public long FailedRequests { get; set; }
-    public int LastMinuteRequests { get; set; }
-}
-
-public class ApplicationInfo
-{
-    public int ProcessId { get; set; }
-    public string ProcessName { get; set; } = string.Empty;
-    public bool Is64BitProcess { get; set; }
-    public bool Is64BitOperatingSystem { get; set; }
-    public int ProcessorCount { get; set; }
-    public string DotNetVersion { get; set; } = string.Empty;
-    public string RuntimeVersion { get; set; } = string.Empty;
-    public string MachineName { get; set; } = string.Empty;
-    public string UserName { get; set; } = string.Empty;
-    public long UptimeSeconds { get; set; }
-    public DateTime StartTime { get; set; }
 }

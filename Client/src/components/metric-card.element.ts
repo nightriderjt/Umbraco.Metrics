@@ -1,11 +1,13 @@
 import {
   LitElement,
   css,
+  unsafeCSS,
   html,
   customElement,
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import stylesString from '../css/metric-card.styles.css?inline';
 
 export type MetricCardColor = 'default' | 'positive' | 'warning' | 'danger';
 
@@ -77,107 +79,7 @@ export class MetricCardElement extends UmbElementMixin(LitElement) {
     `;
   }
 
-  static styles = css`
-    :host {
-      display: block;
-      height: 100%;
-    }
-
-    :host([span="2"]) {
-      grid-column: span 2;
-    }
-
-    :host([span="3"]) {
-      grid-column: span 3;
-    }
-
-    :host([span="4"]) {
-      grid-column: span 4;
-    }
-
-    .metric-card {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: var(--uui-color-surface);
-      border: 1px solid var(--uui-color-border);
-      border-radius: var(--uui-border-radius);
-      overflow: hidden;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: var(--uui-color-surface-alt);
-      border-bottom: 1px solid var(--uui-color-border);
-      min-height: 48px;
-    }
-
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .header-title uui-icon {
-      font-size: 1.25rem;
-      color: var(--uui-color-interactive);
-    }
-
-    .header-title h3 {
-      margin: 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--uui-color-text-alt);
-    }
-
-    .action-button {
-      --uui-button-height: 28px;
-      --uui-button-padding-left-factor: 1;
-      --uui-button-padding-right-factor: 1;
-    }
-
-    .action-button uui-icon {
-      font-size: 1rem;
-    }
-
-    .card-body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      flex: 1;
-      padding: 1.25rem 1rem;
-      text-align: center;
-    }
-
-    .metric-value {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: var(--uui-color-text);
-      line-height: 1.2;
-    }
-
-    .metric-value.positive {
-      color: var(--uui-color-positive);
-    }
-
-    .metric-value.warning {
-      color: var(--uui-color-warning);
-    }
-
-    .metric-value.danger {
-      color: var(--uui-color-danger);
-    }
-
-    .metric-detail {
-      font-size: 0.8rem;
-      color: var(--uui-color-text-alt);
-      margin-top: 0.5rem;
-    }
-  `;
+  static styles = css`${unsafeCSS(stylesString)}`;
 }
 
 export default MetricCardElement;
