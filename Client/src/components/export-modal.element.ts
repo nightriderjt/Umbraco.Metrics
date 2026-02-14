@@ -39,8 +39,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
     timezone: 'UTC'
   };
 
-  @state()
-  private _estimatedSize: string = '';
+
 
   #exportService?: MetricsExportService;
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
@@ -62,15 +61,10 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
       });
     });
 
-    // Calculate initial estimated size
-    this.#updateEstimatedSize();
+    
   }
 
-  #updateEstimatedSize() {
-    if (this.#exportService) {
-      this._estimatedSize = this.#exportService.estimateFileSize(this._exportOptions);
-    }
-  }
+
 
   #handleExport = async () => {
     if (!this.#exportService || this._isExporting) {
@@ -105,7 +99,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
         this.#notificationContext.peek("positive", {
           data: {
             headline: this.localize?.term('export_exportComplete') || 'Export Complete',
-            message: `${this.localize?.term('export_metricsExportedSuccessfully') || 'Metrics exported successfully'} (${this._estimatedSize})`,
+            message: `${this.localize?.term('export_metricsExportedSuccessfully') || 'Metrics exported successfully'} `,
           },
         });
       }
@@ -201,11 +195,9 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
             
             <umbmetrics-export-options
               .exportOptions="${this._exportOptions}"
-              ?disabled="${this._isExporting}"
-              .estimatedSize="${this._estimatedSize}"     
+              ?disabled="${this._isExporting}"               
               .onFormatChange="${(format: string) => {
-                this._exportOptions = { ...this._exportOptions, format };
-                this.#updateEstimatedSize();
+                this._exportOptions = { ...this._exportOptions, format };             
               }}"
               .onScopeChange="${(scope: string) => {
                 this._exportOptions = { ...this._exportOptions, scope };
@@ -214,8 +206,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
                 this._exportOptions = {
                   ...this._exportOptions,
                   [metric]: !this._exportOptions[metric]
-                };
-                this.#updateEstimatedSize();
+                };           
               }}"
               .onDateChange="${(dateField: 'startDate' | 'endDate', value: string) => {
                 this._exportOptions = {

@@ -13,7 +13,7 @@ const d = [
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-BejiFBV1.js"),
+    js: () => import("./dashboard.element-CPW35PpY.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -55,7 +55,7 @@ const d = [
     type: "modal",
     alias: "UmbMetrics.Modal.ExportMetrics",
     name: "Export Metrics Modal",
-    js: () => import("./export-modal.element-B3lLUUkc.js"),
+    js: () => import("./export-modal.element-GFrPUlCo.js"),
     meta: {
       modal: U
     }
@@ -181,4 +181,4 @@ export {
   U,
   S as m
 };
-//# sourceMappingURL=bundle.manifests-NFUlenK4.js.map
+//# sourceMappingURL=bundle.manifests-BIANB2UE.js.map

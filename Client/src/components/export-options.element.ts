@@ -12,7 +12,7 @@ import styles from '../css/export-options.styles.css?inline';
 
 @customElement("umbmetrics-export-options")
 export class ExportOptionsElement extends UmbElementMixin(LitElement) {
-  @property({ type: Object })
+
   exportOptions: ExportOptions = {
     format: 'csv',
     scope: 'current',
@@ -24,11 +24,6 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
 
   @property({ type: Boolean })
   disabled: boolean = false;
-
-  @property({ type: String })
-  estimatedSize: string = '';
-
-
   formatOptions: Array<Option> = [
  { value: 'csv', name: this.localize?.term('formats_csv') || 'CSV' },
  { value: 'json', name: this.localize?.term('formats_json') || 'JSON' },
@@ -192,12 +187,6 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
               ?disabled="${this.disabled}"
             ></uui-toggle>
           </div>
-        </div>
-
-        <!-- Estimated Size -->
-        <div class="estimated-size">
-          <uui-icon name="icon-info"></uui-icon>
-          ${this.localize?.term('export_estimatedFileSize') || 'Estimated file size'}: <strong>${this.estimatedSize}</strong>
         </div>
       </div>
     `;
