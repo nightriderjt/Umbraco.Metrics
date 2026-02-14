@@ -27,24 +27,24 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
     return html`
       <div class="app-info-banner">
         <div class="info-item">
-          <strong>Process:</strong> ${this.applicationInfo.processName} (PID: ${this.applicationInfo.processId})
+          <strong>${this.localize?.term('appInfo.process') || 'Process'}:</strong> ${this.applicationInfo.processName} (PID: ${this.applicationInfo.processId})
         </div>
         <div class="info-item">
-          <strong>Runtime:</strong> ${this.applicationInfo.runtimeVersion}
+          <strong>${this.localize?.term('appInfo.runtime') || 'Runtime'}:</strong> ${this.applicationInfo.runtimeVersion}
         </div>
         <div class="info-item">
-          <strong>Architecture:</strong> ${this.applicationInfo.is64BitProcess ? "64-bit" : "32-bit"}
+          <strong>${this.localize?.term('appInfo.architecture') || 'Architecture'}:</strong> ${this.applicationInfo.is64BitProcess ? this.localize?.term('appInfo.64bit') || '64-bit' : this.localize?.term('appInfo.32bit') || '32-bit'}
         </div>
         <div class="info-item">
-          <strong>CPU Cores:</strong> ${this.applicationInfo.processorCount}
+          <strong>${this.localize?.term('appInfo.cpuCores') || 'CPU Cores'}:</strong> ${this.applicationInfo.processorCount}
         </div>
         <div class="info-item">
-          <strong>Uptime:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
+          <strong>${this.localize?.term('appInfo.uptime') || 'Uptime'}:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
         </div>
         ${this.isConnected ? html`
           <div class="info-item connected">
             <uui-icon name="icon-check"></uui-icon>
-            <strong>SignalR Connected</strong>
+            <strong>${this.localize?.term('appInfo.signalRConnected') || 'SignalR Connected'}</strong>
           </div>
         ` : ''}
       </div>

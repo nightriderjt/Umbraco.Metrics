@@ -58,7 +58,9 @@ export default {
     "exportFailed": "Export Failed",
     "metricsExportedSuccessfully": "Metrics exported successfully",
     "failedToExportMetrics": "Failed to export metrics",
-    "estimatedFileSize": "Estimated file size"
+    "estimatedFileSize": "Estimated file size",
+    "quickExportCompleted": "Quick export to",
+    "completed": "completed"
   },
 
   // Export Options
@@ -149,6 +151,18 @@ export default {
     "days": "days"
   },
 
+  // App Info Banner
+  "appInfo": {
+    "process": "Process",
+    "runtime": "Runtime",
+    "architecture": "Architecture",
+    "cpuCores": "CPU Cores",
+    "uptime": "Uptime",
+    "signalRConnected": "SignalR Connected",
+    "64bit": "64-bit",
+    "32bit": "32-bit"
+  },
+
   // Active Requests Sidebar
   "activeRequests": {
     "title": "Active Requests",
@@ -205,6 +219,7 @@ export default {
     "import": "Import",
     "settings": "Settings",
     "help": "Help",
-    "about": "About"
+    "about": "About",
+    "or": "or"
   }
 } as UmbLocalizationDictionary;

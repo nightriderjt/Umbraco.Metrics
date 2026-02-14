@@ -21,8 +21,8 @@ export class QuickExportButtonsElement extends UmbElementMixin(LitElement) {
   render() {
     return html`
       <div class="quick-export-section">
-        <h4>Quick Export</h4>
-        <p class="description">Export all metrics with one click</p>
+        <h4>${this.localize?.term('export.quickExport') || 'Quick Export'}</h4>
+        <p class="description">${this.localize?.term('export.quickExportDescription') || 'Export all metrics with one click'}</p>
         
         <div class="quick-export-buttons">
           <uui-button 
@@ -32,7 +32,7 @@ export class QuickExportButtonsElement extends UmbElementMixin(LitElement) {
             ?disabled="${this.disabled}"
           >
             <uui-icon name="icon-download"></uui-icon>
-            Export as CSV
+            ${this.localize?.term('export.exportAsCsv') || 'Export as CSV'}
           </uui-button>
           
           <uui-button 
@@ -41,7 +41,7 @@ export class QuickExportButtonsElement extends UmbElementMixin(LitElement) {
             ?disabled="${this.disabled}"
           >
             <uui-icon name="icon-download"></uui-icon>
-            Export as JSON
+            ${this.localize?.term('export.exportAsJson') || 'Export as JSON'}
           </uui-button>
         </div>
       </div>

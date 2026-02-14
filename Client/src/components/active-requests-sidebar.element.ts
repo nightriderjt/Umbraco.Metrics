@@ -145,9 +145,9 @@ export class ActiveRequestsSidebarElement extends UmbModalElement {
   }
 
   private _formatDuration(ms: number): string {
-    if (ms < 1000) return `${ms.toFixed(0)} ms`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)} s`;
-    return `${(ms / 60000).toFixed(1)} min`;
+    if (ms < 1000) return `${ms.toFixed(0)} ${this.localize?.term('activeRequests.milliseconds') || 'ms'}`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)} ${this.localize?.term('activeRequests.seconds') || 's'}`;
+    return `${(ms / 60000).toFixed(1)} ${this.localize?.term('activeRequests.minutes') || 'min'}`;
   }
 
   
@@ -186,26 +186,26 @@ export class ActiveRequestsSidebarElement extends UmbModalElement {
       <umb-modal-container>
 <umb-modal-sidebar>
 
-<umb-body-layout headline="Active Requests">    
+<umb-body-layout headline="${this.localize?.term('activeRequests.title') || 'Active Requests'}">    
 
         <!-- Modal content -->
         <div class="modal-content">
           ${this._loading ? html`
             <div class="loading-state">
               <uui-loader></uui-loader>
-              <p>Loading active requests...</p>
+              <p>${this.localize?.term('activeRequests.loading') || 'Loading active requests...'}</p>
             </div>
           ` : this._requests.length === 0 ? html`
             <div class="empty-state">
               <uui-icon name="icon-check"></uui-icon>
-              <h3>No active requests</h3>
-              <p>All requests have completed</p>
+              <h3>${this.localize?.term('activeRequests.noRequests') || 'No active requests'}</h3>
+              <p>${this.localize?.term('activeRequests.allRequestsCompleted') || 'All requests have completed'}</p>
             </div>
           ` : html`
             <!-- Requests summary -->
             <div class="requests-summary">
               <span class="summary-text">
-                ${this._requests.length} active request${this._requests.length !== 1 ? 's' : ''}
+                ${this.localize ? this.localize.term('activeRequests.activeRequestsCount', this._requests.length, this._requests.length) : `${this._requests.length} active request${this._requests.length !== 1 ? 's' : ''}`}
               </span>
             </div>
 
@@ -263,14 +263,14 @@ export class ActiveRequestsSidebarElement extends UmbModalElement {
           `}
         </div>
         <umb-footer-layout  slot="footer">  <uui-toggle class="align-center-self" slot="actions"
-              label="Auto-refresh"
+              label="${this.localize?.term('activeRequests.autoRefresh') || 'Auto-refresh'}"
             .checked="${this._autoRefresh}"
             @change="${this._toggleAutoRefresh}"
           ></uui-toggle>    <uui-button slot="actions" color="positive" look="primary" @click="${this.#loadActiveRequests}">
-            <uui-icon name="icon-refresh"></uui-icon>Refresh
+            <uui-icon name="icon-refresh"></uui-icon>${this.localize?.term('activeRequests.refresh') || 'Refresh'}
           </uui-button>
          
-<uui-button slot="actions" look="primary" color="danger" type="button" @click=${this._rejectModal}>Close</uui-button> 
+<uui-button slot="actions" look="primary" color="danger" type="button" @click=${this._rejectModal}>${this.localize?.term('activeRequests.close') || 'Close'}</uui-button> 
         
            
         </umb-footer-layout>

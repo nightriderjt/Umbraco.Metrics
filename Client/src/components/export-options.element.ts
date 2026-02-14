@@ -1,12 +1,14 @@
 import {
   LitElement,
   css,
+  unsafeCSS,
   html,
   customElement,
   property,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { ExportFormat, ExportScope, ExportOptions } from "../types/export-options.js";
+import styles from '../css/export-options.styles.css?inline';
 
 @customElement("umbmetrics-export-options")
 export class ExportOptionsElement extends UmbElementMixin(LitElement) {
@@ -84,13 +86,13 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
   render() {
     return html`
       <div class="export-options-section">
-        <h4>Custom Export</h4>
-        <p class="description">Configure export options</p>
+        <h4>${this.localize?.term('export.customExport') || 'Custom Export'}</h4>
+        <p class="description">${this.localize?.term('export.customExportDescription') || 'Configure export options'}</p>
         
         <div class="form-grid">
           <!-- Format Selection -->
           <div class="form-group">
-            <label for="export-format">Format</label>
+            <label for="export-format">${this.localize?.term('exportOptions.format') || 'Format'}</label>
             <uui-select 
               id="export-format"
               .value="${this.exportOptions.format}"
@@ -107,7 +109,7 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
 
           <!-- Scope Selection -->
           <div class="form-group">
-            <label for="export-scope">Scope</label>
+            <label for="export-scope">${this.localize?.term('exportOptions.scope') || 'Scope'}</label>
             <uui-select 
               id="export-scope"
               .value="${this.exportOptions.scope}"
@@ -125,21 +127,21 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
           <!-- Date Range (only for custom scope) -->
           ${this.exportOptions.scope === ExportScope.Custom ? html`
             <div class="form-group span-2">
-              <label>Date Range</label>
+              <label>${this.localize?.term('exportOptions.dateRange') || 'Date Range'}</label>
               <div class="date-range">
                 <uui-input
                   type="date"
-                  label="Start Date"
+                  label="${this.localize?.term('exportOptions.startDate') || 'Start Date'}"
                   .value="${this.exportOptions.startDate || ''}"
                   @change="${(e: Event) => this.#handleDateChange('startDate', e)}"
                   ?disabled="${this.disabled}"
                 ></uui-input>
                 
-                <span class="date-separator">to</span>
+                <span class="date-separator">${this.localize?.term('exportOptions.to') || 'to'}</span>
                 
                 <uui-input
                   type="date"
-                  label="End Date"
+                  label="${this.localize?.term('exportOptions.endDate') || 'End Date'}"
                   .value="${this.exportOptions.endDate || ''}"
                   @change="${(e: Event) => this.#handleDateChange('endDate', e)}"
                   ?disabled="${this.disabled}"
@@ -150,42 +152,42 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
 
           <!-- Timezone -->
           <div class="form-group">
-            <label for="export-timezone">Timezone</label>
+            <label for="export-timezone">${this.localize?.term('exportOptions.timezone') || 'Timezone'}</label>
             <uui-select 
               id="export-timezone"
               .value="${this.exportOptions.timezone}"
               @change="${this.#handleTimezoneChange}"
               ?disabled="${this.disabled}"
             >
-              <uui-option value="UTC">UTC</uui-option>
-              <uui-option value="Local">Local Time</uui-option>
-              <uui-option value="Europe/London">Europe/London</uui-option>
-              <uui-option value="America/New_York">America/New_York</uui-option>
-              <uui-option value="Asia/Tokyo">Asia/Tokyo</uui-option>
+              <uui-option value="UTC">${this.localize?.term('timezones.utc') || 'UTC'}</uui-option>
+              <uui-option value="Local">${this.localize?.term('timezones.local') || 'Local Time'}</uui-option>
+              <uui-option value="Europe/London">${this.localize?.term('timezones.europeLondon') || 'Europe/London'}</uui-option>
+              <uui-option value="America/New_York">${this.localize?.term('timezones.americaNewYork') || 'America/New_York'}</uui-option>
+              <uui-option value="Asia/Tokyo">${this.localize?.term('timezones.asiaTokyo') || 'Asia/Tokyo'}</uui-option>
             </uui-select>
           </div>
         </div>
 
         <!-- Metric Selection -->
         <div class="metric-selection">
-          <h5>Include Metrics</h5>
+          <h5>${this.localize?.term('exportOptions.includeMetrics') || 'Include Metrics'}</h5>
           <div class="metric-toggles">
             <uui-toggle 
-              label="Performance Metrics"
+              label="${this.localize?.term('exportOptions.performanceMetrics') || 'Performance Metrics'}"
               .checked="${this.exportOptions.includePerformanceMetrics}"
               @change="${() => this.#handleMetricToggle('includePerformanceMetrics')}"
               ?disabled="${this.disabled}"
             ></uui-toggle>
             
             <uui-toggle 
-              label="Umbraco Metrics"
+              label="${this.localize?.term('exportOptions.umbracoMetrics') || 'Umbraco Metrics'}"
               .checked="${this.exportOptions.includeUmbracoMetrics}"
               @change="${() => this.#handleMetricToggle('includeUmbracoMetrics')}"
               ?disabled="${this.disabled}"
             ></uui-toggle>
             
             <uui-toggle 
-              label="Active Requests"
+              label="${this.localize?.term('exportOptions.activeRequests') || 'Active Requests'}"
               .checked="${this.exportOptions.includeActiveRequests}"
               @change="${() => this.#handleMetricToggle('includeActiveRequests')}"
               ?disabled="${this.disabled}"
@@ -196,115 +198,13 @@ export class ExportOptionsElement extends UmbElementMixin(LitElement) {
         <!-- Estimated Size -->
         <div class="estimated-size">
           <uui-icon name="icon-info"></uui-icon>
-          Estimated file size: <strong>${this.estimatedSize}</strong>
+          ${this.localize?.term('export.estimatedFileSize') || 'Estimated file size'}: <strong>${this.estimatedSize}</strong>
         </div>
       </div>
     `;
   }
 
-  static styles = css`
-    .export-options-section {
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    h4 {
-      margin: 0 0 var(--uui-size-space-2) 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--uui-color-text);
-    }
-
-    .description {
-      margin: 0 0 var(--uui-size-space-4) 0;
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--uui-size-space-4);
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: var(--uui-size-space-2);
-    }
-
-    .form-group.span-2 {
-      grid-column: span 2;
-    }
-
-    label {
-      font-weight: 600;
-      color: var(--uui-color-text);
-      font-size: 0.875rem;
-    }
-
-    .date-range {
-      display: flex;
-      align-items: center;
-      gap: var(--uui-size-space-3);
-    }
-
-    .date-separator {
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .metric-selection {
-      margin-bottom: var(--uui-size-space-5);
-    }
-
-    h5 {
-      margin: 0 0 var(--uui-size-space-3) 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--uui-color-text);
-    }
-
-    .metric-toggles {
-      display: flex;
-      flex-direction: column;
-      gap: var(--uui-size-space-3);
-    }
-
-    .estimated-size {
-      display: flex;
-      align-items: center;
-      gap: var(--uui-size-space-2);
-      padding: var(--uui-size-space-3);
-      background-color: var(--uui-color-surface-alt);
-      border-radius: var(--uui-border-radius);
-      color: var(--uui-color-text-alt);
-      font-size: 0.875rem;
-    }
-
-    .estimated-size strong {
-      color: var(--uui-color-text);
-    }
-
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-group.span-2 {
-        grid-column: span 1;
-      }
-
-      .date-range {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .date-separator {
-        text-align: center;
-      }
-    }
-  `;
+  static styles = css`${unsafeCSS(styles)}`;
 }
 
 export default ExportOptionsElement;

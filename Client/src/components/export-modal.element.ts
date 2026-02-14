@@ -78,14 +78,14 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
       // Validate date range if custom scope
       if (this._exportOptions.scope === ExportScope.Custom) {
         if (!this._exportOptions.startDate || !this._exportOptions.endDate) {
-          throw new Error('Both start and end dates are required for custom range');
+          throw new Error(this.localize?.term('validation.bothDatesRequired') || 'Both start and end dates are required for custom range');
         }
         
         const start = new Date(this._exportOptions.startDate);
         const end = new Date(this._exportOptions.endDate);
         
         if (start > end) {
-          throw new Error('Start date must be before end date');
+          throw new Error(this.localize?.term('validation.startDateBeforeEndDate') || 'Start date must be before end date');
         }
       }
 
@@ -98,8 +98,8 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
       if (this.#notificationContext) {
         this.#notificationContext.peek("positive", {
           data: {
-            headline: "Export Complete",
-            message: `Metrics exported successfully (${this._estimatedSize})`,
+            headline: this.localize?.term('export.exportComplete') || 'Export Complete',
+            message: `${this.localize?.term('export.metricsExportedSuccessfully') || 'Metrics exported successfully'} (${this._estimatedSize})`,
           },
         });
       }
@@ -117,10 +117,10 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
       if (this.#notificationContext) {
         this.#notificationContext.peek("danger", {
           data: {
-            headline: "Export Failed",
+            headline: this.localize?.term('export.exportFailed') || 'Export Failed',
             message: error instanceof Error 
               ? error.message 
-              : "Failed to export metrics. Please try again.",
+              : this.localize?.term('export.failedToExportMetrics') || 'Failed to export metrics. Please try again.',
           },
         });
       }
@@ -143,8 +143,8 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
       if (this.#notificationContext) {
         this.#notificationContext.peek("positive", {
           data: {
-            headline: "Export Complete",
-            message: `Quick export to ${format.toUpperCase()} completed`,
+            headline: this.localize?.term('export.exportComplete') || 'Export Complete',
+            message: `${this.localize?.term('export.quickExportCompleted') || 'Quick export to'} ${format.toUpperCase()} ${this.localize?.term('export.completed') || 'completed'}`,
           },
         });
       }
@@ -160,10 +160,10 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
       if (this.#notificationContext) {
         this.#notificationContext.peek("danger", {
           data: {
-            headline: "Export Failed",
+            headline: this.localize?.term('export.exportFailed') || 'Export Failed',
             message: error instanceof Error 
               ? error.message 
-              : "Failed to export metrics",
+              : this.localize?.term('export.failedToExportMetrics') || 'Failed to export metrics',
           },
         });
       }
@@ -181,20 +181,20 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
   render() {
     // Get format and scope options from service or use defaults
     const formatOptions = this.#exportService?.getSupportedFormats() || [
-      { value: ExportFormat.Json, label: 'JSON', description: 'Structured data format' },
-      { value: ExportFormat.Csv, label: 'CSV', description: 'Spreadsheet format' },
-      { value: ExportFormat.Xml, label: 'XML', description: 'Markup format' }
+      { value: ExportFormat.Json, label: this.localize?.term('formats.json') || 'JSON', description: this.localize?.term('formats.jsonDescription') || 'Structured data format' },
+      { value: ExportFormat.Csv, label: this.localize?.term('formats.csv') || 'CSV', description: this.localize?.term('formats.csvDescription') || 'Spreadsheet format' },
+      { value: ExportFormat.Xml, label: this.localize?.term('formats.xml') || 'XML', description: this.localize?.term('formats.xmlDescription') || 'Markup format' }
     ];
     
     const scopeOptions = this.#exportService?.getScopeOptions() || [
-      { value: ExportScope.Current, label: 'Current Snapshot', description: 'Export current metrics only' },
-      { value: ExportScope.Historical, label: 'Historical Data', description: 'Export historical metrics' },
-      { value: ExportScope.Custom, label: 'Custom Range', description: 'Export metrics from specific date range' }
+      { value: ExportScope.Current, label: this.localize?.term('exportOptions.currentSnapshot') || 'Current Snapshot', description: this.localize?.term('exportOptions.exportCurrentMetricsOnly') || 'Export current metrics only' },
+      { value: ExportScope.Historical, label: this.localize?.term('exportOptions.historicalData') || 'Historical Data', description: this.localize?.term('exportOptions.exportHistoricalMetrics') || 'Export historical metrics' },
+      { value: ExportScope.Custom, label: this.localize?.term('exportOptions.customRange') || 'Custom Range', description: this.localize?.term('exportOptions.exportMetricsFromSpecificDateRange') || 'Export metrics from specific date range' }
     ];
 
     return html`
       <umb-modal-sidebar>
-        <umb-body-layout headline="Export Metrics">
+        <umb-body-layout headline="${this.localize?.term('export.title') || 'Export Metrics'}">
           <div id="main">
             <umbmetrics-quick-export-buttons
               .disabled="${this._isExporting}"
@@ -203,7 +203,7 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
             ></umbmetrics-quick-export-buttons>
             
             <div class="divider">
-              <span>or</span>
+              <span>${this.localize?.term('common.or') || 'or'}</span>
             </div>
             
             <umbmetrics-export-options
@@ -249,7 +249,7 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
               @click="${this.#handleCancel}"
               ?disabled="${this._isExporting}"
             >
-              Cancel
+              ${this.localize?.term('export.cancel') || 'Cancel'}
             </uui-button>
             
             <uui-button 
@@ -260,10 +260,10 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
             >
               ${this._isExporting ? html`
                 <uui-icon name="icon-time"></uui-icon>
-                Exporting...
+                ${this.localize?.term('export.exporting') || 'Exporting...'}
               ` : html`
                 <uui-icon name="icon-download"></uui-icon>
-                Export Metrics
+                ${this.localize?.term('export.exportMetrics') || 'Export Metrics'}
               `}
             </uui-button>
           </div>
