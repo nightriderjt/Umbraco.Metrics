@@ -58,14 +58,6 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
     this.#updateEstimatedSize();
   }
 
-  _rejectModal(): void {
-    this.modalContext?.reject();
-  }
-
-  _submitModal(): void {
-    this.modalContext?.submit();
-  }
-
   #updateEstimatedSize() {
     if (this.#exportService) {
       this._estimatedSize = this.#exportService.estimateFileSize(this._exportOptions);
@@ -395,53 +387,51 @@ export class UmbMetricsExportModalElement extends UmbModalElement {
 
   render() {
     return html`
-      <umb-body-layout headline="Export Metrics">
-        <div id="main">
-          ${this.#renderQuickExportButtons()}
-          
-          <div class="divider">
-            <span>or</span>
+      <umb-modal-sidebar>
+        <umb-body-layout headline="Export Metrics">
+          <div id="main">
+            ${this.#renderQuickExportButtons()}
+            
+            <div class="divider">
+              <span>or</span>
+            </div>
+            
+            ${this.#renderExportOptions()}
+            
+            ${this.#renderProgressBar()}
           </div>
           
-          ${this.#renderExportOptions()}
-          
-          ${this.#renderProgressBar()}
-        </div>
-        
-        <div slot="actions">
-          <uui-button 
-            look="secondary"
-            @click="${this.#handleCancel}"
-            ?disabled="${this._isExporting}"
-          >
-            Cancel
-          </uui-button>
-          
-          <uui-button 
-            look="primary"
-            color="positive"
-            @click="${this.#handleExport}"
-            ?disabled="${this._isExporting || (!this._exportOptions.includePerformanceMetrics && !this._exportOptions.includeUmbracoMetrics)}"
-          >
-            ${this._isExporting ? html`
-              <uui-icon name="icon-time"></uui-icon>
-              Exporting...
-            ` : html`
-              <uui-icon name="icon-download"></uui-icon>
-              Export Metrics
-            `}
-          </uui-button>
-        </div>
-      </umb-body-layout>
+          <div slot="actions">
+            <uui-button 
+              look="secondary"
+              @click="${this.#handleCancel}"
+              ?disabled="${this._isExporting}"
+            >
+              Cancel
+            </uui-button>
+            
+            <uui-button 
+              look="primary"
+              color="positive"
+              @click="${this.#handleExport}"
+              ?disabled="${this._isExporting || (!this._exportOptions.includePerformanceMetrics && !this._exportOptions.includeUmbracoMetrics)}"
+            >
+              ${this._isExporting ? html`
+                <uui-icon name="icon-time"></uui-icon>
+                Exporting...
+              ` : html`
+                <uui-icon name="icon-download"></uui-icon>
+                Export Metrics
+              `}
+            </uui-button>
+          </div>
+        </umb-body-layout>
+      </umb-modal-sidebar>
     `;
   }
 
   static styles = [...UUIModalElement.styles, css`
-    :host {
-      display: block;
-      min-width: 500px;
-      max-width: 700px;
-    }
+   
 
     #main {
       padding: var(--uui-size-space-5);

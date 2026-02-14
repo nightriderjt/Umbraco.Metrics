@@ -1,10 +1,10 @@
 import { UmbModalToken } from "@umbraco-cms/backoffice/modal";
 
 export const UMB_METRICS_EXPORT_MODAL = new UmbModalToken(
-  "UmbMetrics.Modal.Export",
+  "UmbMetrics.Modal.ExportMetrics",
   {
     modal: {
-      type: "dialog",
+      type: "sidebar",
       size: "medium",
     },
   }

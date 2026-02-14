@@ -1,5 +1,5 @@
 import { UmbModalToken as m } from "@umbraco-cms/backoffice/modal";
-import { LitElement as c, html as l, css as u, customElement as p } from "@umbraco-cms/backoffice/external/lit";
+import { LitElement as c, html as l, css as p, customElement as u } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin as b } from "@umbraco-cms/backoffice/element-api";
 const d = [
   {
@@ -13,7 +13,7 @@ const d = [
     name: "Umb Metrics Dashboard",
     alias: "UmbMetrics.Dashboard",
     type: "dashboard",
-    js: () => import("./dashboard.element-rL4uqz_q.js"),
+    js: () => import("./dashboard.element-vqzXiDgz.js"),
     meta: {
       label: "Umbraco Metrics",
       pathname: "umb-metrics"
@@ -34,11 +34,11 @@ const d = [
     }
   }
 ), g = new m(
-  "UmbMetrics.Modal.Export",
+  "UmbMetrics.Modal.ExportMetrics",
   {
     modal: {
-      type: "dialog",
-      size: "medium"
+      type: "sidebar",
+      size: "large"
     }
   }
 ), v = [
@@ -55,7 +55,7 @@ const d = [
     type: "modal",
     alias: "UmbMetrics.Modal.ExportMetrics",
     name: "Export Metrics Modal",
-    js: () => import("./export-modal.element-DcrR6XWv.js"),
+    js: () => import("./export-modal.element-DtLSTZXh.js"),
     meta: {
       modal: g
     }
@@ -107,7 +107,7 @@ let a = class extends b(c) {
     `;
   }
 };
-a.styles = u`
+a.styles = p`
     :host {
       display: block;
       padding: var(--uui-size-layout-1);
@@ -148,7 +148,7 @@ a.styles = u`
     }
   `;
 a = f([
-  p("umbmetrics-package-view")
+  u("umbmetrics-package-view")
 ], a);
 const z = [
   ...d,
@@ -161,4 +161,4 @@ export {
   g as U,
   z as m
 };
-//# sourceMappingURL=bundle.manifests-DWVuRyEE.js.map
+//# sourceMappingURL=bundle.manifests-PzZDyP-T.js.map

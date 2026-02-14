@@ -4,8 +4,9 @@ import { UMB_NOTIFICATION_CONTEXT as te } from "@umbraco-cms/backoffice/notifica
 import { UMB_CURRENT_USER_CONTEXT as ie } from "@umbraco-cms/backoffice/current-user";
 import { UMB_AUTH_CONTEXT as re } from "@umbraco-cms/backoffice/auth";
 import { M as ae } from "./active-requests-sidebar.element-DxrkQQUB.js";
+import "./export-modal.element-DtLSTZXh.js";
 import { UMB_MODAL_MANAGER_CONTEXT as H } from "@umbraco-cms/backoffice/modal";
-import { A as oe, U as se } from "./bundle.manifests-DWVuRyEE.js";
+import { A as oe, U as se } from "./bundle.manifests-PzZDyP-T.js";
 function j(e, t) {
   return e > t ? "danger" : e > t * 0.7 ? "warning" : "positive";
 }
@@ -967,9 +968,9 @@ M([
 b = M([
   T("umbmetrics-dashboard")
 ], b);
-const Re = b;
+const Pe = b;
 export {
   b as UmbMetrcisDashboardElement,
-  Re as default
+  Pe as default
 };
-//# sourceMappingURL=dashboard.element-rL4uqz_q.js.map
+//# sourceMappingURL=dashboard.element-vqzXiDgz.js.map

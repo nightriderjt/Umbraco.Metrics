@@ -1,4 +1,4 @@
-import { html as p, css as D, state as E, customElement as F } from "@umbraco-cms/backoffice/external/lit";
+import { html as p, css as D, state as w, customElement as F } from "@umbraco-cms/backoffice/external/lit";
 import { UmbModalElement as R } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT as q } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT as B } from "@umbraco-cms/backoffice/auth";
@@ -164,7 +164,7 @@ var I = Object.defineProperty, N = Object.getOwnPropertyDescriptor, P = (e) => {
   for (var s = r > 1 ? void 0 : r ? N(t, i) : t, x = e.length - 1, u; x >= 0; x--)
     (u = e[x]) && (s = (r ? u(t, i, s) : u(s)) || s);
   return r && s && I(t, i, s), s;
-}, C = (e, t, i) => t.has(e) || P("Cannot " + i), o = (e, t, i) => (C(e, t, "read from private field"), i ? i.call(e) : t.get(e)), n = (e, t, i) => t.has(e) ? P("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), S = (e, t, i, r) => (C(e, t, "write to private field"), t.set(e, i), i), g = (e, t, i) => (C(e, t, "access private method"), i), l, c, d, _, M, O, v, b, y, $, w, z, U, T, A;
+}, C = (e, t, i) => t.has(e) || P("Cannot " + i), o = (e, t, i) => (C(e, t, "read from private field"), i ? i.call(e) : t.get(e)), n = (e, t, i) => t.has(e) ? P("Cannot add the same private member more than once") : t instanceof WeakSet ? t.add(e) : t.set(e, i), S = (e, t, i, r) => (C(e, t, "write to private field"), t.set(e, i), i), g = (e, t, i) => (C(e, t, "access private method"), i), l, c, d, _, M, O, v, b, y, $, E, z, U, T, A;
 let m = class extends R {
   constructor() {
     super(), n(this, d), this._isExporting = !1, this._exportProgress = 0, this._exportOptions = {
@@ -230,7 +230,7 @@ let m = class extends R {
           }), this._isExporting = !1, this._exportProgress = 0;
         }
       }
-    }), n(this, w, async (e) => {
+    }), n(this, E, async (e) => {
       if (!(!o(this, l) || this._isExporting)) {
         this._isExporting = !0;
         try {
@@ -264,52 +264,48 @@ let m = class extends R {
       }));
     }), g(this, d, _).call(this);
   }
-  _rejectModal() {
-    this.modalContext?.reject();
-  }
-  _submitModal() {
-    this.modalContext?.submit();
-  }
   render() {
     return p`
-      <umb-body-layout headline="Export Metrics">
-        <div id="main">
-          ${g(this, d, U).call(this)}
-          
-          <div class="divider">
-            <span>or</span>
+      <umb-modal-sidebar>
+        <umb-body-layout headline="Export Metrics">
+          <div id="main">
+            ${g(this, d, U).call(this)}
+            
+            <div class="divider">
+              <span>or</span>
+            </div>
+            
+            ${g(this, d, T).call(this)}
+            
+            ${g(this, d, A).call(this)}
           </div>
           
-          ${g(this, d, T).call(this)}
-          
-          ${g(this, d, A).call(this)}
-        </div>
-        
-        <div slot="actions">
-          <uui-button 
-            look="secondary"
-            @click="${o(this, z)}"
-            ?disabled="${this._isExporting}"
-          >
-            Cancel
-          </uui-button>
-          
-          <uui-button 
-            look="primary"
-            color="positive"
-            @click="${o(this, $)}"
-            ?disabled="${this._isExporting || !this._exportOptions.includePerformanceMetrics && !this._exportOptions.includeUmbracoMetrics}"
-          >
-            ${this._isExporting ? p`
-              <uui-icon name="icon-time"></uui-icon>
-              Exporting...
-            ` : p`
-              <uui-icon name="icon-download"></uui-icon>
-              Export Metrics
-            `}
-          </uui-button>
-        </div>
-      </umb-body-layout>
+          <div slot="actions">
+            <uui-button 
+              look="secondary"
+              @click="${o(this, z)}"
+              ?disabled="${this._isExporting}"
+            >
+              Cancel
+            </uui-button>
+            
+            <uui-button 
+              look="primary"
+              color="positive"
+              @click="${o(this, $)}"
+              ?disabled="${this._isExporting || !this._exportOptions.includePerformanceMetrics && !this._exportOptions.includeUmbracoMetrics}"
+            >
+              ${this._isExporting ? p`
+                <uui-icon name="icon-time"></uui-icon>
+                Exporting...
+              ` : p`
+                <uui-icon name="icon-download"></uui-icon>
+                Export Metrics
+              `}
+            </uui-button>
+          </div>
+        </umb-body-layout>
+      </umb-modal-sidebar>
     `;
   }
 };
@@ -325,7 +321,7 @@ v = /* @__PURE__ */ new WeakMap();
 b = /* @__PURE__ */ new WeakMap();
 y = /* @__PURE__ */ new WeakMap();
 $ = /* @__PURE__ */ new WeakMap();
-w = /* @__PURE__ */ new WeakMap();
+E = /* @__PURE__ */ new WeakMap();
 z = /* @__PURE__ */ new WeakMap();
 U = function() {
   return p`
@@ -337,7 +333,7 @@ U = function() {
           <uui-button 
             look="primary" 
             color="positive"
-            @click="${() => o(this, w).call(this, a.Csv)}"
+            @click="${() => o(this, E).call(this, a.Csv)}"
             ?disabled="${this._isExporting}"
           >
             <uui-icon name="icon-download"></uui-icon>
@@ -346,7 +342,7 @@ U = function() {
           
           <uui-button 
             look="outline"
-            @click="${() => o(this, w).call(this, a.Json)}"
+            @click="${() => o(this, E).call(this, a.Json)}"
             ?disabled="${this._isExporting}"
           >
             <uui-icon name="icon-download"></uui-icon>
@@ -490,11 +486,7 @@ A = function() {
     ` : "";
 };
 m.styles = [...L.styles, D`
-    :host {
-      display: block;
-      min-width: 500px;
-      max-width: 700px;
-    }
+   
 
     #main {
       padding: var(--uui-size-space-5);
@@ -671,16 +663,16 @@ m.styles = [...L.styles, D`
     }
   `];
 f([
-  E()
+  w()
 ], m.prototype, "_isExporting", 2);
 f([
-  E()
+  w()
 ], m.prototype, "_exportProgress", 2);
 f([
-  E()
+  w()
 ], m.prototype, "_exportOptions", 2);
 f([
-  E()
+  w()
 ], m.prototype, "_estimatedSize", 2);
 m = f([
   F("umbmetrics-export-modal")
@@ -690,4 +682,4 @@ export {
   m as UmbMetricsExportModalElement,
   K as default
 };
-//# sourceMappingURL=export-modal.element-DcrR6XWv.js.map
+//# sourceMappingURL=export-modal.element-DtLSTZXh.js.map

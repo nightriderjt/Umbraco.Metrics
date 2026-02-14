@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 using UmbMetrics.Services;
+using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Api.Management.Controllers;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Web.Common.Authorization;
@@ -21,17 +22,20 @@ public class MetricsApiController : ManagementApiControllerBase
     private readonly IPerformanceMetricsService _metricsService;
     private readonly IUmbracoMetricsService _umbracoMetricsService;
     private readonly IMetricsExportService _exportService;
+    private readonly IHistoricalMetricsService _historicalMetricsService;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
     public MetricsApiController(
         IPerformanceMetricsService metricsService,
         IUmbracoMetricsService umbracoMetricsService,
         IMetricsExportService exportService,
+        IHistoricalMetricsService historicalMetricsService,
         IWebHostEnvironment webHostEnvironment)
     {
         _metricsService = metricsService;
         _umbracoMetricsService = umbracoMetricsService;
         _exportService = exportService;
+        _historicalMetricsService = historicalMetricsService;
         _webHostEnvironment = webHostEnvironment;
     }
 
@@ -192,6 +196,145 @@ public class MetricsApiController : ManagementApiControllerBase
         {
             return Problem(
                 title: "Failed to export Umbraco metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Gets historical performance metrics within a date range
+    /// </summary>
+    [HttpGet("historical")]
+    [ProducesResponseType(typeof(IEnumerable<PerformanceMetrics>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetHistoricalMetrics(
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate)
+    {
+        try
+        {
+            if (startDate > endDate)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid date range",
+                    Detail = "Start date must be before end date",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var metrics = await _historicalMetricsService.GetHistoricalMetricsAsync(startDate, endDate);
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve historical metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Gets the latest N historical performance metrics
+    /// </summary>
+    [HttpGet("historical/latest")]
+    [ProducesResponseType(typeof(IEnumerable<PerformanceMetrics>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetLatestHistoricalMetrics([FromQuery] int count = 100)
+    {
+        try
+        {
+            if (count <= 0 || count > 1000)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid count parameter",
+                    Detail = "Count must be between 1 and 1000",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var metrics = await _historicalMetricsService.GetLatestMetricsAsync(count);
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve latest metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Gets statistics about historical metrics storage
+    /// </summary>
+    [HttpGet("historical/stats")]
+    [ProducesResponseType(typeof(HistoricalMetricsStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetHistoricalMetricsStats()
+    {
+        try
+        {
+            var stats = await _historicalMetricsService.GetStorageStatsAsync();
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve storage statistics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Manually triggers cleanup of old historical data
+    /// </summary>
+    [HttpPost("historical/cleanup")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CleanupHistoricalData()
+    {
+        try
+        {
+            await _historicalMetricsService.CleanupOldDataAsync();
+            return Ok(new { message = "Historical data cleanup completed" });
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to cleanup historical data",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Manually saves current metrics to historical storage
+    /// </summary>
+    [HttpPost("historical/save")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> SaveCurrentMetrics()
+    {
+        try
+        {
+            await _historicalMetricsService.SaveMetricsAsync();
+            return Ok(new { message = "Metrics saved to historical storage" });
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to save metrics",
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError
             );

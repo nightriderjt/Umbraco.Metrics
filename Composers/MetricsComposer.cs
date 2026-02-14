@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
 using UmbMetrics.Services;
+using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
@@ -16,8 +17,24 @@ public class MetricsComposer : IComposer
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         builder.Services.AddScoped<IMetricsExportService, MetricsExportService>();
+        
+        // Register historical metrics service
+        builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
+        builder.Services.AddHostedService<HistoricalMetricsService>();
+        builder.Services.Configure<HistoricalMetricsOptions>(options =>
+        {
+            // Configure default options
+            options.StoragePath = "Data/MetricsHistory";
+            options.SaveIntervalMinutes = 5;
+            options.RetentionDays = 30;
+            options.MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
+            options.EnableAutoCleanup = true;
+            options.CleanupIntervalHours = 24;
+        });
+        
         // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
+        builder.Services.AddSignalR();
 
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>

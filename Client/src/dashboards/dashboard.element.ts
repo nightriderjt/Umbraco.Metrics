@@ -23,6 +23,7 @@ import "../components/metric-card.element.js";
 import "../components/metrics-grid.element.js";
 import "../components/stat-card.element.js";
 import "../components/active-requests-sidebar.element.js";
+import "../components/export-modal.element.js";
 import stylesString from '../css/dashboard.element.css?inline';
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
