@@ -205,7 +205,7 @@ export class ActiveRequestsSidebarElement extends UmbModalElement {
             <!-- Requests summary -->
             <div class="requests-summary">
               <span class="summary-text">
-                ${this.localize ? this.localize.term('activeRequests.activeRequestsCount', this._requests.length, this._requests.length) : `${this._requests.length} active request${this._requests.length !== 1 ? 's' : ''}`}
+                ${this.localize ? this.localize.term('activeRequests_activeRequestsCount', this._requests.length, this._requests.length) : `${this._requests.length} active request${this._requests.length !== 1 ? 's' : ''}`}
               </span>
             </div>
 
