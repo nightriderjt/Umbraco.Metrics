@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly ILogger<HistoricalMetricsService> _logger;
+    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly HistoricalMetricsOptions _options;
     private Timer? _timer;
     private bool _disposed;
@@ -20,12 +22,14 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
     public HistoricalMetricsService(
         IPerformanceMetricsService performanceMetricsService,
         ILogger<HistoricalMetricsService> logger,
-        IOptions<HistoricalMetricsOptions> options)
+        IOptions<HistoricalMetricsOptions> options,
+        IWebHostEnvironment webHostEnvironment)
     {
         _performanceMetricsService = performanceMetricsService;
         _logger = logger;
+        _webHostEnvironment = webHostEnvironment;
         _options = options.Value;
-
+        _options.StoragePath = Path.Combine(_webHostEnvironment.ContentRootPath, _options.StoragePath);
         // Ensure storage directory exists
         EnsureStorageDirectory();
     }
@@ -298,7 +302,8 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         while (currentDate <= endDate.Date)
         {
             var fileName = $"metrics-{currentDate:yyyyMMdd}.json";
-            var filePath = Path.Combine(_options.StoragePath, fileName);
+            var filePath = Path.Combine(_options.StoragePath
+            , fileName);
             
             if (File.Exists(filePath))
             {

@@ -69,26 +69,30 @@ Deep dive into .NET's memory management: see how the garbage collector is perfor
 
 ### Step 1: Install the Package
 
-Add UmbMetrics to your Umbraco project via NuGet or by referencing the project.
+Add UmbMetrics to your Umbraco project via NuGet:
 
-### Step 2: Configure Your Startup (Program.cs)
+```bash
+dotnet add package UmbMetrics
+```
 
+Or install via NuGet Package Manager in Visual Studio.
 
+### Step 2: Configure SignalR Hub Endpoint
 
-Update your `Program.cs` file to add SignalR services and map the MetricsHub endpoint. This uses the modern minimal hosting model (no `Startup.cs` or `ConfigureServices` method):
+While most services are registered automatically via the `MetricsComposer`, you need to map the SignalR hub endpoint in your `Program.cs` file to enable real-time metrics updates:
 
 ```csharp
-// Add using statement
 using Umbraco.Metrics;
+
 var builder = WebApplication.CreateBuilder(args);
+
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
     .AddComposers()
     .Build();
-// Register services
-builder.Services.AddSignalR();
 
+var app = builder.Build();
 
 app.UseUmbraco()
     .WithMiddleware(u =>
@@ -101,17 +105,34 @@ app.UseUmbraco()
         u.UseBackOfficeEndpoints();
         u.UseWebsiteEndpoints();
         
-        // Map SignalR hub endpoint
+        // Map SignalR hub endpoint for real-time metrics
         u.EndpointRouteBuilder?.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");
     });
 
+app.Run();
 ```
 
-
+**Note:** The `MetricsComposer` automatically registers all other required services (PerformanceMetricsService, UmbracoMetricsService, MetricsExportService, HistoricalMetricsService, SignalR services, middleware, and background services).
 
 ### Step 3: Access the Dashboard
 
 After installation and configuration, restart your Umbraco site and navigate to `Settings` -> `Umbraco Metrics` to access your monitoring dashboard.
+
+## Advanced Features
+
+### Historical Metrics Collection
+UmbMetrics automatically collects and stores historical performance data, allowing you to:
+- Track performance trends over time (default: 30 days retention)
+- Export historical data for analysis
+- Identify patterns and anomalies in system performance
+- Configure storage settings (path, retention, file size limits)
+
+### Active Requests Monitoring
+Monitor real-time request activity with detailed insights:
+- View currently processing requests with method, path, and duration
+- Identify slow or problematic endpoints
+- Track request status codes and client information
+- Monitor request queue and thread usage
 
 ## Real-Time Updates
 

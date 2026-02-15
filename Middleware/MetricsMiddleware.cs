@@ -99,10 +99,11 @@ public class MetricsMiddleware
 
     private  static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
     {
-        if (!env.IsDevelopment()) return true;
-        return !context.Request.Path.Value.Contains("metrics")
-                    && !context.Request.Path.Value.Contains("serverEventHub")
-                    && !context.Request.Path.Value.Contains("active-requests");
+        if (env.IsDevelopment()) return false;
+        return !(context.Request.Path.Value?.Contains("metrics")??false)
+                    && !(context.Request.Path.Value?.Contains("serverEventHub")??false)
+                    && !(context.Request.Path.Value?.Contains("active-requests")??false)
+                    && !(context.Request.QueryString.Value?.Contains("access_token")??false);
     }
 
     public static long TotalRequests => _totalRequests;
