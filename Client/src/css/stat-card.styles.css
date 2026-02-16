@@ -77,9 +77,27 @@
   border-bottom: none;
 }
 
+.stat-label-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .stat-label {
   color: var(--uui-color-text-alt);
   font-size: 0.875rem;
+}
+
+.info-icon {
+  font-size: 0.75rem;
+  color: var(--uui-color-text-alt);
+  opacity: 0.7;
+  cursor: help;
+}
+
+.info-icon:hover {
+  opacity: 1;
+  color: var(--uui-color-interactive);
 }
 
 .stat-row strong {

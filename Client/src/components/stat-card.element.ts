@@ -13,6 +13,7 @@ export interface StatRow {
   label: string;
   value: string | number;
   color?: 'default' | 'positive' | 'warning' | 'danger';
+  info?: string;
 }
 
 @customElement("umbmetrics-stat-card")
@@ -43,7 +44,16 @@ export class StatCardElement extends UmbElementMixin(LitElement) {
           <div class="stats-list">
             ${this.stats.map(stat => html`
               <div class="stat-row">
-                <span class="stat-label">${stat.label}</span>
+                <div class="stat-label-container">
+                  ${stat.info ? html`
+                    <uui-icon 
+                      class="info-icon" 
+                      name="icon-info" 
+                      title="${stat.info}"
+                    ></uui-icon>
+                  ` : ''}
+                  <span class="stat-label">${stat.label}</span>
+                </div>
                 <strong class="${stat.color || 'default'}">${stat.value}</strong>
               </div>
             `)}
