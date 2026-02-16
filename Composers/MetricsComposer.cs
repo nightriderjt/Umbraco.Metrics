@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
 using UmbMetrics.Services;
@@ -22,10 +23,11 @@ public class MetricsComposer : IComposer
         builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
         builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
+        var environment=builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
             // Configure default options
-            options.StoragePath = "Data/MetricsHistory";
+            options.StoragePath =Path.Combine( environment.ContentRootPath, "umbraco/Data/TEMP/MetricsHistory");
             options.SaveIntervalSeconds = 5;
             options.RetentionDays = 30;
             options.MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
