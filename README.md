@@ -113,6 +113,22 @@ app.Run();
 ```
 
 **Note:** The `MetricsComposer` automatically registers all other required services (PerformanceMetricsService, UmbracoMetricsService, MetricsExportService, HistoricalMetricsService, SignalR services, middleware, and background services).
+In any case you need to modify the default options you can do it with your own composer and a PostConfigure call.
+For example, to change the default metrics collection interval:
+
+```csharp   
+using Umbraco.Metrics;
+public class CustomMetricsComposer : IComposer
+{
+    public void Compose(IUmbracoBuilder builder)
+    {
+        builder.Services.PostConfigure<MetricsOptions>(options =>
+        {
+            options.CollectionInterval = TimeSpan.FromSeconds(5); // Change to 5 seconds
+        });
+    }
+}
+```
 
 ### Step 3: Access the Dashboard
 
