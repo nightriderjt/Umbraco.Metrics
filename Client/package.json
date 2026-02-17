@@ -1,7 +1,7 @@
 {
   "name": "umb-metrics",
   "private": true,
-  "version": "17.1.0.7",
+  "version": "17.1.0.9",
   "type": "module",
   "scripts": {
     "watch": "tsc && vite build --watch",
