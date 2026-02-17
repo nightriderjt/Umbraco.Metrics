@@ -221,5 +221,22 @@ export default {
     "help": "Help",
     "about": "About",
     "or": "or"
+  },
+
+  // Stat Card Info Tooltips
+  "stat_info": {
+    "gc_gen0_heap": "Generation 0 heap contains short-lived objects",
+    "gc_gen1_heap": "Generation 1 heap contains objects that survived Gen 0 collection",
+    "gc_gen2_heap": "Generation 2 heap contains long-lived objects",
+    "gc_gen0_collections": "Number of Generation 0 garbage collections",
+    "gc_gen1_collections": "Number of Generation 1 garbage collections",
+    "gc_gen2_collections": "Number of Generation 2 garbage collections (full GC)",
+    "gc_mode": "Server GC is optimized for multi-core servers, Workstation GC for client apps",
+    "total_heap_size": "Total memory allocated for managed objects across all generations",
+    "fragmented_memory": "Memory that is allocated but cannot be used due to fragmentation",
+    "memory_load": "Current memory load on the system",
+    "high_memory_threshold": "Memory threshold that triggers aggressive garbage collection",
+    "latency_mode": "GC latency mode affects how aggressively garbage collection runs",
+    "total_pause_time": "Total time the application was paused for garbage collection"
   }
-} 
+}

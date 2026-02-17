@@ -28,8 +28,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         _performanceMetricsService = performanceMetricsService;
         _logger = logger;
         _webHostEnvironment = webHostEnvironment;
-        _options = options.Value;
-        _options.StoragePath = Path.Combine(_webHostEnvironment.ContentRootPath, _options.StoragePath);
+        _options = options.Value;     
         // Ensure storage directory exists
         EnsureStorageDirectory();
     }
