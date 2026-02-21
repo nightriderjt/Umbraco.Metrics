@@ -1,7 +1,7 @@
 {
   "id": "UmbMetrics",
   "name": "UmbMetrics",
-  "version": "17.1.0.8",
+  "version": "17.2.0.0",
   "allowTelemetry": true,
   "extensions": [
     {

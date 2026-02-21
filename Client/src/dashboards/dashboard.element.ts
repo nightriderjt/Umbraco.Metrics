@@ -596,7 +596,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   render() {
     return html`
-      <uui-box headline="${this.localize?.term('dashboard_applicationPerformanceMetrics') || 'Application Performance Metrics'}" class="wide">
+      <uui-box headline="${this.localize?.term('dashboard_applicationPerformanceMetrics') || 'Application Performance Metrics'} - ${import.meta.env.VITE_APP_VERSION}" class="wide">
         <div slot="header">[${this.localize?.term('dashboard_dotnetApplication') || '.NET Application'} - ${this.localize?.term('dashboard_realTimeMetrics') || 'Real-time Metrics'}${this._contextCurrentUser?.name ? ` - ${this._contextCurrentUser.name}` : ''}]</div>
 
         <div class="metrics-controls">
