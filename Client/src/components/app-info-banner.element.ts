@@ -41,6 +41,7 @@ export class AppInfoBannerElement extends UmbElementMixin(LitElement) {
         <div class="info-item">
           <strong>${this.localize?.term('appInfo_uptime') || 'Uptime'}:</strong> ${formatUptime(this.applicationInfo.uptimeSeconds)}
         </div>
+       
         ${this.isConnected ? html`
           <div class="info-item connected">
             <uui-icon name="icon-check"></uui-icon>

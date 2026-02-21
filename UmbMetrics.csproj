@@ -10,7 +10,7 @@
     <PackageId>UmbMetrics</PackageId>
     <Product>UmbMetrics</Product>
     <Title>UmbMetrics</Title>
-    <Version>17.1.0.9</Version>
+    <Version>17.2.0</Version>
     <PackageTags>umbraco;umbraco-marketplace;metrics;performance;monitoring</PackageTags>
     <Authors>Stelios Zisis</Authors>
     <PackageProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</PackageProjectUrl>
@@ -24,9 +24,9 @@
     
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.1.0" />
-    <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.1.0" />
-    <PackageReference Include="Umbraco.Cms.Api.Management" Version="17.1.0" />
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.2.0" />
+    <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.2.0" />
+    <PackageReference Include="Umbraco.Cms.Api.Management" Version="17.2.0" />
   </ItemGroup>
 
   <ItemGroup>
