@@ -52,9 +52,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         var allMetrics = new List<PerformanceMetrics>();
         var files = GetDailyFilesForDateRange(startDate, endDate);
 
-        for (int i = 0; i < files.Length; i++)
+        for (int i = 0; i < files.Count; i++)
         {         
-            var file = files.Span[i];
+            var file = files[i];
             await foreach (var metric in StreamMetricsFromFileAsync(file))
             {
                 allMetrics.Add(metric);
@@ -81,33 +81,42 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
     {
         try
         {
-            // Get the most recent daily files (up to last 7 days by default)
-            var recentDays = Math.Max(7, count / 100); // Heuristic: assume ~100 entries per day
-            var startDate = DateTime.UtcNow.AddDays(-recentDays);
-            var files = GetDailyFilesForDateRange(startDate, DateTime.UtcNow);  
+            var recentDays = Math.Max(7, count / 100);
+            // Get files and REVERSE them to start with the most recent data
+            var files = GetDailyFilesForDateRange(DateTime.UtcNow.AddDays(-recentDays), DateTime.UtcNow);
+            files.Reverse();
             var allMetrics = new List<PerformanceMetrics>();
-            for (int i = 0; i < files.Length; i++)
-            {
-                var file = files.Span[i];
+            foreach (var file in files)
+            {           
+                if (allMetrics.Count >= count) break;
                 try
                 {
-                    var fileMetrics = (await ReadMetricsFromFileAsync(file)).Span;
-                    foreach (var metric in fileMetrics)
+                   
+                    Memory<PerformanceMetrics> fileMemory = await ReadMetricsFromFileAsync(file);                  
+                    ReadOnlySpan<PerformanceMetrics> span = fileMemory.Span;
+                    foreach (var metric in span)
                     {
                         allMetrics.Add(metric);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Error reading historical metrics file: {File}", file);
+                    _logger.LogWarning(ex, "Error reading file: {File}", file);
                 }
-            } 
-            return new Memory<PerformanceMetrics>([.. allMetrics.OrderByDescending(m => m.Timestamp).Take(count)]);                         
+            }
+
+            // Final Sort and Take
+            var result = allMetrics
+                .OrderByDescending(m => m.Timestamp)
+                .Take(count)
+                .ToArray();
+
+            return result.AsMemory();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting latest metrics");
-            return new Memory<PerformanceMetrics>();
+            return Memory<PerformanceMetrics>.Empty;
         }
     }
 
@@ -285,9 +294,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         }
     }
 
-    private Memory<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
+    private List<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
     {
-        var files = new Span<string>();
+        var files = new List<string>();
         
         // Generate all possible daily file names for the date range
         var currentDate = startDate.Date;
@@ -299,12 +308,12 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             
             if (File.Exists(filePath))
             {
-                files.Fill(filePath);
+                files.Add(filePath);
             }            
             currentDate = currentDate.AddDays(1);
         }
         
-        return files.ToArray().AsMemory();
+        return files;
     }
 
     private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
