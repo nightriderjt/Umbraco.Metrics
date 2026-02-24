@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
+using UmbMetrics.Models;
 using UmbMetrics.Services;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.Composing;
