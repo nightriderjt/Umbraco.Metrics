@@ -86,18 +86,17 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             // Get the most recent daily files (up to last 7 days by default)
             var recentDays = Math.Max(7, count / 100); // Heuristic: assume ~100 entries per day
             var startDate = DateTime.UtcNow.AddDays(-recentDays);
-            var files = GetDailyFilesForDateRange(startDate, DateTime.UtcNow)
-                .OrderByDescending(f => f)
-                .Take(recentDays);
+            var files = GetDailyFilesForDateRange(startDate, DateTime.UtcNow);             
+               
 
-            var allMetrics = new List<PerformanceMetrics>();
+            var allMetrics = new Span<PerformanceMetrics>();
             
             foreach (var file in files)
             {
                 try
                 {
                     var fileMetrics = await ReadMetricsFromFileAsync(file);
-                    allMetrics.AddRange(fileMetrics);
+                    allMetrics.Fill(fileMetrics);
                 }
                 catch (Exception ex)
                 {
@@ -314,43 +313,45 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         return files;
     }
 
-    private async Task<IEnumerable<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
+    private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
     {
-        var metrics = new List<PerformanceMetrics>();
-        
+        // 1. Use a List because we don't know the file size yet.
+        // Memory/Span are fixed-length and don't have a ".Add()" method.
+        var metricsList = new List<PerformanceMetrics>();
+
         try
         {
+            // Read lines asynchronously
             var lines = await File.ReadAllLinesAsync(filePath, Encoding.UTF8);
+
             var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
-            
+
             foreach (var line in lines)
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                try
                 {
-                    try
+                    var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, jsonOptions);
+                    if (metric != null)
                     {
-                        var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, jsonOptions);
-                        if (metric != null)
-                        {
-                            metrics.Add(metric);
-                        }
+                        metricsList.Add(metric);
                     }
-                    catch (JsonException ex)
-                    {
-                        _logger.LogDebug(ex, "Error parsing JSON line in file {File}: {Line}", filePath, line);
-                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogDebug(ex, "Error parsing JSON line in file {File}: {Line}", filePath, line);
                 }
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Error reading metrics file: {File}", filePath);
-        }
-        
-        return metrics;
+        }       
+        return metricsList.ToArray().AsMemory();
     }
 
     private bool TryParseDateFromFileName(string filePath, out DateTime date)
