@@ -32,8 +32,8 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             }
 
             // Get historical metrics based on scope
-            IEnumerable<PerformanceMetrics> performanceMetrics = [];
-            IEnumerable<UmbracoMetrics> umbracoMetrics = [];
+            Span<PerformanceMetrics> performanceMetrics = [];
+            Span<UmbracoMetrics> umbracoMetrics = [];
 
             if (options.IncludePerformanceMetrics)
             {
@@ -90,12 +90,12 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             return await _historicalMetricsService.GetHistoricalMetricsAsync(startDate, endDate);
         }
 
-        return [];
+        return new Memory<PerformanceMetrics>();
     }
 
     private ExportResult GenerateHistoricalExportResult(
-        IEnumerable<PerformanceMetrics> performanceMetrics,
-        IEnumerable<UmbracoMetrics> umbracoMetrics,
+        Span<PerformanceMetrics> performanceMetrics,
+        Span<UmbracoMetrics> umbracoMetrics,
         ExportOptions options)
     {
         byte[] exportData;
@@ -109,7 +109,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             UmbracoMetrics = [.. umbracoMetrics],
             ExportOptions = options,
             GeneratedAt = DateTime.UtcNow,
-            RecordCount = performanceMetrics.Count() + umbracoMetrics.Count()
+            RecordCount = performanceMetrics.Length + umbracoMetrics.Length
         };
 
         switch (options.Format)
