@@ -49,34 +49,34 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 
     public async Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate)
     {
-        var metrics = new Span<PerformanceMetrics>();
-        
-        try
-        {
-            // Get all daily files that could contain data within the date range
-            var files = GetDailyFilesForDateRange(startDate, endDate);
+        var allMetrics = new List<PerformanceMetrics>();
+        var files = GetDailyFilesForDateRange(startDate, endDate);
 
-            foreach (var file in files)
+        for (int i = 0; i < files.Length; i++)
+        {         
+            var file = files.Span[i];
+            await foreach (var metric in StreamMetricsFromFileAsync(file))
             {
-                try
-                {
-                     metrics = (await ReadMetricsFromFileAsync(file)).Span;
-                  
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Error reading historical metrics file: {File}", file);
-                }
+                allMetrics.Add(metric);
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting historical metrics");
-        }
-
-        return metrics.ToArray().AsMemory(); // Return as array for easier consumption
+        return allMetrics.ToArray().AsMemory();
     }
-
+    private async IAsyncEnumerable<PerformanceMetrics> StreamMetricsFromFileAsync(string filePath)
+    {
+        using var reader = new StreamReader(filePath);
+        string? line;
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = false, // No indentation for smaller file size
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, jsonOptions);
+            if (metric != null) yield return metric;
+        }
+    }
     public async Task<Memory<PerformanceMetrics>> GetLatestMetricsAsync(int count)
     {
         try
@@ -85,28 +85,24 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             var recentDays = Math.Max(7, count / 100); // Heuristic: assume ~100 entries per day
             var startDate = DateTime.UtcNow.AddDays(-recentDays);
             var files = GetDailyFilesForDateRange(startDate, DateTime.UtcNow);  
-            var allMetrics = new Span<PerformanceMetrics>();
-            
-            foreach (var file in files)
+            var allMetrics = new List<PerformanceMetrics>();
+            for (int i = 0; i < files.Length; i++)
             {
+                var file = files.Span[i];
                 try
                 {
                     var fileMetrics = (await ReadMetricsFromFileAsync(file)).Span;
                     foreach (var metric in fileMetrics)
                     {
-  allMetrics.Fill(metric);
-                    }                  
+                        allMetrics.Add(metric);
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Error reading historical metrics file: {File}", file);
                 }
-            }
-
-            // Return the most recent N metrics
-            return allMetrics.Slice(0, count).ToArray().AsMemory();              
-               
-               
+            } 
+            return new Memory<PerformanceMetrics>([.. allMetrics.OrderByDescending(m => m.Timestamp).Take(count)]);                         
         }
         catch (Exception ex)
         {
@@ -289,7 +285,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         }
     }
 
-    private Span<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
+    private Memory<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
     {
         var files = new Span<string>();
         
@@ -308,7 +304,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             currentDate = currentDate.AddDays(1);
         }
         
-        return files;
+        return files.ToArray().AsMemory();
     }
 
     private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
