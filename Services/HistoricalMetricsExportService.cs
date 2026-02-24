@@ -37,7 +37,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
             if (options.IncludePerformanceMetrics)
             {
-                performanceMetrics = await GetHistoricalPerformanceMetricsAsync(options);
+                performanceMetrics = (await GetHistoricalPerformanceMetricsAsync(options)).Span;
             }
 
             // Note: Umbraco metrics historical storage is not implemented yet
