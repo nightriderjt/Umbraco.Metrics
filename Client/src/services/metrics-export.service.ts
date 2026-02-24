@@ -135,64 +135,7 @@ export class MetricsExportService {
     document.body.removeChild(a);
   }
 
-  /**
-   * Get file size estimate for export
-   */
-  estimateFileSize(options: ExportOptions): string {
-    // Simple estimation based on format and included metrics
-    let estimatedSize = 0;
-    
-    // Base size for current snapshot
-    if (options.includePerformanceMetrics) estimatedSize += 5; // ~5KB for performance metrics
-    if (options.includeUmbracoMetrics) estimatedSize += 3; // ~3KB for Umbraco metrics
-    if (options.includeActiveRequests) estimatedSize += 2; // ~2KB for active requests
-    
-    // Adjust for historical data
-    if (options.scope === 'historical' || options.scope === 'custom') {
-      // Historical data is much larger - estimate based on number of records
-      // Assume ~1KB per performance metric record for historical data
-      if (options.includePerformanceMetrics) {
-        // For historical scope, estimate last 30 days with 5-second intervals
-        if (options.scope === 'historical') {
-          estimatedSize += 30 * 24 * 60 * 60 / 5 * 1; // 30 days * 24 hours * 60 minutes * 60 seconds / 5 second intervals * 1KB
-        } else if (options.scope === 'custom' && options.startDate && options.endDate) {
-          // For custom scope, estimate based on date range
-          const start = new Date(options.startDate);
-          const end = new Date(options.endDate);
-          const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-          estimatedSize += days * 24 * 60 * 60 / 5 * 1; // days * 24 hours * 60 minutes * 60 seconds / 5 second intervals * 1KB
-        }
-      }
-      
-      // Note: Historical Umbraco metrics not implemented yet
-      if (options.includeUmbracoMetrics) {
-        estimatedSize += 0; // No historical Umbraco metrics storage yet
-      }
-    }
-    
-    // Format multipliers
-    switch (options.format) {
-      case 'json':
-        estimatedSize *= 1.2; // JSON is slightly larger
-        break;
-      case 'csv':
-        estimatedSize *= 0.8; // CSV is more compact
-        break;
-      case 'xml':
-        estimatedSize *= 1.5; // XML has more markup
-        break;
-    }
-    
-    if (estimatedSize < 1) {
-      return '< 1 KB';
-    } else if (estimatedSize < 1024) {
-      return `${Math.round(estimatedSize)} KB`;
-    } else if (estimatedSize < 1024 * 1024) {
-      return `${(estimatedSize / 1024).toFixed(1)} MB`;
-    } else {
-      return `${(estimatedSize / (1024 * 1024)).toFixed(1)} GB`;
-    }
-  }
+ 
 
 
 
