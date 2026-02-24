@@ -313,23 +313,19 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         return files;
     }
 
-    private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
+    private async Task<List<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
     {
-        // 1. Use a List because we don't know the file size yet.
-        // Memory/Span are fixed-length and don't have a ".Add()" method.
         var metricsList = new List<PerformanceMetrics>();
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         try
-        {
-            // Read lines asynchronously
-            var lines = await File.ReadAllLinesAsync(filePath, Encoding.UTF8);
-
-            var jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
-            foreach (var line in lines)
+        {            
+            using var reader = new StreamReader(filePath, Encoding.UTF8);
+            string? line;          
+            while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
@@ -350,8 +346,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Error reading metrics file: {File}", filePath);
-        }       
-        return metricsList.ToArray().AsMemory();
+        }
+
+        return metricsList;
     }
 
     private bool TryParseDateFromFileName(string filePath, out DateTime date)
