@@ -292,9 +292,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         }
     }
 
-    private List<string> GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
+    private Span<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
     {
-        var files = new List<string>();
+        var files = new Span<string>();
         
         // Generate all possible daily file names for the date range
         var currentDate = startDate.Date;
@@ -306,9 +306,8 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             
             if (File.Exists(filePath))
             {
-                files.Add(filePath);
-            }
-            
+                files.Fill(filePath);
+            }            
             currentDate = currentDate.AddDays(1);
         }
         
