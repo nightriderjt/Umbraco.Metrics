@@ -12,12 +12,12 @@ public interface IHistoricalMetricsService
     /// <summary>
     /// Gets historical metrics within a date range
     /// </summary>
-    Task<IEnumerable<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
+    Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
 
     /// <summary>
     /// Gets the latest N historical metrics
     /// </summary>
-    Task<IEnumerable<PerformanceMetrics>> GetLatestMetricsAsync(int count);
+    Task<Memory<PerformanceMetrics>> GetLatestMetricsAsync(int count);
 
     /// <summary>
     /// Cleans up old historical data based on retention policy

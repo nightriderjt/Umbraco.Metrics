@@ -56,7 +56,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         }
     }
 
-    private async Task<IEnumerable<PerformanceMetrics>> GetHistoricalPerformanceMetricsAsync(ExportOptions options)
+    private async Task<Memory<PerformanceMetrics>> GetHistoricalPerformanceMetricsAsync(ExportOptions options)
     {
         if (options.Scope == ExportScope.Historical)
         {
