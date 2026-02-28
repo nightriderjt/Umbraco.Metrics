@@ -14,20 +14,23 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly ILogger<HistoricalMetricsService> _logger;
-    private readonly IWebHostEnvironment _webHostEnvironment;
+
     private readonly HistoricalMetricsOptions _options;
     private Timer? _timer;
     private bool _disposed;
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        WriteIndented = false, // No indentation for smaller file size
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     public HistoricalMetricsService(
         IPerformanceMetricsService performanceMetricsService,
         ILogger<HistoricalMetricsService> logger,
-        IOptions<HistoricalMetricsOptions> options,
-        IWebHostEnvironment webHostEnvironment)
+        IOptions<HistoricalMetricsOptions> options)
     {
         _performanceMetricsService = performanceMetricsService;
-        _logger = logger;
-        _webHostEnvironment = webHostEnvironment;
+        _logger = logger; 
         _options = options.Value;     
         // Ensure storage directory exists
         EnsureStorageDirectory();
@@ -66,14 +69,10 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
     {
         using var reader = new StreamReader(filePath);
         string? line;
-        var jsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = false, // No indentation for smaller file size
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+  
         while ((line = await reader.ReadLineAsync()) != null)
         {
-            var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, jsonOptions);
+            var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, _jsonSerializerOptions);
             if (metric != null) yield return metric;
         }
     }
@@ -220,13 +219,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             var fileName = $"metrics-{datePart}.json";
             var filePath = Path.Combine(_options.StoragePath, fileName);
 
-            var jsonOptions = new JsonSerializerOptions
-            {
-                WriteIndented = false, // No indentation for smaller file size
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+    
 
-            var json = JsonSerializer.Serialize(metrics, jsonOptions);
+            var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
             
             // Append to file with newline
             await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
@@ -319,10 +314,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
     private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
     {
         var metricsList = new List<PerformanceMetrics>();
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+  
 
         try
         {            
@@ -334,7 +326,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 
                 try
                 {
-                    var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, jsonOptions);
+                    var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, _jsonSerializerOptions);
                     if (metric != null)
                     {
                         metricsList.Add(metric);
