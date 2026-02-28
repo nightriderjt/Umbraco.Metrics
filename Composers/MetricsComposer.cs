@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
+using UmbMetrics.Models;
 using UmbMetrics.Services;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.Composing;
@@ -9,6 +12,7 @@ using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
 
 namespace UmbMetrics.Composers;
+
 
 public class MetricsComposer : IComposer
 {
@@ -51,6 +55,14 @@ public class MetricsComposer : IComposer
                 applicationBuilder => { },
                 applicationBuilder => { }
             ));
-        });
+            options.AddFilter(new UmbracoPipelineFilter("umbHub")
+            {
+                Endpoints = app => app.UseEndpoints(endpoints =>
+                {
+                    // 'endpoints' is your IEndpointRouteBuilder!
+                    endpoints.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");                 
+                })
+            });
+        });     
     }
 }

@@ -24,10 +24,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
     {
         try
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             if (options.Scope == ExportScope.Current)
             {
@@ -35,8 +32,8 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             }
 
             // Get historical metrics based on scope
-            IEnumerable<PerformanceMetrics> performanceMetrics = Enumerable.Empty<PerformanceMetrics>();
-            IEnumerable<UmbracoMetrics> umbracoMetrics = Enumerable.Empty<UmbracoMetrics>();
+            Memory<PerformanceMetrics> performanceMetrics =new Memory<PerformanceMetrics>();
+            Memory<UmbracoMetrics> umbracoMetrics = new Memory<UmbracoMetrics>();
 
             if (options.IncludePerformanceMetrics)
             {
@@ -59,7 +56,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         }
     }
 
-    private async Task<IEnumerable<PerformanceMetrics>> GetHistoricalPerformanceMetricsAsync(ExportOptions options)
+    private async Task<Memory<PerformanceMetrics>> GetHistoricalPerformanceMetricsAsync(ExportOptions options)
     {
         if (options.Scope == ExportScope.Historical)
         {
@@ -93,12 +90,12 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             return await _historicalMetricsService.GetHistoricalMetricsAsync(startDate, endDate);
         }
 
-        return Enumerable.Empty<PerformanceMetrics>();
+        return new Memory<PerformanceMetrics>();
     }
 
     private ExportResult GenerateHistoricalExportResult(
-        IEnumerable<PerformanceMetrics> performanceMetrics,
-        IEnumerable<UmbracoMetrics> umbracoMetrics,
+        Memory<PerformanceMetrics> performanceMetrics,
+        Memory<UmbracoMetrics> umbracoMetrics,
         ExportOptions options)
     {
         byte[] exportData;
@@ -108,11 +105,11 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         // Create historical export data structure
         var historicalData = new HistoricalExportData
         {
-            PerformanceMetrics = performanceMetrics.ToList(),
-            UmbracoMetrics = umbracoMetrics.ToList(),
+            PerformanceMetrics = [.. performanceMetrics.ToArray()],
+            UmbracoMetrics = [.. umbracoMetrics.ToArray()],
             ExportOptions = options,
             GeneratedAt = DateTime.UtcNow,
-            RecordCount = performanceMetrics.Count() + umbracoMetrics.Count()
+            RecordCount = performanceMetrics.Length + umbracoMetrics.Length
         };
 
         switch (options.Format)
@@ -170,19 +167,19 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         // Add UTF-8 BOM for Excel compatibility
         csvBuilder.Append('\uFEFF');
         
-        if (data.PerformanceMetrics.Any())
+        if (data.PerformanceMetrics.Count != 0)
         {
             GeneratePerformanceMetricsHistoricalCsv(csvBuilder, data.PerformanceMetrics);
             
             // Add separator if we have both types of metrics
-            if (data.UmbracoMetrics.Any())
+            if (data.UmbracoMetrics.Count != 0)
             {
                 csvBuilder.AppendLine();
                 csvBuilder.AppendLine();
             }
         }
         
-        if (data.UmbracoMetrics.Any())
+        if (data.UmbracoMetrics.Count != 0)
         {
             GenerateUmbracoMetricsHistoricalCsv(csvBuilder, data.UmbracoMetrics);
         }
@@ -207,7 +204,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
     private void GeneratePerformanceMetricsHistoricalCsv(StringBuilder csvBuilder, List<PerformanceMetrics> metrics)
     {
-        if (!metrics.Any()) return;
+        if (metrics.Count == 0) return;
 
         csvBuilder.AppendLine("Performance Metrics History");
         csvBuilder.AppendLine("Timestamp,CPU Usage (%),Working Set (MB),Thread Count,Total Requests,Active Requests,Requests Per Second,Average Response Time (ms)");
@@ -229,7 +226,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
     private void GenerateUmbracoMetricsHistoricalCsv(StringBuilder csvBuilder, List<UmbracoMetrics> metrics)
     {
-        if (!metrics.Any()) return;
+        if (metrics.Count == 0) return;
 
         csvBuilder.AppendLine("Umbraco Metrics History");
         csvBuilder.AppendLine("Timestamp,Total Content Nodes,Published Nodes,Total Media Items,Total Media Size (MB),Total Users,Active Users");
@@ -262,7 +259,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         if (data.ExportOptions.EndDate.HasValue)
             xmlBuilder.AppendLine($"  <EndDate>{data.ExportOptions.EndDate.Value:yyyy-MM-ddTHH:mm:ssZ}</EndDate>");
         
-        if (data.PerformanceMetrics.Any())
+        if (data.PerformanceMetrics.Count != 0)
         {
             xmlBuilder.AppendLine("  <PerformanceMetrics>");
             foreach (var metric in data.PerformanceMetrics.OrderBy(m => m.Timestamp))
@@ -283,18 +280,4 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         
         return Encoding.UTF8.GetBytes(xmlBuilder.ToString());
     }
-}
-
-public class HistoricalExportData
-{
-    public List<PerformanceMetrics> PerformanceMetrics { get; set; } = new();
-    public List<UmbracoMetrics> UmbracoMetrics { get; set; } = new();
-    public ExportOptions ExportOptions { get; set; } = new();
-    public DateTime GeneratedAt { get; set; }
-    public int RecordCount { get; set; }
-}
-
-public interface IHistoricalMetricsExportService
-{
-    Task<ExportResult> ExportHistoricalMetricsAsync(ExportOptions options);
 }

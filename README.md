@@ -80,38 +80,7 @@ Or install via NuGet Package Manager in Visual Studio.
 
 ### Step 2: Configure SignalR Hub Endpoint
 
-While most services are registered automatically via the `MetricsComposer`, you need to map the SignalR hub endpoint in your `Program.cs` file to enable real-time metrics updates:
-
-```csharp
-using Umbraco.Metrics;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.CreateUmbracoBuilder()
-    .AddBackOffice()
-    .AddWebsite()
-    .AddComposers()
-    .Build();
-
-var app = builder.Build();
-
-app.UseUmbraco()
-    .WithMiddleware(u =>
-    {
-        u.UseBackOffice();
-        u.UseWebsite();
-    })
-    .WithEndpoints(u =>
-    {
-        u.UseBackOfficeEndpoints();
-        u.UseWebsiteEndpoints();
-        
-        // Map SignalR hub endpoint for real-time metrics
-        u.EndpointRouteBuilder?.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");
-    });
-
-app.Run();
-```
+You do not need to map the SignalR hub anymore as you did in the previous versions. It is maped in the composer from version 17.2.0.1+ .
 
 **Note:** The `MetricsComposer` automatically registers all other required services (PerformanceMetricsService, UmbracoMetricsService, MetricsExportService, HistoricalMetricsService, SignalR services, middleware, and background services).
 In any case you need to modify the default options you can do it with your own composer and a PostConfigure call.
@@ -171,27 +140,23 @@ All metrics stay within your environment. Nothing is sent to external services. 
 
 ## Export Functionality
 
-UmbMetrics includes powerful export capabilities, allowing you to download your metrics data for offline analysis, reporting, or archiving. The export system provides both quick one-click exports and customizable export options.
+UmbMetrics includes  export capabilities, allowing you to download your metrics data for offline analysis, reporting, or archiving. The export system provides both quick one-click exports and customizable export options.
 
 ### Available Export Formats
 
 1. **CSV (Comma-Separated Values)**
    - Perfect for spreadsheet analysis in Excel, Google Sheets, or data visualization tools
-   - Includes proper escaping for Excel compatibility
    - Structured with clear column headers
    - Ideal for data analysis and reporting
 
 2. **JSON (JavaScript Object Notation)**
    - Ideal for programmatic analysis and integration with other systems
-   - Preserves the complete data structure with nested objects
    - Easy to parse with any programming language
    - Suitable for API integrations and custom dashboards
 
 3. **XML (eXtensible Markup Language)**
    - Suitable for enterprise systems and legacy integrations
-   - Well-structured hierarchical format with proper schema
-   - Includes comprehensive metadata
-   - Compatible with enterprise reporting systems
+   - Includes comprehensive metadata  
 
 ### Export Scopes
 
@@ -249,9 +214,7 @@ UmbMetrics includes powerful export capabilities, allowing you to download your 
 
 ### Export Modal Features
 
-- **Real-time File Size Estimation**: See estimated download size before exporting
 - **Progress Tracking**: Visual progress bar during export generation
-- **Format Descriptions**: Clear explanations of each export format
 - **Timezone Support**: Export timestamps in UTC, local time, or specific timezones
 - **Metric Selection**: Choose exactly which data to include
 - **Date Range Picker**: Intuitive calendar interface for custom date ranges
@@ -261,13 +224,6 @@ UmbMetrics includes powerful export capabilities, allowing you to download your 
 For maximum convenience, the dashboard includes dedicated quick export buttons:
 - **Export as CSV**: One-click export of all current metrics in CSV format
 - **Export as JSON**: One-click export of all current metrics in JSON format
-
-### File Size Optimization
-
-The export system automatically optimizes file sizes by:
-- Compressing redundant data structures
-- Using efficient serialization formats
-- Supporting partial exports (select specific metric types only)
 
 ### Use Cases
 
@@ -294,8 +250,6 @@ Exported data can be easily integrated with:
 3. **For Enterprise Reporting**: Use XML format with custom date ranges
 4. **For Large Datasets**: Use custom ranges to limit data volume
 5. **For Regular Reporting**: Schedule exports during off-peak hours
-
-The export functionality is designed to be both powerful and user-friendly, providing enterprise-grade data export capabilities with an intuitive interface.
 
 ## What's Next?
 
