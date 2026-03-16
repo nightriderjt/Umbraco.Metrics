@@ -223,7 +223,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
             
             // Append to file with newline
-            await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.ReadWrite, FileShare.ReadWrite);
+            await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             await using var writer = new StreamWriter(stream, Encoding.UTF8);
             await writer.WriteLineAsync(json);
 
