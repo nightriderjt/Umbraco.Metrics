@@ -1,14 +1,12 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
-
 public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsService
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
@@ -83,17 +81,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
     }
  
 
-    public async Task CleanupOldDataAsync()
-    {
-        try
-        {
-            UpdateCleanupLogicForDailyFiles();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error cleaning up old data");
-        }
-    }
+
 
     public async Task<HistoricalMetricsStats> GetStorageStatsAsync()
     {
@@ -112,7 +100,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
                 stats.TotalSizeBytes = files.Sum(f => new FileInfo(f).Length);
                 
                 var dates = files
-                    .Select(f => TryParseDateFromFileName(f, out var date) ? date : (DateTime?)null)
+                    .Select(f => Utils.TryParseDateFromFileName(f, out var date) ? date : (DateTime?)null)
                     .Where(d => d.HasValue)
                     .Select(d => d!.Value)
                     .ToList();
@@ -279,72 +267,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
 
    
 
-    private bool TryParseDateFromFileName(string filePath, out DateTime date)
-    {
-        date = DateTime.MinValue;
-        
-        try
-        {
-            var fileName = Path.GetFileNameWithoutExtension(filePath);
-            if (fileName.StartsWith("metrics-"))
-            {
-                var datePart = fileName.Substring(8); // Remove "metrics-"
-                // Try parsing as daily file (yyyyMMdd)
-                if (DateTime.TryParseExact(datePart, "yyyyMMdd", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-                {
-                    date = parsedDate;
-                    return true;
-                }
-                // Also try the old format for backward compatibility (yyyyMMdd-HHmmss)
-                if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
-                {
-                    date = parsedDate;
-                    return true;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore parsing errors
-        }
-        
-        return false;
-    }
+    
 
-    private void UpdateCleanupLogicForDailyFiles()
-    {
-        try
-        {
-            var cutoffDate = DateTime.UtcNow.AddDays(-_options.RetentionDays).Date;
-            var files = Directory.GetFiles(_options.StoragePath, "metrics-*.json");
 
-            int deletedCount = 0;
-            foreach (var file in files)
-            {
-                if (TryParseDateFromFileName(file, out var fileDate) && fileDate < cutoffDate)
-                {
-                    try
-                    {
-                        File.Delete(file);
-                        deletedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Error deleting old metrics file: {File}", file);
-                    }
-                }
-            }
-
-            if (deletedCount > 0)
-            {
-                _logger.LogInformation("Cleaned up {Count} old metrics files", deletedCount);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error cleaning up old data");
-        }
-    }
 }

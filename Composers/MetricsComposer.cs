@@ -25,8 +25,10 @@ public class MetricsComposer : IComposer
         
         // Register historical metrics services
         builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
+        builder.Services.AddSingleton<IMetricsCleanUpService, MetricsCleanUpService>();
         builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
+        builder.Services.AddHostedService<MetricsCleanUpService>();
         var environment=builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {

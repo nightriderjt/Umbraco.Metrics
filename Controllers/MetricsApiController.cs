@@ -24,19 +24,22 @@ public class MetricsApiController : ManagementApiControllerBase
     private readonly IMetricsExportService _exportService;
     private readonly IHistoricalMetricsService _historicalMetricsService;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IMetricsCleanUpService _metricsCleanUpService;
 
     public MetricsApiController(
         IPerformanceMetricsService metricsService,
         IUmbracoMetricsService umbracoMetricsService,
         IMetricsExportService exportService,
         IHistoricalMetricsService historicalMetricsService,
-        IWebHostEnvironment webHostEnvironment)
+        IWebHostEnvironment webHostEnvironment,
+        IMetricsCleanUpService metricsCleanUpService)
     {
         _metricsService = metricsService;
         _umbracoMetricsService = umbracoMetricsService;
         _exportService = exportService;
         _historicalMetricsService = historicalMetricsService;
         _webHostEnvironment = webHostEnvironment;
+        _metricsCleanUpService = metricsCleanUpService;
     }
 
     /// <summary>
@@ -272,7 +275,7 @@ public class MetricsApiController : ManagementApiControllerBase
     {
         try
         {
-            await _historicalMetricsService.CleanupOldDataAsync();
+            await _metricsCleanUpService.CleanupOldDataAsync();
             return Ok(new { message = "Historical data cleanup completed" });
         }
         catch (Exception ex)

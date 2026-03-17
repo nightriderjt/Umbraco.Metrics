@@ -14,13 +14,6 @@ public interface IHistoricalMetricsService
     /// </summary>
     Task<IReadOnlyList<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
 
-  
-
-    /// <summary>
-    /// Cleans up old historical data based on retention policy
-    /// </summary>
-    Task CleanupOldDataAsync();
-
     /// <summary>
     /// Gets statistics about historical data storage
     /// </summary>
