@@ -220,7 +220,7 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
             ></umbmetrics-export-options>
             
             <umbmetrics-progress
-              .isExporting="${this._isExporting}"
+              .isProgress="${this._isExporting}"
               .progress="${this._exportProgress}"
               .text="${this.localize?.term('progress_exporting') || 'Exporting...'}"
             ></umbmetrics-progress>

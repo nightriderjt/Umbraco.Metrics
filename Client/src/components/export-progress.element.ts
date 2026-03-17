@@ -12,7 +12,7 @@ import styles from '../css/export-progress.styles.css?inline';
 @customElement("umbmetrics-progress")
 export class ProgressElement extends UmbElementMixin(LitElement) {
   @property({ type: Boolean })
-  isExporting: boolean = false;
+  isProgress: boolean = false;
 
   @property({ type: Number })
   progress: number = 0;
@@ -21,7 +21,7 @@ export class ProgressElement extends UmbElementMixin(LitElement) {
   text:string='';
 
   render() {
-    if (!this.isExporting) {
+    if (!this.isProgress) {
       return html``;
     }
 
