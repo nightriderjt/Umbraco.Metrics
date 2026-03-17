@@ -238,39 +238,6 @@ public class MetricsApiController : ManagementApiControllerBase
         }
     }
 
-    /// <summary>
-    /// Gets the latest N historical performance metrics
-    /// </summary>
-    [HttpGet("historical/latest")]
-    [ProducesResponseType(typeof(IEnumerable<PerformanceMetrics>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetLatestHistoricalMetrics([FromQuery] int count = 100)
-    {
-        try
-        {
-            if (count <= 0 || count > 1000)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid count parameter",
-                    Detail = "Count must be between 1 and 1000",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var metrics = await _historicalMetricsService.GetLatestMetricsAsync(count);
-            return Ok(metrics);
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to retrieve latest metrics",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
 
     /// <summary>
     /// Gets statistics about historical metrics storage

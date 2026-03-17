@@ -14,10 +14,7 @@ public interface IHistoricalMetricsService
     /// </summary>
     Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
 
-    /// <summary>
-    /// Gets the latest N historical metrics
-    /// </summary>
-    Task<Memory<PerformanceMetrics>> GetLatestMetricsAsync(int count);
+  
 
     /// <summary>
     /// Cleans up old historical data based on retention policy
