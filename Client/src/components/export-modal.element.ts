@@ -219,10 +219,11 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
               }}"
             ></umbmetrics-export-options>
             
-            <umbmetrics-export-progress
+            <umbmetrics-progress
               .isExporting="${this._isExporting}"
               .progress="${this._exportProgress}"
-            ></umbmetrics-export-progress>
+              .text="${this.localize?.term('progress_exporting') || 'Exporting...'}"
+            ></umbmetrics-progress>
           </div>
           
           <div slot="actions">

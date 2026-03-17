@@ -121,10 +121,11 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
       <umb-modal-dialog>
         <umb-body-layout headline="${this.localize?.term('cleanup_title') || 'Cleanup Metrics'}">
           <div id="main">        
-            <umbmetrics-export-progress
+            <umbmetrics-progress
               .isExporting="${this._isCleaning}"
               .progress="${this._cleanProgress}"
-            ></umbmetrics-export-progress>
+                .text="${this.localize?.term('cleanup_cleaning') || 'Cleaning...'}"
+            ></umbmetrics-progress>
           </div>          
           <div slot="actions">
             <uui-button 
@@ -144,7 +145,7 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
                 <uui-icon name="icon-time"></uui-icon>
                 ${this.localize?.term('cleanup_cleaning') || 'Cleaning Up...'}
               ` : html`
-                <uui-icon name="icon-download"></uui-icon>
+                <uui-icon name="icon-trash"></uui-icon>
                 ${this.localize?.term('cleanup_cleanupMetrics') || 'Cleanup Metrics'}
               `}
             </uui-button>

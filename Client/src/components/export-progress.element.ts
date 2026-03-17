@@ -9,13 +9,16 @@ import {
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import styles from '../css/export-progress.styles.css?inline';
 
-@customElement("umbmetrics-export-progress")
-export class ExportProgressElement extends UmbElementMixin(LitElement) {
+@customElement("umbmetrics-progress")
+export class ProgressElement extends UmbElementMixin(LitElement) {
   @property({ type: Boolean })
   isExporting: boolean = false;
 
   @property({ type: Number })
   progress: number = 0;
+
+  @property()
+  text:string='';
 
   render() {
     if (!this.isExporting) {
@@ -27,8 +30,8 @@ export class ExportProgressElement extends UmbElementMixin(LitElement) {
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${this.progress}%"></div>
         </div>
-        <div class="progress-text">
-          ${this.localize?.term('export_exporting') || 'Exporting...'} ${this.progress}%
+        <div class="progress-text">          
+          ${this.text} ${this.progress}%
         </div>
       </div>
     `;
@@ -37,10 +40,10 @@ export class ExportProgressElement extends UmbElementMixin(LitElement) {
   static styles = css`${unsafeCSS(styles)}`;
 }
 
-export default ExportProgressElement;
+export default ProgressElement;
 
 declare global {
   interface HTMLElementTagNameMap {
-    "umbmetrics-export-progress": ExportProgressElement;
+    "umbmetrics-progress": ProgressElement;
   }
 }
