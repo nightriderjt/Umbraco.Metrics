@@ -48,7 +48,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         }
     }
 
-    public async Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate)
+    public async Task<IReadOnlyList<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate)
     {
         var allMetrics = new List<PerformanceMetrics>();
         var files = GetDailyFilesForDateRange(startDate, endDate);
@@ -61,7 +61,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
                 allMetrics.Add(metric);
             }
         }
-        return allMetrics.ToArray().AsMemory();
+        return allMetrics;
     }
     private async IAsyncEnumerable<PerformanceMetrics> StreamMetricsFromFileAsync(string filePath)
     {

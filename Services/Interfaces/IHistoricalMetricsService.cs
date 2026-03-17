@@ -12,7 +12,7 @@ public interface IHistoricalMetricsService
     /// <summary>
     /// Gets historical metrics within a date range
     /// </summary>
-    Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
+    Task<IReadOnlyList<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate);
 
   
 
