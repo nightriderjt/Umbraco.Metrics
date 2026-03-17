@@ -539,7 +539,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-button 
                 look="outline"
                 style="margin-top: 1rem;"
-                 color="positive"
+                 color="warning"
                  @click="${this.#openCleanupDialog}"
               >
                 <uui-icon name="icon-trash"></uui-icon>
