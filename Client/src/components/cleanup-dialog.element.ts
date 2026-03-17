@@ -1,9 +1,7 @@
 import {
-  css,
   html,
   customElement,
-  state,
-  unsafeCSS,
+  state
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { UmbModalElement } from "@umbraco-cms/backoffice/modal";
@@ -12,7 +10,7 @@ import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { MetricsExportService } from "../services/metrics-export.service.js";
 import { UUIModalElement } from "@umbraco-cms/backoffice/external/uui";
 import './export-progress.element.js';
-import styles from  '../css/cleanup-dialog.styles.css?inline';
+
 
 @customElement("umbmetrics-cleanup-dialog")
 export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalElement) {
@@ -122,44 +120,14 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
     return html`
       <umb-modal-dialog>
         <umb-body-layout headline="${this.localize?.term('cleanup_title') || 'Cleanup Metrics'}">
-
-        
-          <div id="main">  
-            <svg class="cleanup-illustration" viewBox="20 55 200 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-              <!-- Man body -->
-              <circle cx="100" cy="80" r="20" fill="#4a5568" />
-              <rect x="85" y="100" width="30" height="60" rx="5" fill="#4a5568" />
-              
-              <!-- Arms -->
-              <rect x="60" y="100" width="15" height="40" rx="5" fill="#4a5568" transform="rotate(-30 60 100)" />
-              <rect x="125" y="100" width="15" height="40" rx="5" fill="#4a5568" transform="rotate(30 125 100)" />
-              
-              <!-- Legs -->
-              <rect x="85" y="160" width="10" height="30" rx="3" fill="#4a5568" />
-              <rect x="105" y="160" width="10" height="30" rx="3" fill="#4a5568" />
-              
-              <!-- Garbage bag -->
-              <ellipse cx="140" cy="120" rx="25" ry="35" fill="#718096" />
-              <path d="M115 120 Q140 90 165 120" fill="#718096" />
-              
-              <!-- Garbage bag handle (man's hand) -->
-              <circle cx="130" cy="110" r="5" fill="#4a5568" />
-              
-              <!-- Trash can -->
-              <rect x="40" y="130" width="40" height="50" rx="3" fill="#a0aec0" />
-              <rect x="35" y="125" width="50" height="10" rx="2" fill="#a0aec0" />
-              <rect x="45" y="135" width="30" height="5" rx="1" fill="#cbd5e0" />
-              
-              <!-- Motion lines -->
-              <path d="M170 120 Q190 110 210 120" stroke="#cbd5e0" stroke-width="2" fill="none" stroke-dasharray="5,5" />
-              <path d="M175 125 Q195 115 215 125" stroke="#cbd5e0" stroke-width="2" fill="none" stroke-dasharray="5,5" />
-            </svg>           
-            ${this._isCleaning ? html `     
-            <umbmetrics-progress
-              .isProgress="${this._isCleaning}"
-              .progress="${this._cleanProgress}"
+          <div id="main" >
+            ${this._isCleaning ? html`     
+              <umbmetrics-progress
+                .isProgress="${this._isCleaning}"
+                .progress="${this._cleanProgress}"
                 .text="${this.localize?.term('cleanup_cleaning') || 'Cleaning...'}"
-            ></umbmetrics-progress>`: html`` }  
+              ></umbmetrics-progress>
+            ` : html``}  
           </div>
           
           <div slot="actions">
@@ -190,7 +158,7 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
     `;
   }
 
-  static styles = [...UUIModalElement.styles,css`${unsafeCSS(styles)}`];
+  static styles = [...UUIModalElement.styles];
 }
 
 export default UmbMetricsECleanupDialogElement;
