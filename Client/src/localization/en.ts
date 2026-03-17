@@ -238,5 +238,17 @@ export default {
     "high_memory_threshold": "Memory threshold that triggers aggressive garbage collection",
     "latency_mode": "GC latency mode affects how aggressively garbage collection runs",
     "total_pause_time": "Total time the application was paused for garbage collection"
+  },
+
+  // Cleanup Dialog
+  "cleanup": {
+    "title": "Cleanup Metrics",
+    "cleanupComplete": "Cleanup Complete",
+    "cleanupCompleteSuccessfully": "Cleanup completed successfully",
+    "cleanupFailed": "Cleanup Failed",
+    "failedToCleanup": "Failed to cleanup metrics. Please try again.",
+    "cancel": "Cancel",
+    "cleaning": "Cleaning Up...",
+    "cleanupMetrics": "Cleanup Metrics"
   }
 }
