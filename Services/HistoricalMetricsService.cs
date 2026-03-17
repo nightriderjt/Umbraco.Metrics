@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,7 +9,7 @@ using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
 
-public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsService, IDisposable
+public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsService
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly ILogger<HistoricalMetricsService> _logger;
