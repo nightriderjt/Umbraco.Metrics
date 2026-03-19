@@ -29,6 +29,7 @@ import stylesString from '../css/dashboard.element.css?inline';
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
 import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
+import { UMB_METRICS_CLEANUP_DIALOG } from "../components/cleanup-dialog.token.js";
 
 @customElement("umbmetrics-dashboard")
 export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
@@ -187,7 +188,14 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     );
   }
  
-
+  #openCleanupDialog=async ()=>{
+    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    
+    modalManager?.open(
+      this, 
+      UMB_METRICS_CLEANUP_DIALOG   
+    );
+  }
   #toggleAutoRefresh = async () => {
     this._autoRefresh = !this._autoRefresh;
 
@@ -531,7 +539,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               <uui-button 
                 look="outline"
                 style="margin-top: 1rem;"
-                disabled
+                 color="warning"
+                 @click="${this.#openCleanupDialog}"
               >
                 <uui-icon name="icon-trash"></uui-icon>
                 ${this.localize?.term('dashboard_cleanupOldData') || 'Cleanup Old Data'}

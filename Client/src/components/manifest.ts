@@ -1,4 +1,5 @@
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from './active-requests-sidebar.modal.js';
+import { UMB_METRICS_CLEANUP_DIALOG } from './cleanup-dialog.token.js';
 import { UMB_METRICS_EXPORT_MODAL } from './export-modal.token.js';
 
 export const manifests: Array<UmbExtensionManifest> = [
@@ -18,6 +19,15 @@ export const manifests: Array<UmbExtensionManifest> = [
     js: () => import('./export-modal.element.js'),
     meta: {
       modal: UMB_METRICS_EXPORT_MODAL,
+    },
+  },
+  {
+    type: 'modal',
+    alias: 'UmbMetrics.Modal.CleanUp',
+    name: 'CleanUp Dialog',
+    js: () => import('./cleanup-dialog.element.js'),
+    meta: {
+      modal: UMB_METRICS_CLEANUP_DIALOG,
     },
   },
 ];

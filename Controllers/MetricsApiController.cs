@@ -24,19 +24,22 @@ public class MetricsApiController : ManagementApiControllerBase
     private readonly IMetricsExportService _exportService;
     private readonly IHistoricalMetricsService _historicalMetricsService;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IMetricsCleanUpService _metricsCleanUpService;
 
     public MetricsApiController(
         IPerformanceMetricsService metricsService,
         IUmbracoMetricsService umbracoMetricsService,
         IMetricsExportService exportService,
         IHistoricalMetricsService historicalMetricsService,
-        IWebHostEnvironment webHostEnvironment)
+        IWebHostEnvironment webHostEnvironment,
+        IMetricsCleanUpService metricsCleanUpService)
     {
         _metricsService = metricsService;
         _umbracoMetricsService = umbracoMetricsService;
         _exportService = exportService;
         _historicalMetricsService = historicalMetricsService;
         _webHostEnvironment = webHostEnvironment;
+        _metricsCleanUpService = metricsCleanUpService;
     }
 
     /// <summary>
@@ -238,39 +241,6 @@ public class MetricsApiController : ManagementApiControllerBase
         }
     }
 
-    /// <summary>
-    /// Gets the latest N historical performance metrics
-    /// </summary>
-    [HttpGet("historical/latest")]
-    [ProducesResponseType(typeof(IEnumerable<PerformanceMetrics>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetLatestHistoricalMetrics([FromQuery] int count = 100)
-    {
-        try
-        {
-            if (count <= 0 || count > 1000)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid count parameter",
-                    Detail = "Count must be between 1 and 1000",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var metrics = await _historicalMetricsService.GetLatestMetricsAsync(count);
-            return Ok(metrics);
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to retrieve latest metrics",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
 
     /// <summary>
     /// Gets statistics about historical metrics storage
@@ -298,15 +268,27 @@ public class MetricsApiController : ManagementApiControllerBase
     /// <summary>
     /// Manually triggers cleanup of old historical data
     /// </summary>
+    /// <param name="retentionDays">Optional custom retention days. If not provided, uses default from configuration.</param>
     [HttpPost("historical/cleanup")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CleanupHistoricalData()
+    public async Task<IActionResult> CleanupHistoricalData([FromQuery] int? retentionDays = null)
     {
         try
         {
-            await _historicalMetricsService.CleanupOldDataAsync();
-            return Ok(new { message = "Historical data cleanup completed" });
+            if (retentionDays.HasValue && retentionDays.Value < 0)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid retention days",
+                    Detail = "Retention days must be a positive number",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            await _metricsCleanUpService.CleanupOldDataAsync(retentionDays);
+            return Ok(new { message = "Historical data cleanup completed", retentionDays = retentionDays });
         }
         catch (Exception ex)
         {

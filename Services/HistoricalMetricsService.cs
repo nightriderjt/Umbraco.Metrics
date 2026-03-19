@@ -1,22 +1,18 @@
-using System.Globalization;
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text;
+using System.Text.Json;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
-
-public class HistoricalMetricsService : IHistoricalMetricsService, IHostedService, IDisposable
+public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsService
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly ILogger<HistoricalMetricsService> _logger;
+    private readonly HistoricalMetricsOptions _options; 
 
-    private readonly HistoricalMetricsOptions _options;
-    private Timer? _timer;
-    private bool _disposed;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         WriteIndented = false, // No indentation for smaller file size
@@ -49,7 +45,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         }
     }
 
-    public async Task<Memory<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate)
+    public async Task<IReadOnlyList<PerformanceMetrics>> GetHistoricalMetricsAsync(DateTime startDate, DateTime endDate)
     {
         var allMetrics = new List<PerformanceMetrics>();
         var files = GetDailyFilesForDateRange(startDate, endDate);
@@ -62,7 +58,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
                 allMetrics.Add(metric);
             }
         }
-        return allMetrics.ToArray().AsMemory();
+        return allMetrics;
     }
     private async IAsyncEnumerable<PerformanceMetrics> StreamMetricsFromFileAsync(string filePath)
     {
@@ -71,64 +67,21 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
   
         while ((line = await reader.ReadLineAsync()) != null)
         {
-            var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, _jsonSerializerOptions);
+            PerformanceMetrics? metric = null;
+            try
+            {
+                metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, _jsonSerializerOptions);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogDebug(ex, "Error parsing JSON line in file {File}: {Line}", filePath, line);
+            }
             if (metric != null) yield return metric;
         }
     }
-    public async Task<Memory<PerformanceMetrics>> GetLatestMetricsAsync(int count)
-    {
-        try
-        {
-            var recentDays = Math.Max(7, count / 100);
-            // Get files and REVERSE them to start with the most recent data
-            var files = GetDailyFilesForDateRange(DateTime.UtcNow.AddDays(-recentDays), DateTime.UtcNow);
-            files.Reverse();
-            var allMetrics = new List<PerformanceMetrics>();
-            foreach (var file in files)
-            {           
-                if (allMetrics.Count >= count) break;
-                try
-                {
-                   
-                    Memory<PerformanceMetrics> fileMemory = await ReadMetricsFromFileAsync(file);                  
-                    ReadOnlySpan<PerformanceMetrics> span = fileMemory.Span;
-                    foreach (var metric in span)
-                    {
-                        allMetrics.Add(metric);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Error reading file: {File}", file);
-                }
-            }
+ 
 
-            // Final Sort and Take
-            var result = allMetrics
-                .OrderByDescending(m => m.Timestamp)
-                .Take(count)
-                .ToArray();
 
-            return result.AsMemory();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting latest metrics");
-            return Memory<PerformanceMetrics>.Empty;
-        }
-    }
-
-    public async Task CleanupOldDataAsync()
-    {
-        try
-        {
-            UpdateCleanupLogicForDailyFiles();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error cleaning up old data");
-        }
-    }
 
     public async Task<HistoricalMetricsStats> GetStorageStatsAsync()
     {
@@ -147,7 +100,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
                 stats.TotalSizeBytes = files.Sum(f => new FileInfo(f).Length);
                 
                 var dates = files
-                    .Select(f => TryParseDateFromFileName(f, out var date) ? date : (DateTime?)null)
+                    .Select(f => Utils.TryParseDateFromFileName(f, out var date) ? date : (DateTime?)null)
                     .Where(d => d.HasValue)
                     .Select(d => d!.Value)
                     .ToList();
@@ -166,48 +119,50 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
 
         return stats;
     }
-
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Historical Metrics Service starting");
-        
-        // Start the timer for periodic saving
-        _timer = new Timer(
-            async _ => await SaveMetricsAsync(),
-            null,
-            TimeSpan.Zero,
-            TimeSpan.FromSeconds(_options.SaveIntervalSeconds));
-
-        // Start cleanup timer if enabled
-        if (_options.EnableAutoCleanup)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var cleanupTimer = new Timer(
-                async _ => await CleanupOldDataAsync(),
-                null,
-                TimeSpan.FromHours(1), // First run after 1 hour
-                TimeSpan.FromHours(_options.CleanupIntervalHours));
-        }
+            try
+            {
+            await SaveMetricsAsync(); 
+            await Task.Delay(_options.SaveIntervalSeconds*1000, stoppingToken);
+            } 
+            catch (OperationCanceledException ex)
+            {
 
-        return Task.CompletedTask;
+                _logger.LogInformation(ex, "Historical Metrics Service stopped");
+            }                   
+        }     
     }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Historical Metrics Service stopping");
+    //public Task StartAsync(CancellationToken cancellationToken)
+    //{
+    //    _logger.LogInformation("Historical Metrics Service starting");
         
-        _timer?.Change(Timeout.Infinite, 0);
-        return Task.CompletedTask;
-    }
+    //    // Start the timer for periodic saving
+    //    _timer = new Timer(
+    //        async _ => await SaveMetricsAsync(),
+    //        null,
+    //        TimeSpan.Zero,
+    //        TimeSpan.FromSeconds(_options.SaveIntervalSeconds));
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _timer?.Dispose();
-            _disposed = true;
-            GC.SuppressFinalize(this);
-        }
-    }
+    //    // Start cleanup timer if enabled
+    //    if (_options.EnableAutoCleanup)
+    //    {
+    //        var cleanupTimer = new Timer(
+    //            async _ => await CleanupOldDataAsync(),
+    //            null,
+    //            TimeSpan.FromHours(1), // First run after 1 hour
+    //            TimeSpan.FromHours(_options.CleanupIntervalHours));
+    //    }
+
+    //    return Task.CompletedTask;
+    //}
+
+   
+
+   
 
     private async Task SaveMetricsToFileAsync(PerformanceMetrics metrics)
     {
@@ -223,7 +178,7 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
             var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
             
             // Append to file with newline
-            await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.ReadWrite, FileShare.ReadWrite);
+            await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             await using var writer = new StreamWriter(stream, Encoding.UTF8);
             await writer.WriteLineAsync(json);
 
@@ -310,107 +265,9 @@ public class HistoricalMetricsService : IHistoricalMetricsService, IHostedServic
         return files;
     }
 
-    private async Task<Memory<PerformanceMetrics>> ReadMetricsFromFileAsync(string filePath)
-    {
-        var metricsList = new List<PerformanceMetrics>();
-  
+   
 
-        try
-        {            
-            using var reader = new StreamReader(filePath, Encoding.UTF8);
-            string? line;          
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                if (string.IsNullOrWhiteSpace(line)) continue;
+    
 
-                try
-                {
-                    var metric = JsonSerializer.Deserialize<PerformanceMetrics>(line, _jsonSerializerOptions);
-                    if (metric != null)
-                    {
-                        metricsList.Add(metric);
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    _logger.LogDebug(ex, "Error parsing JSON line in file {File}: {Line}", filePath, line);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error reading metrics file: {File}", filePath);
-        }
 
-        return metricsList.ToArray().AsMemory();
-    }
-
-    private bool TryParseDateFromFileName(string filePath, out DateTime date)
-    {
-        date = DateTime.MinValue;
-        
-        try
-        {
-            var fileName = Path.GetFileNameWithoutExtension(filePath);
-            if (fileName.StartsWith("metrics-"))
-            {
-                var datePart = fileName.Substring(8); // Remove "metrics-"
-                // Try parsing as daily file (yyyyMMdd)
-                if (DateTime.TryParseExact(datePart, "yyyyMMdd", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-                {
-                    date = parsedDate;
-                    return true;
-                }
-                // Also try the old format for backward compatibility (yyyyMMdd-HHmmss)
-                if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
-                {
-                    date = parsedDate;
-                    return true;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore parsing errors
-        }
-        
-        return false;
-    }
-
-    private void UpdateCleanupLogicForDailyFiles()
-    {
-        try
-        {
-            var cutoffDate = DateTime.UtcNow.AddDays(-_options.RetentionDays).Date;
-            var files = Directory.GetFiles(_options.StoragePath, "metrics-*.json");
-
-            int deletedCount = 0;
-            foreach (var file in files)
-            {
-                if (TryParseDateFromFileName(file, out var fileDate) && fileDate < cutoffDate)
-                {
-                    try
-                    {
-                        File.Delete(file);
-                        deletedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Error deleting old metrics file: {File}", file);
-                    }
-                }
-            }
-
-            if (deletedCount > 0)
-            {
-                _logger.LogInformation("Cleaned up {Count} old metrics files", deletedCount);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error cleaning up old data");
-        }
-    }
 }

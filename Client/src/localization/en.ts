@@ -238,5 +238,24 @@ export default {
     "high_memory_threshold": "Memory threshold that triggers aggressive garbage collection",
     "latency_mode": "GC latency mode affects how aggressively garbage collection runs",
     "total_pause_time": "Total time the application was paused for garbage collection"
+  },
+
+  // Cleanup Dialog
+  "cleanup": {
+    "title": "Cleanup Metrics",
+    "cleanupComplete": "Cleanup Complete",
+    "cleanupCompleteSuccessfully": "Cleanup completed successfully",
+    "cleanupFailed": "Cleanup Failed",
+    "failedToCleanup": "Failed to cleanup metrics. Please try again.",
+    "cancel": "Cancel",
+    "cleaning": "Cleaning Up...",
+    "cleanupMetrics": "Cleanup Metrics",
+    "useDefaultRetention": "Use default retention period",
+    "defaultRetentionDescription": "Clean up data older than the configured default retention period (usually 30 days)",
+    "customRetention": "Custom retention period",
+    "customRetentionDescription": "Specify a custom number of days to keep data",
+    "retentionDaysPlaceholder": "Number of days",
+    "days": "days",
+    "customRetentionHelp": "Enter number of days to keep historical metrics data (1-365)"
   }
 }

@@ -363,3 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /wwwroot/App_Plugins/UmbMetrics
 /wwwroot/App_Plugins/UmbMetrics
+
+# Version sync script (local development tool)
+sync-version.ps1

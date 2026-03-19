@@ -137,6 +137,49 @@ export class MetricsExportService {
 
  
 
+  /**
+   * Cleanup historical metrics data
+   * @param retentionDays Optional custom retention days. If not provided, uses server default.
+   */
+  async cleanupHistoricalData(retentionDays?: number): Promise<{ message: string; retentionDays?: number }> {
+    const token = await this.tokenProvider();
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
 
+    const url = retentionDays !== undefined 
+      ? `${this.API_BASE_URL}/historical/cleanup?retentionDays=${retentionDays}`
+      : `${this.API_BASE_URL}/historical/cleanup`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized: Please ensure you are logged into the Umbraco backoffice');
+      }
+      
+      let errorMessage = `Failed to cleanup historical data: ${response.status} ${response.statusText}`;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.title || errorData.detail) {
+          errorMessage = `${errorData.title || 'Error'}: ${errorData.detail || errorMessage}`;
+        }
+      } catch {
+        // If we can't parse JSON, use the default error message
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return await response.json();
+  }
 
 }
