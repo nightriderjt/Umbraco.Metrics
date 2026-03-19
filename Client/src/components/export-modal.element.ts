@@ -225,17 +225,20 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
               .text="${this.localize?.term('progress_exporting') || 'Exporting...'}"
             ></umbmetrics-progress>
           </div>
-          
-          <div slot="actions">
+          <umb-footer-layout  slot="footer"> 
+
+
             <uui-button 
               look="secondary"
               @click="${this.#handleCancel}"
               ?disabled="${this._isExporting}"
+              slot="actions"
             >
               ${this.localize?.term('export_cancel') || 'Cancel'}
             </uui-button>
             
             <uui-button 
+             slot="actions"
               look="primary"
               color="positive"
               @click="${this.#handleExport}"
@@ -249,7 +252,10 @@ export class UmbMetricsExportModalElement extends UmbElementMixin(UmbModalElemen
                 ${this.localize?.term('export_exportMetrics') || 'Export Metrics'}
               `}
             </uui-button>
-          </div>
+        
+
+          </umb-footer-layout>
+          
         </umb-body-layout>
       </umb-modal-sidebar>
     `;

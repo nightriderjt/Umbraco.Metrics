@@ -5,8 +5,8 @@ export const UMB_METRICS_CLEANUP_DIALOG = new UmbModalToken(
   "UmbMetrics.Modal.CleanUp",
   {
     modal: {
-      type: "dialog",
-      size: "medium",
+      type: "sidebar",
+      size: "small",
     },
   }
 );

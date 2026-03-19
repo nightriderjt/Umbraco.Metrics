@@ -268,15 +268,27 @@ public class MetricsApiController : ManagementApiControllerBase
     /// <summary>
     /// Manually triggers cleanup of old historical data
     /// </summary>
+    /// <param name="retentionDays">Optional custom retention days. If not provided, uses default from configuration.</param>
     [HttpPost("historical/cleanup")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CleanupHistoricalData()
+    public async Task<IActionResult> CleanupHistoricalData([FromQuery] int? retentionDays = null)
     {
         try
         {
-            await _metricsCleanUpService.CleanupOldDataAsync();
-            return Ok(new { message = "Historical data cleanup completed" });
+            if (retentionDays.HasValue && retentionDays.Value < 0)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid retention days",
+                    Detail = "Retention days must be a positive number",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            await _metricsCleanUpService.CleanupOldDataAsync(retentionDays);
+            return Ok(new { message = "Historical data cleanup completed", retentionDays = retentionDays });
         }
         catch (Exception ex)
         {

@@ -249,6 +249,13 @@ export default {
     "failedToCleanup": "Failed to cleanup metrics. Please try again.",
     "cancel": "Cancel",
     "cleaning": "Cleaning Up...",
-    "cleanupMetrics": "Cleanup Metrics"
+    "cleanupMetrics": "Cleanup Metrics",
+    "useDefaultRetention": "Use default retention period",
+    "defaultRetentionDescription": "Clean up data older than the configured default retention period (usually 30 days)",
+    "customRetention": "Custom retention period",
+    "customRetentionDescription": "Specify a custom number of days to keep data",
+    "retentionDaysPlaceholder": "Number of days",
+    "days": "days",
+    "customRetentionHelp": "Enter number of days to keep historical metrics data (1-365)"
   }
 }

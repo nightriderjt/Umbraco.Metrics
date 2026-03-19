@@ -139,15 +139,20 @@ export class MetricsExportService {
 
   /**
    * Cleanup historical metrics data
+   * @param retentionDays Optional custom retention days. If not provided, uses server default.
    */
-  async cleanupHistoricalData(): Promise<{ message: string }> {
+  async cleanupHistoricalData(retentionDays?: number): Promise<{ message: string; retentionDays?: number }> {
     const token = await this.tokenProvider();
     
     if (!token) {
       throw new Error('No authentication token available');
     }
 
-    const response = await fetch(`${this.API_BASE_URL}/historical/cleanup`, {
+    const url = retentionDays !== undefined 
+      ? `${this.API_BASE_URL}/historical/cleanup?retentionDays=${retentionDays}`
+      : `${this.API_BASE_URL}/historical/cleanup`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

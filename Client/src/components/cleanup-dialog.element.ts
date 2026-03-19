@@ -1,31 +1,47 @@
 import {
   html,
   customElement,
-  state
+  state,
+  css
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { UmbModalElement } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import { MetricsExportService } from "../services/metrics-export.service.js";
-import { UUIModalElement } from "@umbraco-cms/backoffice/external/uui";
+
 import './export-progress.element.js';
 
 
 @customElement("umbmetrics-cleanup-dialog")
 export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalElement) {
-  modalContext: any;
+  static styles = css`
+    .retention-options {
+      margin-bottom: var(--uui-size-space-4);
+    }
+    
+    .retention-option {
+      margin-bottom: var(--uui-size-space-2);
+    }
+    
+    .custom-retention-input {
+      margin-top: var(--uui-size-space-2);
+    }
+    
+    uui-button[slot="actions"] {
+      margin-left: var(--uui-size-space-2);
+    }
+  `;
 
+  modalContext: any;
   @state()
   private _isCleaning: boolean = false;
-
   @state()
   private _cleanProgress: number = 0;
-
- 
-
-
-
+  @state()
+  private _retentionOption: 'default' | 'custom' = 'default';
+  @state()
+  private _customRetentionDays: number = 30;
   #exportService?: MetricsExportService;
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
 
@@ -69,8 +85,13 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
 
       this._cleanProgress = 1;
       
-      // Call cleanup API
-      await this.#exportService.cleanupHistoricalData();
+      // Determine retention days based on selection
+      const retentionDays = this._retentionOption === 'custom' 
+        ? this._customRetentionDays 
+        : undefined;
+      
+      // Call cleanup API with optional retention days
+      await this.#exportService.cleanupHistoricalData(retentionDays);
       
       // Clear progress timer and set to 100%
       clearInterval(progressInterval);
@@ -118,9 +139,64 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
 
   render() {
     return html`
-      <umb-modal-dialog>
+      <umb-modal-sidebar>
         <umb-body-layout headline="${this.localize?.term('cleanup_title') || 'Cleanup Metrics'}">
-          <div id="main" >
+          <div id="main">
+            ${!this._isCleaning ? html`
+              <div class="retention-options">
+                <div class="retention-option">
+                  <uui-radio
+                    name="retentionOption"
+                    value="default"
+                    .checked="${this._retentionOption === 'default'}"
+                    @change="${() => this._retentionOption = 'default'}"
+                  >
+                    <strong>${this.localize?.term('cleanup_useDefaultRetention') || 'Use default retention period'}</strong>
+                    <div>${this.localize?.term('cleanup_defaultRetentionDescription') || 'Clean up data older than the configured default retention period (usually 30 days)'}</div>
+                  </uui-radio>
+                </div>
+                
+                <div class="retention-option">
+                  <uui-radio
+                    name="retentionOption"
+                    value="custom"
+                    .checked="${this._retentionOption === 'custom'}"
+                    @change="${() => this._retentionOption = 'custom'}"
+                  >
+                    <div style="display: flex; align-items: center; gap: var(--uui-size-space-1);">
+                      <strong>${this.localize?.term('cleanup_customRetention') || 'Custom retention period'}</strong>
+                      <uui-icon
+                        name="icon-info"                      
+                        title="${this.localize?.term('cleanup_customRetentionHelp') || 'Enter number of days to keep historical metrics data (1-365)'}"
+                      ></uui-icon>
+                    </div>
+                    <div>${this.localize?.term('cleanup_customRetentionDescription') || 'Specify a custom number of days to keep data'}</div>
+                  </uui-radio>
+                  
+                  ${this._retentionOption === 'custom' ? html`
+                    <div class="custom-retention-input">
+                      <uui-input
+                        type="number"
+                        min="1"
+                        max="365"
+                        .value="${this._customRetentionDays.toString()}"
+                        @change="${(e: Event) => {
+                          const input = e.target as HTMLInputElement;
+                          const value = parseInt(input.value);
+                          if (!isNaN(value) && value >= 1 && value <= 365) {
+                            this._customRetentionDays = value;
+                          }
+                        }}"
+                        placeholder="${this.localize?.term('cleanup_retentionDaysPlaceholder') || 'Number of days'}"
+                       
+                      >                      
+                      </uui-input>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            ` : ''}
+            
             ${this._isCleaning ? html`     
               <umbmetrics-progress
                 .isProgress="${this._isCleaning}"
@@ -129,16 +205,19 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
               ></umbmetrics-progress>
             ` : html``}  
           </div>
-          
-          <div slot="actions">
-            <uui-button 
+
+          <umb-footer-layout  slot="footer"> 
+
+<uui-button 
               look="secondary"
               @click="${this.#handleCancel}"
               ?disabled="${this._isCleaning}"
+              slot="actions"
             >
               ${this.localize?.term('cleanup_cancel') || 'Cancel'}
             </uui-button>            
             <uui-button 
+            slot="actions"
               look="primary"
               color="positive"
               @click="${this.#handleCleanup}"
@@ -152,13 +231,13 @@ export class UmbMetricsECleanupDialogElement extends UmbElementMixin(UmbModalEle
                 ${this.localize?.term('cleanup_cleanupMetrics') || 'Cleanup Metrics'}
               `}
             </uui-button>
-          </div>
+          </umb-footer-layout>
         </umb-body-layout>
-      </umb-modal-dialog>
+      </umb-modal-sidebar>
     `;
   }
 
-  static styles = [...UUIModalElement.styles];
+ 
 }
 
 export default UmbMetricsECleanupDialogElement;

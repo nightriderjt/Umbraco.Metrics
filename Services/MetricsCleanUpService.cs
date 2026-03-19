@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,11 +40,11 @@ public class MetricsCleanUpService : BackgroundService, IMetricsCleanUpService
     }
 
 
-    public async Task CleanupOldDataAsync()
+    public async Task CleanupOldDataAsync(int? retentionDays = null)
     {
         try
         {
-            UpdateCleanupLogicForDailyFiles();
+            UpdateCleanupLogicForDailyFiles(retentionDays);
         }
         catch (Exception ex)
         {
@@ -51,11 +52,12 @@ public class MetricsCleanUpService : BackgroundService, IMetricsCleanUpService
         }
     }
 
-    private void UpdateCleanupLogicForDailyFiles()
+    private void UpdateCleanupLogicForDailyFiles(int? customRetentionDays = null)
     {
         try
         {
-            var cutoffDate = DateTime.UtcNow.AddDays(-_options.RetentionDays).Date;
+            var effectiveRetentionDays = customRetentionDays ?? _options.RetentionDays;
+            var cutoffDate = DateTime.UtcNow.AddDays(-effectiveRetentionDays).Date;
             var files = Directory.GetFiles(_options.StoragePath, "metrics-*.json");
 
             int deletedCount = 0;
@@ -77,7 +79,7 @@ public class MetricsCleanUpService : BackgroundService, IMetricsCleanUpService
 
             if (deletedCount > 0)
             {
-                _logger.LogInformation("Cleaned up {Count} old metrics files", deletedCount);
+                _logger.LogInformation("Cleaned up {Count} old metrics files (retention: {RetentionDays} days)", deletedCount, effectiveRetentionDays);
             }
         }
         catch (Exception ex)
