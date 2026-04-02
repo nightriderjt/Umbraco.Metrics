@@ -20,7 +20,7 @@ namespace UmbMetrics.Services.HealthChecks;
     "F1E2D3C4-B5A6-7890-1234-567890ABCDEF",
     "Umbraco Metrics",
     Description = "Health checks for threshold configuration and monitoring",
-    Group = "umbMetrics")]
+    Group = "Umbraco Metrics")]
 public class UmbMetricsHealthCheckGroup : HealthCheck
 {
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
@@ -35,7 +35,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         _thresholdRulesSettings = provider.GetRequiredService<IOptions<ThresholdRulesSettings>>();
         _emailNotificationSettings = provider.GetRequiredService<IOptions<EmailNotificationSettings>>();
         _thresholdEvaluationService = provider.GetRequiredService<IThresholdEvaluationService>();
-        _thresholdMonitoringService = provider.GetRequiredService<ThresholdMonitoringService>();
+        _thresholdMonitoringService = provider.GetService<ThresholdMonitoringService>();
         _runtimeState = provider.GetRequiredService<IRuntimeState>();
     }
 
@@ -101,7 +101,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         return new HealthCheckStatus(isHealthy ? "Threshold rules configuration is valid" : "Threshold rules configuration is missing or invalid")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
-            Actions = isHealthy ? null : new List<HealthCheckAction>
+            Actions = isHealthy ? new List<HealthCheckAction>() : new List<HealthCheckAction>
             {
                 new("configure-threshold-rules", Id) { Name = "Configure Threshold Rules" }
             }
@@ -119,7 +119,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         return new HealthCheckStatus(isHealthy ? "Email notification settings are properly configured" : "Email notification settings are missing or invalid")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
-            Actions = isHealthy ? null : new List<HealthCheckAction>
+            Actions = isHealthy ? new List<HealthCheckAction>() : new List<HealthCheckAction>
             {
                 new("configure-email-settings", Id) { Name = "Configure Email Settings" }
             }
@@ -135,7 +135,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         return new HealthCheckStatus(isHealthy ? "Required threshold database tables exist" : "Required threshold database tables are missing")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
-            Actions = isHealthy ? null : new List<HealthCheckAction>
+            Actions = isHealthy ? new List<HealthCheckAction>() : new List<HealthCheckAction>
             {
                 new("run-migration", Id) { Name = "Run Database Migration" }
             }
@@ -151,7 +151,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         return new HealthCheckStatus(isHealthy ? "Threshold monitoring service is running" : "Threshold monitoring service is not running")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
-            Actions = isHealthy ? null : new List<HealthCheckAction>
+            Actions = isHealthy ? new List<HealthCheckAction>() : new List<HealthCheckAction>
             {
                 new("restart-application", Id) { Name = "Restart Application" }
             }
@@ -168,7 +168,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         return new HealthCheckStatus(hasNotificationSettings ? "Alert notification settings are configured" : "Alert notification settings are missing")
         {
             ResultType = hasNotificationSettings ? StatusResultType.Success : StatusResultType.Warning,
-            Actions = hasNotificationSettings ? null : new List<HealthCheckAction>
+            Actions = hasNotificationSettings ? new List<HealthCheckAction>() : new List<HealthCheckAction>
             {
                 new("configure-alert-resolution", Id) { Name = "Configure Alert Notification Settings" }
             }
