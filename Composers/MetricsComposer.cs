@@ -59,6 +59,9 @@ public class MetricsComposer : IComposer
         builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         builder.Services.AddScoped<IWebhookNotificationService, WebhookNotificationService>();
         
+        // Register threshold monitoring background service (runs every 1 second)
+        builder.Services.AddHostedService<ThresholdMonitoringService>();
+        
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler

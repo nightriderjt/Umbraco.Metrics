@@ -90,111 +90,10 @@ public class ThresholdApiController : ManagementApiControllerBase
         }
     }
 
-    /// <summary>
-    /// Creates a new threshold rule
-    /// Note: Threshold rules are now configured via appsettings.json and cannot be created at runtime
-    /// </summary>
-    [HttpPost("rules")]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status405MethodNotAllowed)]
-    public async Task<IActionResult> CreateThresholdRule([FromBody] ThresholdRule rule)
-    {
-        return StatusCode(StatusCodes.Status405MethodNotAllowed, new ProblemDetails
-        {
-            Title = "Method Not Allowed",
-            Detail = "Threshold rules are configured via appsettings.json and cannot be created at runtime. Please update your appsettings.json file and restart the application.",
-            Status = StatusCodes.Status405MethodNotAllowed
-        });
-    }
+ 
 
-    /// <summary>
-    /// Updates an existing threshold rule
-    /// </summary>
-    [HttpPut("rules/{id:int}")]
-    [ProducesResponseType(typeof(ThresholdRule), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateThresholdRule(int id, [FromBody] ThresholdRule rule)
-    {
-        try
-        {
-            if (rule == null)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid request",
-                    Detail = "Threshold rule data is required",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
+ 
 
-            if (!rule.IsValid())
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid threshold rule",
-                    Detail = "Threshold rule configuration is invalid",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var existingRule = await _thresholdService.GetThresholdRuleAsync(id);
-            if (existingRule == null)
-            {
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Threshold rule not found",
-                    Detail = $"Threshold rule with ID {id} was not found",
-                    Status = StatusCodes.Status404NotFound
-                });
-            }
-
-            var updatedRule = await _thresholdService.UpdateThresholdRuleAsync(id, rule);
-            return Ok(updatedRule);
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to update threshold rule",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
-
-    /// <summary>
-    /// Deletes a threshold rule
-    /// </summary>
-    [HttpDelete("rules/{id:int}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> DeleteThresholdRule(int id)
-    {
-        try
-        {
-            var success = await _thresholdService.DeleteThresholdRuleAsync(id);
-            if (!success)
-            {
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Threshold rule not found",
-                    Detail = $"Threshold rule with ID {id} was not found",
-                    Status = StatusCodes.Status404NotFound
-                });
-            }
-
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to delete threshold rule",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
 
     /// <summary>
     /// Gets all active alerts
@@ -330,49 +229,7 @@ public class ThresholdApiController : ManagementApiControllerBase
         }
     }
 
-    /// <summary>
-    /// Tests a threshold rule
-    /// </summary>
-    [HttpPost("rules/test")]
-    [ProducesResponseType(typeof(ThresholdTestResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> TestThresholdRule([FromBody] ThresholdRule rule)
-    {
-        try
-        {
-            if (rule == null)
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid request",
-                    Detail = "Threshold rule data is required",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            if (!rule.IsValid())
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid threshold rule",
-                    Detail = "Threshold rule configuration is invalid",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var result = await _thresholdService.TestThresholdRuleAsync(rule);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to test threshold rule",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
+  
 
 
 

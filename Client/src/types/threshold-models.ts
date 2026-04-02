@@ -96,45 +96,12 @@ export interface ThresholdAlertStats {
     last7Days: number;
 }
 
-export interface ThresholdTestResult {
-    wouldTrigger: boolean;
-    triggeredConditions: ThresholdCondition[];
-    currentValues: Record<ThresholdMetricType, number>;
-    message?: string;
-}
 
-export interface EmailNotificationSettings {
-    id: number;
-    smtpServer: string;
-    smtpPort: number;
-    smtpUsername: string;
-    smtpPassword: string;
-    fromAddress: string;
-    fromName: string;
-    enableSsl: boolean;
-    isEnabled: boolean;
-    recipients: string[];
-    createdAt: Date;
-    updatedAt: Date;
-}
 
-export interface WebhookEndpoint {
-    id: number;
-    name: string;
-    url: string;
-    secret?: string;
-    headers?: Record<string, string>;
-    isEnabled: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
-export interface WebhookTestResult {
-    success: boolean;
-    statusCode?: number;
-    response?: string;
-    error?: string;
-}
+
+
+
 
 export interface AcknowledgeAlertRequest {
     acknowledgedBy: string;
@@ -145,6 +112,3 @@ export interface ResolveAlertRequest {
     notes?: string;
 }
 
-export interface TestEmailRequest {
-    recipient: string;
-}

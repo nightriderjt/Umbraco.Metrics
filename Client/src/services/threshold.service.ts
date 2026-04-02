@@ -1,14 +1,9 @@
 import type { 
     ThresholdRule, 
     ThresholdAlert, 
-    ThresholdAlertStats, 
-    ThresholdTestResult,
-    EmailNotificationSettings,
-    WebhookEndpoint,
-    WebhookTestResult,
+    ThresholdAlertStats,  
     AcknowledgeAlertRequest,
-    ResolveAlertRequest,
-    TestEmailRequest
+    ResolveAlertRequest  
 } from '../types/threshold-models.js';
 
 export class ThresholdService {
@@ -53,34 +48,6 @@ export class ThresholdService {
         return this.fetchWithAuth(`${this.baseUrl}/rules/${id}`);
     }
 
-    async createThresholdRule(rule: Omit<ThresholdRule, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'>): Promise<ThresholdRule> {
-        return this.fetchWithAuth(`${this.baseUrl}/rules`, {
-            method: 'POST',
-            body: JSON.stringify(rule)
-        });
-    }
-
-    async updateThresholdRule(id: number, rule: Partial<ThresholdRule>): Promise<ThresholdRule> {
-        return this.fetchWithAuth(`${this.baseUrl}/rules/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(rule)
-        });
-    }
-
-    async deleteThresholdRule(id: number): Promise<boolean> {
-        await this.fetchWithAuth(`${this.baseUrl}/rules/${id}`, {
-            method: 'DELETE'
-        });
-        return true;
-    }
-
-    async testThresholdRule(rule: ThresholdRule): Promise<ThresholdTestResult> {
-        return this.fetchWithAuth(`${this.baseUrl}/rules/test`, {
-            method: 'POST',
-            body: JSON.stringify(rule)
-        });
-    }
-
     // Threshold Alerts
     async getActiveAlerts(): Promise<ThresholdAlert[]> {
         return this.fetchWithAuth(`${this.baseUrl}/alerts/active`);
@@ -104,59 +71,6 @@ export class ThresholdService {
 
     async getAlertStats(): Promise<ThresholdAlertStats> {
         return this.fetchWithAuth(`${this.baseUrl}/alerts/stats`);
-    }
-
-    // Email Notifications
-    async getEmailSettings(): Promise<EmailNotificationSettings> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/email/settings`);
-    }
-
-    async updateEmailSettings(settings: EmailNotificationSettings): Promise<EmailNotificationSettings> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/email/settings`, {
-            method: 'PUT',
-            body: JSON.stringify(settings)
-        });
-    }
-
-    async testEmailConfiguration(request: TestEmailRequest): Promise<boolean> {
-        const result = await this.fetchWithAuth(`${this.baseUrl}/notifications/email/test`, {
-            method: 'POST',
-            body: JSON.stringify(request)
-        });
-        return result.success;
-    }
-
-    // Webhook Notifications
-    async getWebhookEndpoints(): Promise<WebhookEndpoint[]> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/webhooks`);
-    }
-
-    async createWebhookEndpoint(endpoint: Omit<WebhookEndpoint, 'id' | 'createdAt' | 'updatedAt'>): Promise<WebhookEndpoint> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/webhooks`, {
-            method: 'POST',
-            body: JSON.stringify(endpoint)
-        });
-    }
-
-    async updateWebhookEndpoint(id: number, endpoint: Partial<WebhookEndpoint>): Promise<WebhookEndpoint> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/webhooks/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(endpoint)
-        });
-    }
-
-    async deleteWebhookEndpoint(id: number): Promise<boolean> {
-        await this.fetchWithAuth(`${this.baseUrl}/notifications/webhooks/${id}`, {
-            method: 'DELETE'
-        });
-        return true;
-    }
-
-    async testWebhookEndpoint(endpoint: WebhookEndpoint): Promise<WebhookTestResult> {
-        return this.fetchWithAuth(`${this.baseUrl}/notifications/webhooks/test`, {
-            method: 'POST',
-            body: JSON.stringify(endpoint)
-        });
     }
 
     // Helper methods

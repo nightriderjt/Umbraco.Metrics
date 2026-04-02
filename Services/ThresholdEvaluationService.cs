@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Umbraco.Cms.Infrastructure.Persistence;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
@@ -12,6 +13,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     private readonly IEmailNotificationService _emailService;
     private readonly IWebhookNotificationService _webhookService;
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
+    private readonly IUmbracoDatabaseFactory _databaseFactory;
     private readonly List<ThresholdRule> _rulesCache = new();
     private readonly Dictionary<string, List<DateTime>> _ruleEvaluationHistory = new();
     private readonly object _lock = new();
@@ -22,12 +24,17 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         ILogger<ThresholdEvaluationService> logger,
         IEmailNotificationService emailService,
         IWebhookNotificationService webhookService,
-        IOptions<ThresholdRulesSettings> thresholdRulesSettings)
+        IOptions<ThresholdRulesSettings> thresholdRulesSettings,
+        IUmbracoDatabaseFactory databaseFactory)
     {
         _logger = logger;
         _emailService = emailService;
         _webhookService = webhookService;
         _thresholdRulesSettings = thresholdRulesSettings;
+        _databaseFactory = databaseFactory;
+        
+        // Load rules eagerly on startup
+        Task.Run(async () => await RefreshRulesCacheAsync());
     }
 
     public async Task EvaluateThresholdsAsync(PerformanceMetrics metrics)
@@ -215,7 +222,8 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             
             alert.SetTriggeredValues(triggeredValues);
             
-            // TODO: Save alert to database
+            // Save alert to database
+            await SaveAlertToDatabaseAsync(alert);
             
             // Update rule tracking (in memory only since rules are from configuration)
             rule.LastTriggeredAt = DateTime.UtcNow;
@@ -229,6 +237,39 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error triggering alert for rule: {RuleName}", rule.Name);
+        }
+    }
+
+    private async Task SaveAlertToDatabaseAsync(ThresholdAlert alert)
+    {
+        try
+        {
+            using var db = _databaseFactory.CreateDatabase();
+            
+            // Since rules are from configuration, we use RuleName as identifier
+            // RuleId is set to 0 for configuration-based rules
+            var sql = @"
+                INSERT INTO UmbMetrics_ThresholdAlerts 
+                (RuleId, RuleName, TriggeredAt, Status, Severity, TriggeredValuesJson, EmailSent)
+                VALUES (@0, @1, @2, @3, @4, @5, @6);
+                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+            
+            var alertId = db.ExecuteScalar<int>(sql,
+                0, // RuleId (0 for configuration-based rules)
+                alert.RuleName,
+                alert.TriggeredAt,
+                (int)alert.Status,
+                (int)alert.Severity,
+                alert.TriggeredValuesJson,
+                alert.EmailSent);
+            
+            alert.Id = alertId;
+            _logger.LogDebug("Alert saved to database with ID: {AlertId}", alertId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving alert to database for rule: {RuleName}", alert.RuleName);
+            throw;
         }
     }
 
@@ -297,8 +338,26 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     // Implementation of other interface methods
     public Task<IEnumerable<ThresholdAlert>> GetActiveAlertsAsync()
     {
-        // TODO: Implement database query
-        return Task.FromResult(Enumerable.Empty<ThresholdAlert>());
+        try
+        {
+            using var db = _databaseFactory.CreateDatabase();
+            
+            var sql = @"
+                SELECT Id, RuleId, RuleName, TriggeredAt, ResolvedAt, AcknowledgedAt, 
+                       Status, Severity, TriggeredValuesJson, EmailSent, EmailSentAt, 
+                       ResolvedBy, ResolutionNotes
+                FROM UmbMetrics_ThresholdAlerts 
+                WHERE Status = @0
+                ORDER BY TriggeredAt DESC";
+            
+            var alerts = db.Fetch<ThresholdAlert>(sql, (int)AlertStatus.Active);
+            return Task.FromResult(alerts.AsEnumerable());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting active alerts from database");
+            return Task.FromResult(Enumerable.Empty<ThresholdAlert>());
+        }
     }
 
     public Task<IEnumerable<ThresholdRule>> GetThresholdRulesAsync()
@@ -312,7 +371,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         // For backward compatibility, we can try to find by index or return null
         if (id >= 0 && id < _rulesCache.Count)
         {
-            return Task.FromResult(_rulesCache[id]);
+            return Task.FromResult<ThresholdRule?>(_rulesCache[id]);
         }
         return Task.FromResult<ThresholdRule?>(null);
     }
@@ -337,39 +396,122 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
 
     public Task<bool> AcknowledgeAlertAsync(int alertId, string acknowledgedBy)
     {
-        // TODO: Implement database update
-        return Task.FromResult(true);
+        try
+        {
+            using var db = _databaseFactory.CreateDatabase();
+            
+            var sql = @"
+                UPDATE UmbMetrics_ThresholdAlerts 
+                SET Status = @0, AcknowledgedAt = @1, ResolvedBy = @2
+                WHERE Id = @3 AND Status = @4";
+            
+            var rowsAffected = db.Execute(sql,
+                (int)AlertStatus.Acknowledged,
+                DateTime.UtcNow,
+                acknowledgedBy,
+                alertId,
+                (int)AlertStatus.Active);
+            
+            return Task.FromResult(rowsAffected > 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error acknowledging alert {AlertId}", alertId);
+            return Task.FromResult(false);
+        }
     }
 
     public Task<bool> ResolveAlertAsync(int alertId, string resolvedBy, string? notes = null)
     {
-        // TODO: Implement database update
-        return Task.FromResult(true);
+        try
+        {
+            using var db = _databaseFactory.CreateDatabase();
+            
+            var sql = @"
+                UPDATE UmbMetrics_ThresholdAlerts 
+                SET Status = @0, ResolvedAt = @1, ResolvedBy = @2, ResolutionNotes = @3
+                WHERE Id = @4 AND (Status = @5 OR Status = @6)";
+            
+            var rowsAffected = db.Execute(sql,
+                (int)AlertStatus.Resolved,
+                DateTime.UtcNow,
+                resolvedBy,
+                notes ?? string.Empty,
+                alertId,
+                (int)AlertStatus.Active,
+                (int)AlertStatus.Acknowledged);
+            
+            return Task.FromResult(rowsAffected > 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resolving alert {AlertId}", alertId);
+            return Task.FromResult(false);
+        }
     }
 
     public Task<ThresholdAlertStats> GetAlertStatsAsync()
     {
-        // TODO: Implement database query
-        var stats = new ThresholdAlertStats
+        try
         {
-            TotalAlerts = 0,
-            ActiveAlerts = 0,
-            AcknowledgedAlerts = 0,
-            ResolvedAlerts = 0,
-            Last24Hours = 0,
-            Last7Days = 0,
-            LastAlertTime = null,
-            BySeverity = new Dictionary<string, int>
+            using var db = _databaseFactory.CreateDatabase();
+            
+            var stats = new ThresholdAlertStats
             {
-                ["low"] = 0,
-                ["medium"] = 0,
-                ["high"] = 0,
-                ["critical"] = 0
-            },
-            AlertsByRule = new Dictionary<string, int>()
-        };
-        
-        return Task.FromResult(stats);
+                TotalAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts"),
+                ActiveAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 0"),
+                AcknowledgedAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 1"),
+                ResolvedAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 2"),
+                Last24Hours = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE TriggeredAt >= DATEADD(hour, -24, GETUTCDATE())"),
+                Last7Days = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE TriggeredAt >= DATEADD(day, -7, GETUTCDATE())"),
+                LastAlertTime = db.ExecuteScalar<DateTime?>("SELECT MAX(TriggeredAt) FROM UmbMetrics_ThresholdAlerts"),
+                BySeverity = new Dictionary<string, int>(),
+                AlertsByRule = new Dictionary<string, int>()
+            };
+            
+            // Get severity counts
+            var severitySql = "SELECT Severity, COUNT(*) as Count FROM UmbMetrics_ThresholdAlerts GROUP BY Severity";
+            var severityResults = db.Fetch<dynamic>(severitySql);
+            foreach (var result in severityResults)
+            {
+                var severity = ((int)result.Severity).ToString();
+                stats.BySeverity[severity] = (int)result.Count;
+            }
+            
+            // Get rule counts
+            var ruleSql = "SELECT RuleName, COUNT(*) as Count FROM UmbMetrics_ThresholdAlerts GROUP BY RuleName";
+            var ruleResults = db.Fetch<dynamic>(ruleSql);
+            foreach (var result in ruleResults)
+            {
+                var ruleName = (string)result.RuleName;
+                stats.AlertsByRule[ruleName] = (int)result.Count;
+            }
+            
+            return Task.FromResult(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting alert statistics from database");
+            
+            // Return empty stats on error
+            var stats = new ThresholdAlertStats
+            {
+                TotalAlerts = 0,
+                ActiveAlerts = 0,
+                AcknowledgedAlerts = 0,
+                ResolvedAlerts = 0,
+                Last24Hours = 0,
+                Last7Days = 0,
+                LastAlertTime = null,
+                BySeverity = new Dictionary<string, int>
+                {
+                    ["0"] = 0, ["1"] = 0, ["2"] = 0, ["3"] = 0
+                },
+                AlertsByRule = new Dictionary<string, int>()
+            };
+            
+            return Task.FromResult(stats);
+        }
     }
 
     public async Task<ThresholdTestResult> TestThresholdRuleAsync(ThresholdRule rule)

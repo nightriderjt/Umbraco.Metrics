@@ -775,19 +775,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               `)}
             </div>
           `}
-        </div>
-
-        <div class="thresholds-info">
-          <p>${this.localize?.term('threshold_description') || 'Threshold monitoring allows you to set rules for CPU usage, memory usage, active requests, and average response time. Alerts are triggered when metrics exceed configured thresholds.'}</p>
-          <uui-button 
-            look="outline"
-            style="margin-top: 1rem;"
-            disabled
-          >
-            <uui-icon name="icon-settings"></uui-icon>
-            ${this.localize?.term('threshold_manageRules') || 'Manage Threshold Rules'}
-          </uui-button>
-        </div>
+        </div>        
       </div>
     `;
   }
