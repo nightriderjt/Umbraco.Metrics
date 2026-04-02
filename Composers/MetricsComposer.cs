@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -22,28 +23,48 @@ public class MetricsComposer : IComposer
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         builder.Services.AddScoped<IMetricsExportService, MetricsExportService>();
-        
+
         // Register historical metrics services
         builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
         builder.Services.AddSingleton<IMetricsCleanUpService, MetricsCleanUpService>();
         builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
         builder.Services.AddHostedService<MetricsCleanUpService>();
-        var environment=builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
+        var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
+       
+
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
             // Configure default options
-            options.StoragePath =Path.Combine( environment.ContentRootPath, "umbraco/Data/TEMP/MetricsHistory");
+            options.StoragePath = Path.Combine(environment.ContentRootPath, "umbraco/Data/TEMP/MetricsHistory");
             options.SaveIntervalSeconds = 5;
             options.RetentionDays = 30;
             options.MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
             options.EnableAutoCleanup = true;
             options.CleanupIntervalHours = 24;
         });
+        
+        // Register email notification settings configuration
+        builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection("UmbMetrics:EmailNotifications"));
+        
+        // Register threshold rules configuration
+        builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection("UmbMetrics:ThresholdRules"));
+        
         builder.Services.AddSignalR();
         // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
-    
+
+        // Register threshold monitoring services
+        builder.Services.AddScoped<IThresholdEvaluationService, ThresholdEvaluationService>();
+        builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+        builder.Services.AddScoped<IWebhookNotificationService, WebhookNotificationService>();
+        
+        // Register HttpClient for webhooks
+        builder.Services.AddHttpClient("WebhookClient")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            });
 
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
@@ -62,9 +83,9 @@ public class MetricsComposer : IComposer
                 Endpoints = app => app.UseEndpoints(endpoints =>
                 {
                     // 'endpoints' is your IEndpointRouteBuilder!
-                    endpoints.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");                 
+                    endpoints.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");
                 })
             });
-        });     
+        });
     }
 }
