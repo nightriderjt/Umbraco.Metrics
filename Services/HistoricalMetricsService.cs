@@ -136,29 +136,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
             }                   
         }     
     }
-    //public Task StartAsync(CancellationToken cancellationToken)
-    //{
-    //    _logger.LogInformation("Historical Metrics Service starting");
-        
-    //    // Start the timer for periodic saving
-    //    _timer = new Timer(
-    //        async _ => await SaveMetricsAsync(),
-    //        null,
-    //        TimeSpan.Zero,
-    //        TimeSpan.FromSeconds(_options.SaveIntervalSeconds));
-
-    //    // Start cleanup timer if enabled
-    //    if (_options.EnableAutoCleanup)
-    //    {
-    //        var cleanupTimer = new Timer(
-    //            async _ => await CleanupOldDataAsync(),
-    //            null,
-    //            TimeSpan.FromHours(1), // First run after 1 hour
-    //            TimeSpan.FromHours(_options.CleanupIntervalHours));
-    //    }
-
-    //    return Task.CompletedTask;
-    //}
+ 
 
    
 

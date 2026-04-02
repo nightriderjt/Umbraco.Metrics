@@ -656,6 +656,13 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   }
 
   #renderThresholdsTab() {
+  
+    async () => {
+      await Promise.all([
+        this.#loadThresholdAlerts(),
+        this.#loadAlertStats()
+      ]);}
+   
     if (this._loadingAlerts) {
       return html`<p>${this.localize?.term('threshold_loadingAlerts') || 'Loading threshold alerts...'}</p>`;
     }

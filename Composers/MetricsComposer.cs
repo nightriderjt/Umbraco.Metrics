@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 using UmbMetrics.Services;
+using UmbMetrics.Services.HealthChecks;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -55,9 +56,9 @@ public class MetricsComposer : IComposer
         builder.Services.AddHostedService<MetricsBroadcastService>();
 
         // Register threshold monitoring services
-        builder.Services.AddScoped<IThresholdEvaluationService, ThresholdEvaluationService>();
-        builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
-        builder.Services.AddScoped<IWebhookNotificationService, WebhookNotificationService>();
+        builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
+        builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
+        builder.Services.AddSingleton<IWebhookNotificationService, WebhookNotificationService>();
         
         // Register threshold monitoring background service (runs every 1 second)
         builder.Services.AddHostedService<ThresholdMonitoringService>();

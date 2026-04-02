@@ -31,7 +31,7 @@ public class ThresholdMonitoringService : BackgroundService
         _logger.LogInformation("Threshold monitoring service started. Evaluation interval: {Interval} seconds", _evaluationInterval.TotalSeconds);
 
         // Small delay to allow other services to initialize
-        await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -57,23 +57,8 @@ public class ThresholdMonitoringService : BackgroundService
             }
             catch (TaskCanceledException)
             {
-                // Service is stopping
-                break;
+                _logger.LogInformation("Threshold monitoring service stopped");
             }
-        }
-
-        _logger.LogInformation("Threshold monitoring service stopped");
-    }
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Starting threshold monitoring service...");
-        await base.StartAsync(cancellationToken);
-    }
-
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Stopping threshold monitoring service...");
-        await base.StopAsync(cancellationToken);
+        }       
     }
 }

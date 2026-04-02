@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Resolved: {RuleName}</title>
+    <style>
+        /* Reset styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        
+        .resolved-badge {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .alert-title {
+            color: #28a745;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .resolved-info {
+            background-color: #f0fff4;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .info-item {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .timeline {
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            padding-top: 8px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .btn-primary {
+            background-color: #3544b1;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer-links {
+            margin-top: 15px;
+        }
+        
+        .footer-links a {
+            color: #3544b1;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .timeline::before {
+                left: 15px;
+            }
+            
+            .timeline-icon {
+                width: 30px;
+                height: 30px;
+                margin-right: 15px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .alert-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <img src="UmbMetricsLogo.svg" alt="Umbraco Metrics Logo" class="logo">
+            <h1>Alert Resolved</h1>
+            <div class="resolved-badge">RESOLVED</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <h2 class="alert-title">✅ {RuleName}</h2>
+            <p>{RuleDescription}</p>
+            
+            <div class="resolved-info">
+                <p><strong>✅ Issue Resolved:</strong> The performance alert on server <strong>{ServerName}</strong> has been successfully resolved.</p>
+                <p><strong>Condition:</strong> {Condition}</p>
+            </div>
+            
+            <!-- Alert Timeline -->
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">🚨</div>
+                    <div class="timeline-content">
+                        <h3>Alert Triggered</h3>
+                        <p><strong>Time:</strong> {TriggeredAt}</p>
+                        <p><strong>Severity:</strong> {Severity}</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">⏱️</div>
+                    <div class="timeline-content">
+                        <h3>Duration</h3>
+                        <p>The alert was active for <strong>{Duration}</strong></p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">✅</div>
+                    <div class="timeline-content">
+                        <h3>Alert Resolved</h3>
+                        <p><strong>Time:</strong> {ResolvedAt}</p>
+                        <p><strong>Resolved By:</strong> {ResolvedBy}</p>
+                        <p><strong>Notes:</strong> {ResolutionNotes}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert Information -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Rule Name</div>
+                    <div class="info-value">{RuleName}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Severity</div>
+                    <div class="info-value">{Severity}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Server</div>
+                    <div class="info-value">{ServerName}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Duration</div>
+                    <div class="info-value">{Duration}</div>
+                </div>
+            </div>
+            
+            <!-- Resolution Details -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Resolved At</div>
+                    <div class="info-value">{ResolvedAt}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Resolved By</div>
+                    <div class="info-value">{ResolvedBy}</div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{DashboardUrl}" class="btn btn-primary">View Dashboard</a>
+                <a href="#" class="btn btn-secondary">View Alert History</a>
+            </div>
+            
+            <p><em>This alert has been successfully resolved. No further action is required.</em></p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>© Umbraco Metrics. This is an automated notification from your Umbraco Metrics monitoring system.</p>
+            <div class="footer-links">
+                <a href="{DashboardUrl}">Dashboard</a> | 
+                <a href="#">Alert Settings</a> | 
+                <a href="#">Documentation</a>
+            </div>
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                Server: {ServerName}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
