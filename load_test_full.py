@@ -8,7 +8,7 @@ import signal
 import sys
 
 class LoadTester:
-    def __init__(self, url, num_users=50, duration_seconds=180):
+    def __init__(self, url, num_users=2000, duration_seconds=180):
         self.url = url
         self.num_users = num_users
         self.duration_seconds = duration_seconds
@@ -16,6 +16,7 @@ class LoadTester:
         self.running = True
         self.request_count = 0
         self.error_count = 0
+        self.error_details = []
         
     def signal_handler(self, signum, frame):
         """Handle Ctrl+C gracefully"""
@@ -26,7 +27,8 @@ class LoadTester:
         """Make a single HTTP request and record timing"""
         start_time = time.time()
         try:
-            async with session.get(self.url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+            # Disable SSL verification for local testing
+            async with session.get(self.url, timeout=aiohttp.ClientTimeout(total=10), ssl=False) as response:
                 end_time = time.time()
                 response_time = (end_time - start_time) * 1000  # Convert to milliseconds
                 
@@ -40,19 +42,29 @@ class LoadTester:
                     self.request_count += 1
                 else:
                     self.error_count += 1
+                    # Store error details for non-200 responses
+                    try:
+                        text = await response.text()
+                        self.error_details.append(f"Status {response.status}: {text[:100]}")
+                    except:
+                        self.error_details.append(f"Status {response.status}: No response text")
                     
                 return response_time, response.status
                 
         except Exception as e:
             end_time = time.time()
             response_time = (end_time - start_time) * 1000
+            error_msg = str(e)
             self.results[user_id].append({
                 'status': 'error',
                 'response_time': response_time,
                 'timestamp': end_time,
-                'error': str(e)
+                'error': error_msg
             })
             self.error_count += 1
+            # Store first few error details
+            if len(self.error_details) < 5:
+                self.error_details.append(f"Exception: {error_msg}")
             return response_time, None
             
     async def user_behavior(self, user_id, session):
@@ -78,7 +90,7 @@ class LoadTester:
         start_time = time.time()
         
         # Create a connector with connection limits
-        connector = aiohttp.TCPConnector(limit=self.num_users * 2, limit_per_host=self.num_users)
+        connector = aiohttp.TCPConnector(limit=self.num_users * 2, limit_per_host=self.num_users, ssl=False)
         
         async with aiohttp.ClientSession(connector=connector) as session:
             # Create tasks for each user
@@ -137,8 +149,10 @@ class LoadTester:
             print(f"  • Median: {statistics.median(all_response_times):.2f} ms")
             print(f"  • Min: {min(all_response_times):.2f} ms")
             print(f"  • Max: {max(all_response_times):.2f} ms")
-            print(f"  • 95th Percentile: {statistics.quantiles(all_response_times, n=20)[18]:.2f} ms")
-            print(f"  • 99th Percentile: {statistics.quantiles(all_response_times, n=100)[98]:.2f} ms")
+            if len(all_response_times) >= 20:
+                print(f"  • 95th Percentile: {statistics.quantiles(all_response_times, n=20)[18]:.2f} ms")
+            if len(all_response_times) >= 100:
+                print(f"  • 99th Percentile: {statistics.quantiles(all_response_times, n=100)[98]:.2f} ms")
         
         # Status code breakdown
         status_codes = defaultdict(int)
@@ -153,13 +167,19 @@ class LoadTester:
                 percentage = (count / total_requests * 100) if total_requests > 0 else 0
                 print(f"  • {code}: {count} ({percentage:.1f}%)")
         
+        # Show error details if any
+        if self.error_details:
+            print(f"\n🔍 Error Details (first {len(self.error_details)}):")
+            for i, error in enumerate(self.error_details[:10]):
+                print(f"  {i+1}. {error}")
+        
         print(f"\n{'='*60}\n")
 
 async def main():
-    # Configuration
-    URL = "https://httpbin.org/get"  # Replace with your target URL
-    NUM_USERS = 50
-    DURATION_SECONDS = 180  # 3 minutes
+    # Configuration - using original parameters
+    URL = "https://localhost:44359"  # Replace with your target URL
+    NUM_USERS = 50  # Original value
+    DURATION_SECONDS = 180  # Original value (3 minutes)
     
     # Create load tester instance
     tester = LoadTester(URL, NUM_USERS, DURATION_SECONDS)

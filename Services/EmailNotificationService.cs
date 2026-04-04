@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
@@ -13,7 +16,7 @@ public class EmailNotificationService : IEmailNotificationService
 {
     private readonly ILogger<EmailNotificationService> _logger;
     private readonly IEmailSender _emailSender;
-    private readonly IOptions<EmailNotificationSettings> _emailSettings;
+    public readonly IOptions<EmailNotificationSettings> _emailSettings;
     private readonly IWebHostEnvironment _env;
 
     public EmailNotificationService(
@@ -116,9 +119,9 @@ public class EmailNotificationService : IEmailNotificationService
                     // Create email message - use empty string for From if not configured (Umbraco will use default)
                     var fromAddress = string.IsNullOrWhiteSpace(settings.FromAddress) ? string.Empty : settings.FromAddress;
                     var message = new EmailMessage(fromAddress, recipient, subject, body, isHtml);
+                
 
-                    // Use the non-obsolete overload with expires parameter (false for immediate delivery)
-                    await _emailSender.SendAsync(message, "Umbraco Metrics", false);
+                    await _emailSender.SendAsync(message, "Umbraco Metrics", expires:null);
                 }
             }
             
@@ -139,7 +142,7 @@ public class EmailNotificationService : IEmailNotificationService
         {
             try
             {
-                var templateContent = await File.ReadAllTextAsync(Path.Combine(_env.WebRootPath,templatePath));
+                var templateContent = await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Views/UmbMetrics/EmailTemplates", templatePath));
                 return FormatTemplate(templateContent, alert, rule, metrics);
             }
             catch (Exception ex)
@@ -150,8 +153,8 @@ public class EmailNotificationService : IEmailNotificationService
 
         // Use default template
         var defaultTemplate = metrics != null 
-            ? await File.ReadAllTextAsync(Path.Combine(_env.WebRootPath,"EmailTemplates/alert-triggered.html")) 
-            :await File.ReadAllTextAsync(Path.Combine(_env.WebRootPath,"EmailTemplates/alert-resolved.html")) ;
+            ? await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath,"Views/UmbMetrics/Emailtemplates/alert-triggered.html")) 
+            :await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Views/UmbMetrics/Emailtemplates/alert-resolved.html")) ;
         
         return FormatTemplate(defaultTemplate, alert, rule, metrics);
     }

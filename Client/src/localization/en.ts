@@ -304,16 +304,15 @@ export default {
     "resolvedBy": "Resolved By",
     "resolutionNotes": "Resolution Notes",
     "triggeredAt": "Triggered At",
-    "triggeredValue": "Triggered Value",
-    "thresholdValue": "Threshold Value",
+    "triggeredValue": "Triggered Values",   
     "status": "Status",
     "active": "Active",
     "acknowledged": "Acknowledged",
     "resolved": "Resolved",
-    "low": "Low",
-    "medium": "Medium",
-    "high": "High",
-    "critical": "Critical",
+    "threshold_low": "Low",
+    "threshold_medium": "Medium",
+    "threshold_high": "High",
+    "threshold_critical": "Critical",
     "greaterThan": "Greater Than",
     "greaterThanOrEqual": "Greater Than or Equal",
     "lessThan": "Less Than",
@@ -390,48 +389,7 @@ export default {
     "errorUpdatingWebhook": "Error updating webhook",
     "errorDeletingWebhook": "Error deleting webhook",
     "errorTestingWebhook": "Error testing webhook"
-  },
-
-  // Health Checks
-  "healthChecks": {
-    "group": {
-      "name": "Umbraco Metrics",
-      "description": "Health checks for threshold configuration and monitoring"
-    },
-    "thresholdRulesConfiguration": {
-      "name": "Threshold Rules Configuration",
-      "description": "Checks if threshold rules are properly configured",
-      "successMessage": "Threshold rules configuration is valid",
-      "errorMessage": "Threshold rules configuration is missing or invalid",
-      "actionableMessage": "Configure threshold rules in appsettings.json under UmbMetrics:ThresholdRules"
-    },
-    "emailNotificationSettings": {
-      "name": "Email Notification Settings",
-      "description": "Checks if email notification settings are properly configured",
-      "successMessage": "Email notification settings are properly configured",
-      "errorMessage": "Email notification settings are missing or invalid",
-      "actionableMessage": "Configure email notification settings in appsettings.json under UmbMetrics:EmailNotifications"
-    },
-    "thresholdDatabaseTables": {
-      "name": "Threshold Database Tables",
-      "description": "Checks if required threshold database tables exist",
-      "successMessage": "Required threshold database tables exist",
-      "errorMessage": "Required threshold database tables are missing",
-      "actionableMessage": "Run the database migration to create threshold tables"
-    },
-    "thresholdMonitoringService": {
-      "name": "Threshold Monitoring Service",
-      "description": "Checks if the threshold monitoring service is running",
-      "successMessage": "Threshold monitoring service is running",
-      "errorMessage": "Threshold monitoring service is not running",
-      "actionableMessage": "Check the background services configuration and restart the application"
-    },
-    "alertResolutionConfiguration": {
-      "name": "Alert Resolution Configuration",
-      "description": "Checks if alert resolution settings are properly configured",
-      "successMessage": "Alert resolution configuration is valid",
-      "errorMessage": "Alert resolution configuration is missing or invalid",
-      "actionableMessage": "Configure alert resolution settings in threshold rules"
-    }
   }
+
+ 
 }

@@ -5,6 +5,7 @@ import {
   html,
   customElement,
   state,
+  repeat,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { UUIButtonElement } from "@umbraco-cms/backoffice/external/uui";
@@ -721,7 +722,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                 icon="icon-chart"
                 title="${this.localize?.term('threshold_bySeverity') || 'By Severity'}"
                 value=""
-                detail="Low: ${stats.bySeverity.low}, Med: ${stats.bySeverity.medium}, High: ${stats.bySeverity.high}, Crit: ${stats.bySeverity.critical}"
+                detail="Low: ${stats.bySeverity['0']}, Med: ${stats.bySeverity['1']}, High: ${stats.bySeverity['2']}, Crit: ${stats.bySeverity['3']}"
               ></umbmetrics-metric-card>
             </umbmetrics-metrics-grid>
           </div>
@@ -734,7 +735,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             <p class="no-alerts">${this.localize?.term('threshold_noAlerts') || 'No active alerts'}</p>
           ` : html`
             <div class="alerts-list">
-              ${alerts.map(alert => html`
+              ${repeat(alerts, alert => alert.id, alert => html`
                 <div class="alert-item" data-severity="${alert.severity}">
                   <div class="alert-header">
                     <div class="alert-severity">
@@ -749,13 +750,9 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                     <div class="alert-message">${alert.message}</div>
                     <div class="alert-details">
                       <span class="alert-detail">
-                        <strong>${this.localize?.term('threshold_triggeredValue') || 'Triggered Value'}:</strong>
-                        ${alert.triggeredValue}
-                      </span>
-                      <span class="alert-detail">
-                        <strong>${this.localize?.term('threshold_thresholdValue') || 'Threshold'}:</strong>
-                        ${alert.thresholdValue}
-                      </span>
+                        <strong>${this.localize?.term('threshold_triggeredValue') || 'Triggered Values'}:</strong>
+                        ${alert.triggeredValuesJson}
+                      </span>                 
                       <span class="alert-detail">
                         <strong>${this.localize?.term('threshold_ruleName') || 'Rule'}:</strong>
                         ${alert.ruleName}

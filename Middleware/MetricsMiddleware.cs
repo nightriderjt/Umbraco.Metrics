@@ -30,7 +30,7 @@ public class MetricsMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
 
-        if (ExcludeSystemPaths(context,_webHostEnvironment))
+        if (!ExcludeSystemPaths(context,_webHostEnvironment))
         {
             var requestId = Guid.NewGuid().ToString();
             var stopwatch = Stopwatch.StartNew();

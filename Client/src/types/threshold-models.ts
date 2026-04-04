@@ -74,7 +74,7 @@ export interface ThresholdAlert {
     ruleName: string;
     severity: ThresholdSeverity;
     message: string;
-    triggeredValue: number;
+    triggeredValuesJson: string;
     thresholdValue: number;
     triggeredAt: Date;
     acknowledgedAt?: Date;
@@ -91,7 +91,7 @@ export interface ThresholdAlertStats {
     activeAlerts: number;
     acknowledgedAlerts: number;
     resolvedAlerts: number;
-    bySeverity: Record<ThresholdSeverity, number>;
+    bySeverity: Record<string, number>;
     last24Hours: number;
     last7Days: number;
 }

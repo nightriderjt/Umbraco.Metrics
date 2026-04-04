@@ -32,7 +32,7 @@ public class WebhookNotificationService : IWebhookNotificationService
                 .Where(e => e.IsEnabled && e.IsValid())
                 .ToList();
 
-            if (!enabledEndpoints.Any())
+            if (enabledEndpoints.Count == 0)
             {
                 _logger.LogDebug("No enabled webhook endpoints configured");
                 return;
@@ -59,7 +59,7 @@ public class WebhookNotificationService : IWebhookNotificationService
                 .Where(e => e.IsEnabled && e.IsValid())
                 .ToList();
 
-            if (!enabledEndpoints.Any())
+            if (enabledEndpoints.Count == 0)
             {
                 _logger.LogDebug("No enabled webhook endpoints configured");
                 return;

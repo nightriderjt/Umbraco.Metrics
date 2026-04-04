@@ -14,6 +14,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     private readonly IWebhookNotificationService _webhookService;
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
+    private readonly IOptions<EmailNotificationSettings> _emailSettings;
     private readonly List<ThresholdRule> _rulesCache = new();
     private readonly Dictionary<string, List<DateTime>> _ruleEvaluationHistory = new();
     private readonly object _lock = new();
@@ -25,14 +26,16 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         IEmailNotificationService emailService,
         IWebhookNotificationService webhookService,
         IOptions<ThresholdRulesSettings> thresholdRulesSettings,
-        IUmbracoDatabaseFactory databaseFactory)
+        IUmbracoDatabaseFactory databaseFactory,
+        IOptions<EmailNotificationSettings> emailSettings)
     {
         _logger = logger;
         _emailService = emailService;
         _webhookService = webhookService;
         _thresholdRulesSettings = thresholdRulesSettings;
         _databaseFactory = databaseFactory;
-        
+        _emailSettings = emailSettings;
+
         // Load rules eagerly on startup
         Task.Run(async () => await RefreshRulesCacheAsync());
     }
@@ -45,13 +48,14 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             
             var enabledRules = _rulesCache.Where(r => r.IsEnabled).ToList();
             
-            foreach (var rule in enabledRules)
+            foreach (var rule in enabledRules.Where(x=> !x.IsInCooldown))
             {
                 try
                 {
+                    
                     var conditionMet = await EvaluateRuleAsync(rule, metrics);
                     
-                    if (conditionMet && rule.ShouldEvaluate)
+                    if (conditionMet && rule.ShouldEvaluate )
                     {
                         await TriggerAlertAsync(rule, metrics);
                     }
@@ -251,17 +255,19 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             var sql = @"
                 INSERT INTO UmbMetrics_ThresholdAlerts 
                 (RuleId, RuleName, TriggeredAt, Status, Severity, TriggeredValuesJson, EmailSent)
-                VALUES (@0, @1, @2, @3, @4, @5, @6);
+                VALUES (@ruleid, @RuleName, @TriggeredAt, @Status, @Severity, @TriggeredValuesJson, @EmailSent);
                 SELECT CAST(SCOPE_IDENTITY() AS INT);";
             
-            var alertId = db.ExecuteScalar<int>(sql,
-                0, // RuleId (0 for configuration-based rules)
+            var alertId = db.ExecuteScalar<int>(sql,new {
+                ruleid = 0, // RuleId (0 for configuration-based rules)
                 alert.RuleName,
                 alert.TriggeredAt,
-                (int)alert.Status,
-                (int)alert.Severity,
+             Status=   (int)alert.Status,
+              Severity=  (int)alert.Severity,
                 alert.TriggeredValuesJson,
-                alert.EmailSent);
+                alert.EmailSent
+            }
+               );
             
             alert.Id = alertId;
             _logger.LogDebug("Alert saved to database with ID: {AlertId}", alertId);
@@ -277,12 +283,8 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     {
         try
         {
-            // Send email notifications
-            if (rule.EmailRecipients.Any())
-            {
-                await _emailService.SendAlertEmailAsync(alert, rule, metrics);
-            }
-            
+            // Send email notifications           
+                await _emailService.SendAlertEmailAsync(alert, rule, metrics);   
             // Send webhook notifications
             if (rule.WebhookEndpoints.Any(e => e.IsEnabled))
             {
@@ -454,8 +456,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     {
         try
         {
-            using var db = _databaseFactory.CreateDatabase();
-            
+            using var db = _databaseFactory.CreateDatabase();            
             var stats = new ThresholdAlertStats
             {
                 TotalAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts"),

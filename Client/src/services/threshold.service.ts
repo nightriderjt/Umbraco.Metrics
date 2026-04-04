@@ -8,14 +8,12 @@ import type {
 
 export class ThresholdService {
     private baseUrl = '/umbraco/management/api/v1/metrics/thresholds';
-    private getAuthToken: () => Promise<string>;
+ 
 
-    constructor(getAuthToken: () => Promise<string>) {
-        this.getAuthToken = getAuthToken;
-    }
+    constructor(private tokenProvider: () => Promise<string>) {}
 
     private async fetchWithAuth(url: string, options: RequestInit = {}) {
-        const token = await this.getAuthToken();
+        const token = await this.tokenProvider();
         
         const headers = {
             'Content-Type': 'application/json',

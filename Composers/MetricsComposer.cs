@@ -1,13 +1,9 @@
-using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 using UmbMetrics.Services;
-using UmbMetrics.Services.HealthChecks;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -52,16 +48,14 @@ public class MetricsComposer : IComposer
         builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection("UmbMetrics:ThresholdRules"));
         
         builder.Services.AddSignalR();
-        // Register background service for broadcasting metrics
-        builder.Services.AddHostedService<MetricsBroadcastService>();
+       
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
         builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
         builder.Services.AddSingleton<IWebhookNotificationService, WebhookNotificationService>();
         
-        // Register threshold monitoring background service (runs every 1 second)
-        builder.Services.AddHostedService<ThresholdMonitoringService>();
+   
         
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")
@@ -69,7 +63,8 @@ public class MetricsComposer : IComposer
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             });
-
+ // Register background service for broadcasting metrics
+        builder.Services.AddHostedService<MetricsBroadcastService>();
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
         {

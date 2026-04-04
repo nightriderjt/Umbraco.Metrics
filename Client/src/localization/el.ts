@@ -306,16 +306,15 @@ export default {
     "resolvedBy": "Επιλύθηκε Από",
     "resolutionNotes": "Σημειώσεις Επίλυσης",
     "triggeredAt": "Ενεργοποιήθηκε Στις",
-    "triggeredValue": "Τιμή Ενεργοποίησης",
-    "thresholdValue": "Τιμή Ορίου",
+    "triggeredValue": "Τιμές Ενεργοποίησης",   
     "status": "Κατάσταση",
     "active": "Ενεργό",
     "acknowledged": "Αναγνωρισμένο",
     "resolved": "Επιλυμένο",
-    "low": "Χαμηλό",
-    "medium": "Μέτριο",
-    "high": "Υψηλό",
-    "critical": "Κρίσιμο",
+    "threshold_low": "Χαμηλό",
+    "threshold_medium": "Μέτριο",
+    "threshold_high": "Υψηλό",
+    "threshold_critical": "Κρίσιμο",
     "greaterThan": "Μεγαλύτερο Από",
     "greaterThanOrEqual": "Μεγαλύτερο ή Ίσο Από",
     "lessThan": "Μικρότερο Από",
@@ -392,48 +391,7 @@ export default {
     "errorUpdatingWebhook": "Σφάλμα ενημέρωσης webhook",
     "errorDeletingWebhook": "Σφάλμα διαγραφής webhook",
     "errorTestingWebhook": "Σφάλμα δοκιμής webhook"
-  },
-
-  // Health Checks
-  "healthChecks": {
-    "group": {
-      "name": "Μετρικές Umbraco",
-      "description": "Έλεγχοι υγείας για διαμόρφωση και παρακολούθηση ορίων"
-    },
-    "thresholdRulesConfiguration": {
-      "name": "Διαμόρφωση Κανόνων Ορίων",
-      "description": "Ελέγχει εάν οι κανόνες ορίων είναι σωστά διαμορφωμένοι",
-      "successMessage": "Η διαμόρφωση κανόνων ορίων είναι έγκυρη",
-      "errorMessage": "Η διαμόρφωση κανόνων ορίων λείπει ή είναι μη έγκυρη",
-      "actionableMessage": "Διαμορφώστε τους κανόνες ορίων στο appsettings.json στην ενότητα UmbMetrics:ThresholdRules"
-    },
-    "emailNotificationSettings": {
-      "name": "Ρυθμίσεις Ειδοποιήσεων Email",
-      "description": "Ελέγχει εάν οι ρυθμίσεις ειδοποιήσεων email είναι σωστά διαμορφωμένες",
-      "successMessage": "Οι ρυθμίσεις ειδοποιήσεων email είναι σωστά διαμορφωμένες",
-      "errorMessage": "Οι ρυθμίσεις ειδοποιήσεων email λείπουν ή είναι μη έγκυρες",
-      "actionableMessage": "Διαμορφώστε τις ρυθμίσεις ειδοποιήσεων email στο appsettings.json στην ενότητα UmbMetrics:EmailNotifications"
-    },
-    "thresholdDatabaseTables": {
-      "name": "Πίνακες Βάσης Δεδομένων Ορίων",
-      "description": "Ελέγχει εάν υπάρχουν οι απαιτούμενοι πίνακες βάσης δεδομένων ορίων",
-      "successMessage": "Οι απαιτούμενοι πίνακες βάσης δεδομένων ορίων υπάρχουν",
-      "errorMessage": "Οι απαιτούμενοι πίνακες βάσης δεδομένων ορίων λείπουν",
-      "actionableMessage": "Εκτελέστε τη μετάβαση βάσης δεδομένων για δημιουργία πινάκων ορίων"
-    },
-    "thresholdMonitoringService": {
-      "name": "Υπηρεσία Παρακολούθησης Ορίων",
-      "description": "Ελέγχει εάν η υπηρεσία παρακολούθησης ορίων εκτελείται",
-      "successMessage": "Η υπηρεσία παρακολούθησης ορίων εκτελείται",
-      "errorMessage": "Η υπηρεσία παρακολούθησης ορίων δεν εκτελείται",
-      "actionableMessage": "Ελέγξτε τη διαμόρφωση των υπηρεσιών παρασκηνίου και επανεκκινήστε την εφαρμογή"
-    },
-    "alertResolutionConfiguration": {
-      "name": "Διαμόρφωση Επίλυσης Ειδοποιήσεων",
-      "description": "Ελέγχει εάν οι ρυθμίσεις επίλυσης ειδοποιήσεων είναι σωστά διαμορφωμένες",
-      "successMessage": "Η διαμόρφωση επίλυσης ειδοποιήσεων είναι έγκυρη",
-      "errorMessage": "Η διαμόρφωση επίλυσης ειδοποιήσεων λείπει ή είναι μη έγκυρη",
-      "actionableMessage": "Διαμορφώστε τις ρυθμίσεις επίλυσης ειδοποιήσεων στους κανόνες ορίων"
-    }
   }
+
+
 }
