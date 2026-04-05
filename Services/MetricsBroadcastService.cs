@@ -32,7 +32,7 @@ public class MetricsBroadcastService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(new TimeSpan(0, 5, 0), stoppingToken);
+        var initialized = DateTime.UtcNow;
         _logger.LogInformation("Metrics broadcast service started");
         _isRunning = true;
         while (!stoppingToken.IsCancellationRequested)
@@ -45,7 +45,11 @@ public class MetricsBroadcastService : BackgroundService
                     "ReceiveMetrics",
                     metrics,
                     stoppingToken);
-                await _thresholdEvaluationService.EvaluateThresholdsAsync(metrics);
+                // Start the evaluation 5 minutesd after the service starts to allow time for initial metrics collection and avoid false positives on thresholds
+                if (DateTime.UtcNow.Subtract(initialized).Minutes >= 5)
+                {
+                    await _thresholdEvaluationService.EvaluateThresholdsAsync(metrics);
+                }               
             }
             catch (Exception ex)
             {
