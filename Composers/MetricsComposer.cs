@@ -6,6 +6,7 @@ using UmbMetrics.Models;
 using UmbMetrics.Notifications;
 using UmbMetrics.Services;
 using UmbMetrics.Services.Interfaces;
+using UmbMetrics.WebHooks;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Web.Common.ApplicationBuilder;
@@ -54,10 +55,7 @@ public class MetricsComposer : IComposer
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
         builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
-        builder.Services.AddSingleton<IWebhookNotificationService, WebhookNotificationService>();
-       
-
-
+    
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -67,6 +65,7 @@ public class MetricsComposer : IComposer
  // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
         builder.AddNotificationHandler<ThresholdAlertTriggeredNotification, ThresholdAlertTriggered>();
+        builder.WebhookEvents().Add<AlertTriggeredWebHookEvent>();
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
         {

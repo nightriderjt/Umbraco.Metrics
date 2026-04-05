@@ -11,14 +11,13 @@ namespace UmbMetrics.Notifications
         private readonly ILogger<ThresholdAlertTriggered> _logger;
         private readonly IUmbracoDatabaseFactory _databaseFactory;
         private readonly IEmailNotificationService _emailService;
-        private readonly IWebhookNotificationService _webhookService;
 
-        public ThresholdAlertTriggered(ILogger<ThresholdAlertTriggered> logger, IUmbracoDatabaseFactory databaseFactory, IEmailNotificationService emailService, IWebhookNotificationService webhookService)
+
+        public ThresholdAlertTriggered(ILogger<ThresholdAlertTriggered> logger, IUmbracoDatabaseFactory databaseFactory, IEmailNotificationService emailService)
         {
            _logger = logger;
            _databaseFactory = databaseFactory;
-            _emailService = emailService;
-            _webhookService = webhookService;
+            _emailService = emailService;        
         }
         public void Handle(ThresholdAlertTriggeredNotification notification)
         {
@@ -102,11 +101,11 @@ namespace UmbMetrics.Notifications
             {
                 // Send email notifications           
                 await _emailService.SendAlertEmailAsync(alert, rule, metrics);
-                // Send webhook notifications
-                if (rule.WebhookEndpoints.Any(e => e.IsEnabled))
-                {
-                    await _webhookService.SendAlertWebhooksAsync(alert, rule, metrics);
-                }
+                //// Send webhook notifications
+                //if (rule.WebhookEndpoints.Any(e => e.IsEnabled))
+                //{
+                //    await _webhookService.SendAlertWebhooksAsync(alert, rule, metrics);
+                //}
             }
             catch (Exception ex)
             {

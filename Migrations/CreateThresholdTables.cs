@@ -87,42 +87,6 @@ public class CreateThresholdTables : AsyncMigrationBase
 
           
         }
-
-        // Table for webhook endpoints
-        if (!TableExists("UmbMetrics_WebhookEndpoints"))
-        {
-            Create.Table("UmbMetrics_WebhookEndpoints")
-                .WithColumn("Id").AsInt32().Identity()
-                .WithColumn("Name").AsString(200).NotNullable()
-                .WithColumn("Url").AsString(500).NotNullable()
-                .WithColumn("HeadersJson").AsString().Nullable()
-                .WithColumn("PayloadTemplate").AsString().Nullable()
-                .WithColumn("IsEnabled").AsBoolean().NotNullable().WithDefaultValue(1)
-                .WithColumn("MaxRetries").AsInt32().NotNullable().WithDefaultValue(3)
-                .WithColumn("RetryDelayTicks").AsInt64().NotNullable().WithDefaultValue(3000000000)
-                .Do();
-        }
-
-        // Table for webhook deliveries
-        if (!TableExists("UmbMetrics_WebhookDeliveries"))
-        {
-            Create.Table("UmbMetrics_WebhookDeliveries")
-                .WithColumn("Id").AsInt32().Identity()
-                .WithColumn("WebhookEndpointId").AsInt32().NotNullable()
-                .WithColumn("WebhookName").AsString(200).NotNullable()
-                .WithColumn("WebhookUrl").AsString(500).NotNullable()
-                .WithColumn("SentAt").AsDateTime().NotNullable().WithDefaultValue(DateTime.UtcNow)
-                .WithColumn("Success").AsBoolean().NotNullable().WithDefaultValue(0)
-                .WithColumn("StatusCode").AsInt32().Nullable()
-                .WithColumn("ResponseBody").AsString().Nullable()
-                .WithColumn("ErrorMessage").AsString(1000).Nullable()
-                .WithColumn("RetryCount").AsInt32().NotNullable().WithDefaultValue(0)
-                .WithColumn("NextRetryAt").AsDateTime().Nullable()
-                .Do();
-
-        
-        }    
-
         Logger.LogInformation("Threshold monitoring tables created successfully.");
     }
 }

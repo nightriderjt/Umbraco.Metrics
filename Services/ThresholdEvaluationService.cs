@@ -11,8 +11,7 @@ namespace UmbMetrics.Services;
 
 public class ThresholdEvaluationService : IThresholdEvaluationService
 {
-    private readonly ILogger<ThresholdEvaluationService> _logger;
- 
+    private readonly ILogger<ThresholdEvaluationService> _logger; 
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
 

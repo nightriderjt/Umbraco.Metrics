@@ -21,16 +21,16 @@ public class ThresholdApiController : ManagementApiControllerBase
 {
     private readonly IThresholdEvaluationService _thresholdService;
     private readonly IEmailNotificationService _emailService;
-    private readonly IWebhookNotificationService _webhookService;
+
 
     public ThresholdApiController(
         IThresholdEvaluationService thresholdService,
-        IEmailNotificationService emailService,
-        IWebhookNotificationService webhookService)
+        IEmailNotificationService emailService
+      )
     {
         _thresholdService = thresholdService;
         _emailService = emailService;
-        _webhookService = webhookService;
+      
     }
 
     /// <summary>
