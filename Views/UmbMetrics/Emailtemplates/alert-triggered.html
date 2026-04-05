@@ -147,7 +147,7 @@
         
         .btn-primary {
             background-color: #3544b1;
-            color: white;
+            color: white!important;
         }
         
         .btn-secondary {
@@ -382,16 +382,14 @@ c64 4 118 8 120 10 6 6 -30 102 -51 134 -57 86 -216 127 -395 101z" />
             
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <a href="{DashboardUrl}" class="btn btn-primary">View Dashboard</a>
-                <a href="{AcknowledgeUrl}" class="btn btn-secondary">Acknowledge Alert</a>               
+                <a href="{DashboardUrl}" class="btn btn-primary">View Dashboard</a>                           
             </div>            
             <p><em>This alert will remain active until acknowledged. Please investigate the issue promptly.</em></p>
         </div>
         
         <!-- Footer -->
         <div class="footer">
-            <p>© Umbraco Metrics. This is an automated alert from your Umbraco Metrics monitoring system.</p>
-        
+            <p>© Umbraco Metrics. This is an automated alert from your Umbraco Metrics monitoring system.</p>        
             <p style="margin-top: 15px; font-size: 12px; color: #999;">
                 Server: {ServerName}
             </p>
