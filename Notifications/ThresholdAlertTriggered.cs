@@ -10,10 +10,10 @@ namespace UmbMetrics.Notifications
     {
         private readonly ILogger<ThresholdAlertTriggered> _logger;
         private readonly IUmbracoDatabaseFactory _databaseFactory;
-        private readonly IEmailNotificationService _emailService;
+        private readonly IUmbMetricslNotificationService _emailService;
 
 
-        public ThresholdAlertTriggered(ILogger<ThresholdAlertTriggered> logger, IUmbracoDatabaseFactory databaseFactory, IEmailNotificationService emailService)
+        public ThresholdAlertTriggered(ILogger<ThresholdAlertTriggered> logger, IUmbracoDatabaseFactory databaseFactory, IUmbMetricslNotificationService emailService)
         {
             _logger = logger;
             _databaseFactory = databaseFactory;

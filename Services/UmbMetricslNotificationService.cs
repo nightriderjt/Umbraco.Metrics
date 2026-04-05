@@ -1,35 +1,43 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 using System.Text;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Mail;
 using Umbraco.Cms.Core.Models.Email;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.Persistence;
+using Umbraco.Extensions;
 
 namespace UmbMetrics.Services;
 
-public class EmailNotificationService : IEmailNotificationService
+public class UmbMetricslNotificationService : IUmbMetricslNotificationService
 {
-    private readonly ILogger<EmailNotificationService> _logger;
+    private readonly ILogger<UmbMetricslNotificationService> _logger;
     private readonly IEmailSender _emailSender;
     public readonly IOptions<EmailNotificationSettings> _emailSettings;
     private readonly IWebHostEnvironment _env;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
+    private readonly IUmbracoContextFactory _context;
 
-    public EmailNotificationService(
-        ILogger<EmailNotificationService> logger,
+    public UmbMetricslNotificationService(
+        ILogger<UmbMetricslNotificationService> logger,
         IEmailSender emailSender,
         IOptions<EmailNotificationSettings> emailSettings,
         IWebHostEnvironment env,
-        IUmbracoDatabaseFactory databaseFactory)
+        IUmbracoDatabaseFactory databaseFactory,
+        IUmbracoContextFactory context)
     {
         _logger = logger;
         _emailSender = emailSender;
         _emailSettings = emailSettings;
         _env = env;
         _databaseFactory = databaseFactory;
+        _context = context;
     }
 
     public async Task<bool> SendAlertEmailAsync(ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics metrics)
@@ -54,7 +62,7 @@ public class EmailNotificationService : IEmailNotificationService
             var subject = FormatTemplate(settings.AlertTriggeredSubjectTemplate, alert, rule, metrics);
             var body = await GetEmailBodyAsync(settings.AlertTriggeredBodyTemplatePath, alert, rule, metrics);
 
-            var success = await SendEmailAsync(recipients, subject, body, true);
+            var success = await SendEmailAsync(recipients, subject, body);
 
             if (success)
             {
@@ -79,7 +87,7 @@ public class EmailNotificationService : IEmailNotificationService
 
 
 
-    private async Task<bool> SendEmailAsync(List<string> recipients, string subject, string body, bool isHtml)
+    private async Task<bool> SendEmailAsync(List<string> recipients, string subject, string body)
     {
         try
         {
@@ -91,7 +99,7 @@ public class EmailNotificationService : IEmailNotificationService
                 {
                     // Create email message - use empty string for From if not configured (Umbraco will use default)
                     var fromAddress = string.IsNullOrWhiteSpace(settings.FromAddress) ? string.Empty : settings.FromAddress;
-                    var message = new EmailMessage(fromAddress, recipient, subject, body, isHtml);
+                    var message = new EmailMessage(fromAddress, recipient, subject, body, true);
 
 
                     await _emailSender.SendAsync(message, "Umbraco Metrics", expires: null);
@@ -134,7 +142,9 @@ public class EmailNotificationService : IEmailNotificationService
     private string FormatTemplate(string template, ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics? metrics)
     {
         var triggeredValues = alert.GetTriggeredValues();
+        var ctx = _context.EnsureUmbracoContext();
 
+        var root = ctx.UmbracoContext.CleanedUmbracoUrl.AbsoluteUri;
         var replacements = new Dictionary<string, string>
         {
             ["{RuleName}"] = rule.Name,
@@ -144,8 +154,8 @@ public class EmailNotificationService : IEmailNotificationService
             ["{Duration}"] = alert.Duration.ToString(@"hh\:mm\:ss"),
             ["{ServerName}"] = Environment.MachineName,
             ["{Condition}"] = rule.RootCondition.ToString(),
-            ["{DashboardUrl}"] = "/umbraco/section/settings/dashboard/umb-metrics",
-            ["{AcknowledgeUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/acknowledge",
+            ["{DashboardUrl}"] = $"{root??String.Empty}umbraco/section/settings/dashboard/umb-metrics",
+            ["{AcknowledgeUrl}"] = $"{root??String.Empty}umbraco/management/api/v1/metrics/thresholds/alerts/{alert.Id}/acknowledge",
             ["{year}"] = $"{DateTime.UtcNow.Year}"
         };
 

@@ -13,9 +13,6 @@ public class EmailNotificationSettings
     public string AlertTriggeredSubjectTemplate { get; set; } = "[ALERT] {RuleName} - {ServerName}";
     public string AlertTriggeredBodyTemplatePath { get; set; } = string.Empty;
 
-    public string AlertResolvedSubjectTemplate { get; set; } = "[RESOLVED] {RuleName} - {ServerName}";
-    public string AlertResolvedBodyTemplatePath { get; set; } = string.Empty;
-
     // Delivery settings
     public int MaxRetryAttempts { get; set; } = 3;
     public int RetryDelaySeconds { get; set; } = 30;
@@ -28,7 +25,4 @@ public class EmailNotificationSettings
         return string.IsNullOrWhiteSpace(FromAddress) ||
                Uri.TryCreate($"mailto:{FromAddress}", UriKind.Absolute, out _);
     }
-
-
-
 }

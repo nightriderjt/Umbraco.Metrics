@@ -131,8 +131,8 @@ public static class SqlQueries
         /// </summary>
         public const string AcknowledgeAlert =
             @"UPDATE UmbMetrics_ThresholdAlerts 
-              SET Status = @0, AcknowledgedAt = @1, ResolvedBy = @2
-              WHERE Id = @3 AND Status = @4";
+              SET Status = @0, AcknowledgedAt = @1
+              WHERE Id = @2 AND Status = @3";
 
 
 

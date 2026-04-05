@@ -288,11 +288,9 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         try
         {
             using var db = _databaseFactory.CreateDatabase();
-
             var rowsAffected = db.Execute(Constants.SqlQueries.Thresholds.AcknowledgeAlert,
                 (int)AlertStatus.Acknowledged,
-                DateTime.UtcNow,
-                acknowledgedBy,
+                DateTime.UtcNow,               
                 alertId,
                 (int)AlertStatus.Active);
 

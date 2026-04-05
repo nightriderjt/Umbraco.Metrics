@@ -2,7 +2,7 @@ using UmbMetrics.Models;
 
 namespace UmbMetrics.Services.Interfaces;
 
-public interface IEmailNotificationService
+public interface IUmbMetricslNotificationService
 {
     /// <summary>
     /// Sends an alert notification email

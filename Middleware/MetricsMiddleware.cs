@@ -28,8 +28,7 @@ public class MetricsMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
 
-        if (!ExcludeSystemPaths(context, _webHostEnvironment))
-        {
+       
             var requestId = Guid.NewGuid().ToString();
             var stopwatch = Stopwatch.StartNew();
 
@@ -85,24 +84,9 @@ public class MetricsMiddleware
                     _responseTimes.TryDequeue(out _);
                 }
             }
-
-
-        }
-        else
-        {
-            await _next(context);
-        }
-
     }
 
-    private static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
-    {
-        if (env.IsDevelopment()) return false;
-        return !(context.Request.Path.Value?.Contains("metrics") ?? false)
-                    && !(context.Request.Path.Value?.Contains("serverEventHub") ?? false)
-                    && !(context.Request.Path.Value?.Contains("active-requests") ?? false)
-                    && !(context.Request.QueryString.Value?.Contains("access_token") ?? false);
-    }
+
 
     public static long TotalRequests => _totalRequests;
     public static long FailedRequests => _failedRequests;

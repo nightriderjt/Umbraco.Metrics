@@ -54,7 +54,7 @@ public class MetricsComposer : IComposer
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
-        builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
+        builder.Services.AddScoped<IUmbMetricslNotificationService, UmbMetricslNotificationService>();
 
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")

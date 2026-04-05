@@ -251,11 +251,277 @@ Exported data can be easily integrated with:
 4. **For Large Datasets**: Use custom ranges to limit data volume
 5. **For Regular Reporting**: Schedule exports during off-peak hours
 
+## Threshold Monitoring
+
+UmbMetrics includes threshold monitoring that lets you set up alerts for
+
+### Key Features
+
+- **Custom Threshold Rules**: Define rules based on any performance metric
+- **Complex Conditions**: Create AND/OR logic with nested conditions
+- **Multiple Alert Channels**: Dashboard notifications, email alerts, and webhook integrations
+- **Cooldown Periods**: Prevent alert spam with configurable cooldown intervals
+
+### Available Metrics for Threshold Rules
+
+You can create threshold rules based on the following performance metrics:
+
+- **CPU Usage**: Monitor processor utilization percentages
+- **Memory Usage**: Track memory consumption and pressure
+- **Active Requests**: Monitor concurrent request processing
+- **Average Response Time**: Track application responsiveness
+- **Requests Per Second**: Monitor traffic volume
+- **Failed Requests**: Track error rates
+- **Thread Count**: Monitor thread pool usage
+- **Memory Statistics**: Working set, private memory, and GC memory
+
+### Creating Threshold Rules
+
+Threshold rules consist of:
+1. **Rule Name & Description**: Descriptive identifiers for your rule
+2. **Root Condition**: The main condition to evaluate (supports nested AND/OR logic)
+3. **Evaluation Window**: Time period over which to evaluate the condition
+4. **Alert Severity**: Info, Warning, or Critical levels
+5. **Notification Settings**: Email recipients
+6. **Cooldown Period**: Minimum time between alert triggers
+
+### Example Threshold Rules
+
+#### Simple CPU Alert
+```json
+{
+  "name": "High CPU Usage",
+  "description": "Alert when CPU exceeds 80% for 2 minutes",
+  "rootCondition": {
+    "type": "Single",
+    "metric": "CpuUsage",
+    "operator": "GreaterThan",
+    "value": 80
+  },
+  "evaluationWindow": "00:02:00",
+  "severity": "Warning"
+}
+```
+
+#### Complex Memory & Request Alert
+```json
+{
+  "name": "Memory Pressure with High Traffic",
+  "description": "Alert when memory > 90% AND requests > 100/sec",
+  "rootCondition": {
+    "type": "And",
+    "children": [
+      {
+        "type": "Single",
+        "metric": "MemoryUsage",
+        "operator": "GreaterThan",
+        "value": 90
+      },
+      {
+        "type": "Single",
+        "metric": "RequestsPerSecond",
+        "operator": "GreaterThan",
+        "value": 100
+      }
+    ]
+  },
+  "evaluationWindow": "00:05:00",
+  "severity": "Critical"
+}
+```
+
+### Alert Management
+
+- **Active Alerts Dashboard**: View all currently triggered alerts
+- **Alert Acknowledgment**: Mark alerts as acknowledged to track resolution
+- **Alert Statistics**: View alert frequency and severity trends
+- **Email Notifications**: Receive alerts directly in your inbox
+- **Webhook Integrations**: Send alerts to external systems (Slack, Teams, etc.)
+
+
+
+#### Email Notifications
+- Configure multiple email recipients per rule
+- Customizable email templates
+- Include detailed metric information in alerts
+
+#### Webhook Integrations
+- Using the built in Umbraco's webhook mechanism
+
+### Best Practices
+
+1. **Start Conservative**: Begin with higher thresholds and adjust based on your environment
+2. **Use Cooldown Periods**: Prevent alert fatigue with 15-30 minute cooldowns
+3. **Combine Related Metrics**: Use AND conditions to reduce false positives
+4. **Test with Lower Severities**: Start with Info/Warning alerts before moving to Critical
+5. **Monitor Alert Volume**: Adjust thresholds if you're receiving too many or too few alerts
+
+
+Detailed example :
+```json
+{
+  "EmailNotifications": {
+    "FromAddress": "metrics@yourdomain.com",
+    "FromName": "Umbraco Metrics",
+    "DefaultRecipients": [
+      "admin@yourdomain.com",
+      "devops@yourdomain.com"
+    ],
+    "AlertTriggeredSubjectTemplate": "[ALERT] {RuleName} - {ServerName}",
+    "AlertTriggeredBodyTemplatePath": "", 
+    "MaxRetryAttempts": 3,
+    "RetryDelaySeconds": 30,
+    "IsEnabled": true
+  },
+  "ThresholdRules": {
+    "Rules": [
+      {
+        "Name": "High CPU Usage",
+        "Description": "Alert when CPU usage exceeds 80% for 2 minutes",
+        "RootCondition": {
+          "Type": "Single",
+          "Metric": "CpuUsage",
+          "Operator": "GreaterThan",
+          "Value": 80.0,
+          "Children": []
+        },
+        "EvaluationWindow": "00:02:00",
+        "Severity": "Warning",
+        "IsEnabled": true,
+        "EmailRecipients": [],       
+        "CooldownPeriod": "00:15:00"
+      },
+      {
+        "Name": "High Memory Usage",
+        "Description": "Alert when memory usage exceeds 1.5GB for 1 minute",
+        "RootCondition": {
+          "Type": "Single",
+          "Metric": "MemoryUsage",
+          "Operator": "GreaterThan",
+          "Value": 1500.0,
+          "Children": []
+        },
+        "EvaluationWindow": "00:01:00",
+        "Severity": "Warning",
+        "IsEnabled": true,
+        "EmailRecipients": [],      
+        "CooldownPeriod": "00:10:00"
+      },
+      {
+        "Name": "High Active Requests",
+        "Description": "Alert when active requests exceed 50 for 30 seconds",
+        "RootCondition": {
+          "Type": "Single",
+          "Metric": "ActiveRequests",
+          "Operator": "GreaterThan",
+          "Value": 50.0,
+          "Children": []
+        },
+        "EvaluationWindow": "00:00:30",
+        "Severity": "Critical",
+        "IsEnabled": true,
+        "EmailRecipients": [],       
+        "CooldownPeriod": "00:05:00"
+      },
+      {
+        "Name": "Slow Response Time",
+        "Description": "Alert when average response time exceeds 500ms for 1 minute",
+        "RootCondition": {
+          "Type": "Single",
+          "Metric": "AverageResponseTime",
+          "Operator": "GreaterThan",
+          "Value": 500.0,
+          "Children": []
+        },
+        "EvaluationWindow": "00:01:00",
+        "Severity": "Warning",
+        "IsEnabled": true,
+        "EmailRecipients": [],      
+        "CooldownPeriod": "00:10:00"
+      },
+      {
+        "Name": "CPU and Memory High",
+        "Description": "Alert when both CPU > 70% AND Memory > 1GB for 2 minutes",
+        "RootCondition": {
+          "Type": "And",
+          "Metric": null,
+          "Operator": null,
+          "Value": null,
+          "Children": [
+            {
+              "Type": "Single",
+              "Metric": "CpuUsage",
+              "Operator": "GreaterThan",
+              "Value": 70.0,
+              "Children": []
+            },
+            {
+              "Type": "Single",
+              "Metric": "MemoryUsage",
+              "Operator": "GreaterThan",
+              "Value": 1000.0,
+              "Children": []
+            }
+          ]
+        },
+        "EvaluationWindow": "00:02:00",
+        "Severity": "Critical",
+        "IsEnabled": true,
+        "EmailRecipients": [],      
+        "CooldownPeriod": "00:20:00"
+      },
+      {
+        "Name": "CPU High OR Active Requests High",
+        "Description": "Alert when CPU > 70% OR Active Requests > 30 for 1 minute",
+        "RootCondition": {
+          "Type": "Or",
+          "Metric": null,
+          "Operator": null,
+          "Value": null,
+          "Children": [
+            {
+              "Type": "Single",
+              "Metric": "CpuUsage",
+              "Operator": "GreaterThan",
+              "Value": 70.0,
+              "Children": []
+            },
+            {
+              "Type": "Single",
+              "Metric": "ActiveRequests",
+              "Operator": "GreaterThan",
+              "Value": 30.0,
+              "Children": []
+            }
+          ]
+        },
+        "EvaluationWindow": "00:01:00",
+        "Severity": "Warning",
+        "IsEnabled": true,
+        "EmailRecipients": [],     
+        "CooldownPeriod": "00:15:00"
+      }
+    ]
+  }
+}
+```
+
+#### Configuration Options
+
+- **Rules**: Array of threshold rule definitions
+- **Name**: Unique identifier for the rule
+- **Description**: Human-readable description
+- **RootCondition**: The condition to evaluate (supports nested AND/OR conditions)
+- **EvaluationWindow**: TimeSpan format (HH:MM:SS) - how long the condition must be true before triggering
+- **Severity**: Info, Warning, or Critical
+- **IsEnabled**: Enable/disable the rule
+- **EmailRecipients**: List of email addresses to notify
+- **CooldownPeriod**: TimeSpan format - minimum time between alert triggers
+
+
 ## What's Next?
 
 Future enhancements planned:
-- Alerting and notifications
-- Custom metric thresholds
 - Multi-server monitoring
 - Advanced analytics and visualization
 

@@ -17,12 +17,12 @@ namespace UmbMetrics.Controllers;
 public class ThresholdApiController : ManagementApiControllerBase
 {
     private readonly IThresholdEvaluationService _thresholdService;
-    private readonly IEmailNotificationService _emailService;
+    private readonly IUmbMetricslNotificationService _emailService;
 
 
     public ThresholdApiController(
         IThresholdEvaluationService thresholdService,
-        IEmailNotificationService emailService
+        IUmbMetricslNotificationService emailService
       )
     {
         _thresholdService = thresholdService;
