@@ -69,35 +69,6 @@ public interface IWebhookNotificationService
     /// </summary>
     Task SendAlertWebhooksAsync(ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics metrics);
     
-    /// <summary>
-    /// Sends alert resolved notification to all configured webhooks
-    /// </summary>
-    Task SendAlertResolvedWebhooksAsync(ThresholdAlert alert, ThresholdRule rule);
-    
-    /// <summary>
-    /// Tests a webhook endpoint
-    /// </summary>
-    Task<WebhookTestResult> TestWebhookEndpointAsync(WebhookEndpoint endpoint);
-    
-    /// <summary>
-    /// Gets all webhook endpoints
-    /// </summary>
-    Task<IEnumerable<WebhookEndpoint>> GetWebhookEndpointsAsync();
-    
-    /// <summary>
-    /// Creates a new webhook endpoint
-    /// </summary>
-    Task<WebhookEndpoint> CreateWebhookEndpointAsync(WebhookEndpoint endpoint);
-    
-    /// <summary>
-    /// Updates a webhook endpoint
-    /// </summary>
-    Task<WebhookEndpoint> UpdateWebhookEndpointAsync(int id, WebhookEndpoint endpoint);
-    
-    /// <summary>
-    /// Deletes a webhook endpoint
-    /// </summary>
-    Task<bool> DeleteWebhookEndpointAsync(int id);
 }
 
 public class ThresholdAlertStats

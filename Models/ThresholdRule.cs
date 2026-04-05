@@ -52,18 +52,11 @@ public class ThresholdRule
 }
 
 public class WebhookEndpoint
-{
-    public int Id { get; set; }
+{  
     public string Name { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
-    public Dictionary<string, string> Headers { get; set; } = new();
-    public string PayloadTemplate { get; set; } = string.Empty;
-    public bool IsEnabled { get; set; } = true;
-    
-    // Retry settings
-    public int MaxRetries { get; set; } = 3;
-    public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(30);
-    
+    public Dictionary<string, string> Headers { get; set; } = [];   
+    public bool IsEnabled { get; set; } = true; 
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Name) && 

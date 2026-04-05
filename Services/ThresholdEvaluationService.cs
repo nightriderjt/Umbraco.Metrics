@@ -1,20 +1,22 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
-using Umbraco.Cms.Infrastructure.Persistence;
 using UmbMetrics.Models;
+using UmbMetrics.Notifications;
 using UmbMetrics.Services.Interfaces;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Infrastructure.Persistence;
 
 namespace UmbMetrics.Services;
 
 public class ThresholdEvaluationService : IThresholdEvaluationService
 {
     private readonly ILogger<ThresholdEvaluationService> _logger;
-    private readonly IEmailNotificationService _emailService;
-    private readonly IWebhookNotificationService _webhookService;
+ 
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
-    private readonly IOptions<EmailNotificationSettings> _emailSettings;
+
+    private readonly IEventAggregator _eventAggregator;
     private readonly List<ThresholdRule> _rulesCache = new();
     private readonly Dictionary<string, List<DateTime>> _ruleEvaluationHistory = new();
     private readonly object _lock = new();
@@ -22,19 +24,16 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     private readonly TimeSpan _cacheRefreshInterval = TimeSpan.FromMinutes(5);
 
     public ThresholdEvaluationService(
-        ILogger<ThresholdEvaluationService> logger,
-        IEmailNotificationService emailService,
-        IWebhookNotificationService webhookService,
+        ILogger<ThresholdEvaluationService> logger,     
+     
         IOptions<ThresholdRulesSettings> thresholdRulesSettings,
-        IUmbracoDatabaseFactory databaseFactory,
-        IOptions<EmailNotificationSettings> emailSettings)
+        IUmbracoDatabaseFactory databaseFactory,      
+          IEventAggregator eventAggregator)
     {
-        _logger = logger;
-        _emailService = emailService;
-        _webhookService = webhookService;
+        _logger = logger;           
         _thresholdRulesSettings = thresholdRulesSettings;
-        _databaseFactory = databaseFactory;
-        _emailSettings = emailSettings;
+        _databaseFactory = databaseFactory;       
+        _eventAggregator = eventAggregator;
 
         // Load rules eagerly on startup
         Task.Run(async () => await RefreshRulesCacheAsync());
@@ -57,7 +56,8 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
                     
                     if (conditionMet && rule.ShouldEvaluate )
                     {
-                        await TriggerAlertAsync(rule, metrics);
+                        _eventAggregator.Publish(new ThresholdAlertTriggeredNotification(rule, metrics));
+                      
                     }
                 }
                 catch (Exception ex)
@@ -200,95 +200,11 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         }
     }
 
-    private async Task TriggerAlertAsync(ThresholdRule rule, PerformanceMetrics metrics)
-    {
-        try
-        {
-            // Create alert - use rule name as identifier since rules come from configuration
-            var alert = new ThresholdAlert
-            {
-                RuleName = rule.Name,
-                Severity = rule.Severity,
-                Status = AlertStatus.Active,
-                TriggeredAt = DateTime.UtcNow
-            };
-            
-            // Store current metric values
-            var triggeredValues = new Dictionary<string, object>
-            {
-                ["CpuUsage"] = metrics.CpuUsage,
-                ["MemoryUsage"] = metrics.MemoryUsage.WorkingSetMB,
-                ["ActiveRequests"] = metrics.RequestMetrics.ActiveRequests,
-                ["AverageResponseTime"] = metrics.RequestMetrics.AverageResponseTimeMs,
-                ["RequestsPerSecond"] = metrics.RequestMetrics.RequestsPerSecond,
-                ["Timestamp"] = metrics.Timestamp
-            };
-            
-            alert.SetTriggeredValues(triggeredValues);
-            
-            // Save alert to database
-            await SaveAlertToDatabaseAsync(alert);
-            
-            // Update rule tracking (in memory only since rules are from configuration)
-            rule.LastTriggeredAt = DateTime.UtcNow;
-           
-            
-            // Send notifications
-            await SendNotificationsAsync(alert, rule, metrics);
-            
-            _logger.LogWarning("Threshold alert triggered: {RuleName}", rule.Name);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error triggering alert for rule: {RuleName}", rule.Name);
-        }
-    }
+  
 
-    private async Task SaveAlertToDatabaseAsync(ThresholdAlert alert)
-    {
-        try
-        {
-            using var db = _databaseFactory.CreateDatabase();
-            
-            // Since rules are from configuration, we use RuleName as identifier
-            // RuleId is set to 0 for configuration-based rules
-            var alertId = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.InsertAlert, new {
-                ruleid = 0, // RuleId (0 for configuration-based rules)
-                alert.RuleName,
-                alert.TriggeredAt,
-                Status = (int)alert.Status,
-                Severity = (int)alert.Severity,
-                alert.TriggeredValuesJson,
-                alert.EmailSent
-            });
-            
-            alert.Id = alertId;
-            _logger.LogDebug("Alert saved to database with ID: {AlertId}", alertId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error saving alert to database for rule: {RuleName}", alert.RuleName);
-            throw;
-        }
-    }
 
-    private async Task SendNotificationsAsync(ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics metrics)
-    {
-        try
-        {
-            // Send email notifications           
-                await _emailService.SendAlertEmailAsync(alert, rule, metrics);   
-            // Send webhook notifications
-            if (rule.WebhookEndpoints.Any(e => e.IsEnabled))
-            {
-                await _webhookService.SendAlertWebhooksAsync(alert, rule, metrics);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending notifications for alert {AlertId}", alert.Id);
-        }
-    }
+
+ 
 
     private async Task RefreshRulesCacheIfNeededAsync()
     {

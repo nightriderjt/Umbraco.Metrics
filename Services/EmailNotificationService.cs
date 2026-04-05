@@ -148,7 +148,8 @@ public class EmailNotificationService : IEmailNotificationService
             ["{ServerName}"] = Environment.MachineName,
             ["{Condition}"] = rule.RootCondition.ToString(),
             ["{DashboardUrl}"] = "/umbraco/section/settings/dashboard/umb-metrics",
-            ["{AcknowledgeUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/acknowledge"         
+            ["{AcknowledgeUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/acknowledge",
+            ["{year}"] = $"{DateTime.UtcNow.Year}"
         };
 
         if (metrics != null)
