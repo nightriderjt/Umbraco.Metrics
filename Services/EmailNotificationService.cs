@@ -71,36 +71,7 @@ public class EmailNotificationService : IEmailNotificationService
         }
     }
 
-    public async Task<bool> SendAlertResolvedEmailAsync(ThresholdAlert alert, ThresholdRule rule)
-    {
-        try
-        {
-            var settings = _emailSettings.Value;
-            
-            if (!settings.IsEnabled || !settings.IsValid())
-            {
-                _logger.LogWarning("Email notifications are disabled or configuration is invalid");
-                return false;
-            }
-
-            var recipients = rule.EmailRecipients.Any() ? rule.EmailRecipients : settings.DefaultRecipients;
-            if (!recipients.Any())
-            {
-                _logger.LogWarning("No email recipients configured for alert {AlertId}", alert.Id);
-                return false;
-            }
-
-            var subject = FormatTemplate(settings.AlertResolvedSubjectTemplate, alert, rule, null);
-            var body = await GetEmailBodyAsync(settings.AlertResolvedBodyTemplatePath, alert, rule, null);
-
-            return await SendEmailAsync(recipients, subject, body, true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending alert resolved email for alert {AlertId}", alert.Id);
-            return false;
-        }
-    }
+  
 
  
 
@@ -152,9 +123,8 @@ public class EmailNotificationService : IEmailNotificationService
         }
 
         // Use default template
-        var defaultTemplate = metrics != null 
-            ? await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath,"Views/UmbMetrics/Emailtemplates/alert-triggered.html")) 
-            :await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Views/UmbMetrics/Emailtemplates/alert-resolved.html")) ;
+        var defaultTemplate = await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Views/UmbMetrics/Emailtemplates/alert-triggered.html"));
+            
         
         return FormatTemplate(defaultTemplate, alert, rule, metrics);
     }
@@ -168,16 +138,12 @@ public class EmailNotificationService : IEmailNotificationService
             ["{RuleName}"] = rule.Name,
             ["{RuleDescription}"] = rule.Description,
             ["{Severity}"] = rule.Severity.ToString(),
-            ["{TriggeredAt}"] = alert.TriggeredAt.ToString("yyyy-MM-dd HH:mm:ss UTC"),
-            ["{ResolvedAt}"] = alert.ResolvedAt?.ToString("yyyy-MM-dd HH:mm:ss UTC") ?? "N/A",
-            ["{Duration}"] = alert.Duration.ToString(@"hh\:mm\:ss"),
-            ["{ResolvedBy}"] = alert.ResolvedBy ?? "N/A",
-            ["{ResolutionNotes}"] = alert.ResolutionNotes ?? "N/A",
+            ["{TriggeredAt}"] = alert.TriggeredAt.ToString("yyyy-MM-dd HH:mm:ss UTC"),          
+            ["{Duration}"] = alert.Duration.ToString(@"hh\:mm\:ss"), 
             ["{ServerName}"] = Environment.MachineName,
             ["{Condition}"] = rule.RootCondition.ToString(),
-            ["{DashboardUrl}"] = "/umbraco#/metrics/dashboard",
-            ["{AcknowledgeUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/acknowledge",
-            ["{ResolveUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/resolve"
+            ["{DashboardUrl}"] = "/umbraco/section/settings/dashboard/umb-metrics",
+            ["{AcknowledgeUrl}"] = $"/umbraco#/metrics/alerts/{alert.Id}/acknowledge"         
         };
 
         if (metrics != null)

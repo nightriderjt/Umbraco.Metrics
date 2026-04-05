@@ -50,6 +50,10 @@
       <BuildAction>None</BuildAction>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+    <Content Include="Views\UmbMetrics\Emailtemplates\UmbMetricsLogo.svg">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <None Include="UmbMetrics.targets" Pack="true" PackagePath="build" />
   </ItemGroup>
 </Project>

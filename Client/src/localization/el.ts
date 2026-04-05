@@ -315,6 +315,7 @@ export default {
     "threshold_medium": "Μέτριο",
     "threshold_high": "Υψηλό",
     "threshold_critical": "Κρίσιμο",
+    "bySeverity": "Ανά Σοβαρότητα",
     "greaterThan": "Μεγαλύτερο Από",
     "greaterThanOrEqual": "Μεγαλύτερο ή Ίσο Από",
     "lessThan": "Μικρότερο Από",

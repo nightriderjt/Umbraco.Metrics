@@ -313,6 +313,7 @@ export default {
     "threshold_medium": "Medium",
     "threshold_high": "High",
     "threshold_critical": "Critical",
+    "bySeverity": "By Severity",
     "greaterThan": "Greater Than",
     "greaterThanOrEqual": "Greater Than or Equal",
     "lessThan": "Less Than",

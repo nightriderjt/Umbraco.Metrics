@@ -2,8 +2,7 @@ import type {
     ThresholdRule, 
     ThresholdAlert, 
     ThresholdAlertStats,  
-    AcknowledgeAlertRequest,
-    ResolveAlertRequest  
+    AcknowledgeAlertRequest      
 } from '../types/threshold-models.js';
 
 export class ThresholdService {
@@ -59,13 +58,7 @@ export class ThresholdService {
         return true;
     }
 
-    async resolveAlert(id: number, request: ResolveAlertRequest): Promise<boolean> {
-        await this.fetchWithAuth(`${this.baseUrl}/alerts/${id}/resolve`, {
-            method: 'POST',
-            body: JSON.stringify(request)
-        });
-        return true;
-    }
+ 
 
     async getAlertStats(): Promise<ThresholdAlertStats> {
         return this.fetchWithAuth(`${this.baseUrl}/alerts/stats`);

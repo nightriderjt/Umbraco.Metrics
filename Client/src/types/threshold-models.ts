@@ -38,8 +38,7 @@ export enum ThresholdSeverity {
 
 export enum ThresholdAlertStatus {
     Active = 'active',
-    Acknowledged = 'acknowledged',
-    Resolved = 'resolved'
+    Acknowledged = 'acknowledged'  
 }
 
 export interface ThresholdCondition {
@@ -78,10 +77,7 @@ export interface ThresholdAlert {
     thresholdValue: number;
     triggeredAt: Date;
     acknowledgedAt?: Date;
-    acknowledgedBy?: string;
-    resolvedAt?: Date;
-    resolvedBy?: string;
-    resolutionNotes?: string;
+    acknowledgedBy?: string;   
     status: ThresholdAlertStatus;
     metadata?: Record<string, any>;
 }
@@ -89,26 +85,14 @@ export interface ThresholdAlert {
 export interface ThresholdAlertStats {
     totalAlerts: number;
     activeAlerts: number;
-    acknowledgedAlerts: number;
-    resolvedAlerts: number;
+    acknowledgedAlerts: number;   
     bySeverity: Record<string, number>;
     last24Hours: number;
     last7Days: number;
 }
-
-
-
-
-
-
-
-
 export interface AcknowledgeAlertRequest {
     acknowledgedBy: string;
 }
 
-export interface ResolveAlertRequest {
-    resolvedBy: string;
-    notes?: string;
-}
+
 

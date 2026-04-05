@@ -195,8 +195,8 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             var cutoff = DateTime.UtcNow - evaluationWindow;
             var evaluationsInWindow = _ruleEvaluationHistory[ruleName].Count(t => t >= cutoff);
             
-            // We need at least 2 evaluations in the window to make a determination
             return evaluationsInWindow >= 2;
+            // We need at least 2 evaluations in the window to make a determination
         }
     }
 
@@ -231,7 +231,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             
             // Update rule tracking (in memory only since rules are from configuration)
             rule.LastTriggeredAt = DateTime.UtcNow;
-            rule.TriggerCount++;
+           
             
             // Send notifications
             await SendNotificationsAsync(alert, rule, metrics);
@@ -252,22 +252,15 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             
             // Since rules are from configuration, we use RuleName as identifier
             // RuleId is set to 0 for configuration-based rules
-            var sql = @"
-                INSERT INTO UmbMetrics_ThresholdAlerts 
-                (RuleId, RuleName, TriggeredAt, Status, Severity, TriggeredValuesJson, EmailSent)
-                VALUES (@ruleid, @RuleName, @TriggeredAt, @Status, @Severity, @TriggeredValuesJson, @EmailSent);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);";
-            
-            var alertId = db.ExecuteScalar<int>(sql,new {
+            var alertId = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.InsertAlert, new {
                 ruleid = 0, // RuleId (0 for configuration-based rules)
                 alert.RuleName,
                 alert.TriggeredAt,
-             Status=   (int)alert.Status,
-              Severity=  (int)alert.Severity,
+                Status = (int)alert.Status,
+                Severity = (int)alert.Severity,
                 alert.TriggeredValuesJson,
                 alert.EmailSent
-            }
-               );
+            });
             
             alert.Id = alertId;
             _logger.LogDebug("Alert saved to database with ID: {AlertId}", alertId);
@@ -344,15 +337,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         {
             using var db = _databaseFactory.CreateDatabase();
             
-            var sql = @"
-                SELECT Id, RuleId, RuleName, TriggeredAt, ResolvedAt, AcknowledgedAt, 
-                       Status, Severity, TriggeredValuesJson, EmailSent, EmailSentAt, 
-                       ResolvedBy, ResolutionNotes
-                FROM UmbMetrics_ThresholdAlerts 
-                WHERE Status = @0
-                ORDER BY TriggeredAt DESC";
-            
-            var alerts = db.Fetch<ThresholdAlert>(sql, (int)AlertStatus.Active);
+            var alerts = db.Fetch<ThresholdAlert>(Constants.SqlQueries.Thresholds.GetActiveAlerts, (int)AlertStatus.Active);
             return Task.FromResult(alerts.AsEnumerable());
         }
         catch (Exception ex)
@@ -378,23 +363,11 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         return Task.FromResult<ThresholdRule?>(null);
     }
 
-    public Task<ThresholdRule> CreateThresholdRuleAsync(ThresholdRule rule)
-    {
-        // Rules are read-only from configuration
-        throw new NotSupportedException("Threshold rules are configured via appsettings.json and cannot be created at runtime.");
-    }
+ 
 
-    public Task<ThresholdRule> UpdateThresholdRuleAsync(int id, ThresholdRule rule)
-    {
-        // Rules are read-only from configuration
-        throw new NotSupportedException("Threshold rules are configured via appsettings.json and cannot be updated at runtime.");
-    }
+  
 
-    public Task<bool> DeleteThresholdRuleAsync(int id)
-    {
-        // Rules are read-only from configuration
-        throw new NotSupportedException("Threshold rules are configured via appsettings.json and cannot be deleted at runtime.");
-    }
+
 
     public Task<bool> AcknowledgeAlertAsync(int alertId, string acknowledgedBy)
     {
@@ -402,12 +375,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         {
             using var db = _databaseFactory.CreateDatabase();
             
-            var sql = @"
-                UPDATE UmbMetrics_ThresholdAlerts 
-                SET Status = @0, AcknowledgedAt = @1, ResolvedBy = @2
-                WHERE Id = @3 AND Status = @4";
-            
-            var rowsAffected = db.Execute(sql,
+            var rowsAffected = db.Execute(Constants.SqlQueries.Thresholds.AcknowledgeAlert,
                 (int)AlertStatus.Acknowledged,
                 DateTime.UtcNow,
                 acknowledgedBy,
@@ -423,34 +391,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         }
     }
 
-    public Task<bool> ResolveAlertAsync(int alertId, string resolvedBy, string? notes = null)
-    {
-        try
-        {
-            using var db = _databaseFactory.CreateDatabase();
-            
-            var sql = @"
-                UPDATE UmbMetrics_ThresholdAlerts 
-                SET Status = @0, ResolvedAt = @1, ResolvedBy = @2, ResolutionNotes = @3
-                WHERE Id = @4 AND (Status = @5 OR Status = @6)";
-            
-            var rowsAffected = db.Execute(sql,
-                (int)AlertStatus.Resolved,
-                DateTime.UtcNow,
-                resolvedBy,
-                notes ?? string.Empty,
-                alertId,
-                (int)AlertStatus.Active,
-                (int)AlertStatus.Acknowledged);
-            
-            return Task.FromResult(rowsAffected > 0);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error resolving alert {AlertId}", alertId);
-            return Task.FromResult(false);
-        }
-    }
+   
 
     public Task<ThresholdAlertStats> GetAlertStatsAsync()
     {
@@ -459,29 +400,25 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             using var db = _databaseFactory.CreateDatabase();            
             var stats = new ThresholdAlertStats
             {
-                TotalAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts"),
-                ActiveAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 0"),
-                AcknowledgedAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 1"),
-                ResolvedAlerts = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE Status = 2"),
-                Last24Hours = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE TriggeredAt >= DATEADD(hour, -24, GETUTCDATE())"),
-                Last7Days = db.ExecuteScalar<int>("SELECT COUNT(*) FROM UmbMetrics_ThresholdAlerts WHERE TriggeredAt >= DATEADD(day, -7, GETUTCDATE())"),
-                LastAlertTime = db.ExecuteScalar<DateTime?>("SELECT MAX(TriggeredAt) FROM UmbMetrics_ThresholdAlerts"),
-                BySeverity = new Dictionary<string, int>(),
-                AlertsByRule = new Dictionary<string, int>()
+                TotalAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.TotalAlertsCount),
+                ActiveAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.AlertsCountByStatus,new {status= (int)AlertStatus.Active }),
+                AcknowledgedAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.AlertsCountByStatus, new { status = (int)AlertStatus.Acknowledged }),
+                Last24Hours = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.Last24HoursAlertsCount),
+                Last7Days = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.Last7DaysAlertsCount),
+                LastAlertTime = db.ExecuteScalar<DateTime?>(Constants.SqlQueries.Thresholds.LastAlertTime),
+                BySeverity = [],
+                AlertsByRule = []
             };
             
             // Get severity counts
-            var severitySql = "SELECT Severity, COUNT(*) as Count FROM UmbMetrics_ThresholdAlerts GROUP BY Severity";
-            var severityResults = db.Fetch<dynamic>(severitySql);
+            var severityResults = db.Fetch<SeverityResult>(Constants.SqlQueries.Thresholds.AlertsBySeverity);
             foreach (var result in severityResults)
-            {
-                var severity = ((int)result.Severity).ToString();
-                stats.BySeverity[severity] = (int)result.Count;
+            {              
+                stats.BySeverity[result.Severity.ToString()] = (int)result.Count;
             }
             
             // Get rule counts
-            var ruleSql = "SELECT RuleName, COUNT(*) as Count FROM UmbMetrics_ThresholdAlerts GROUP BY RuleName";
-            var ruleResults = db.Fetch<dynamic>(ruleSql);
+            var ruleResults = db.Fetch<dynamic>(Constants.SqlQueries.Thresholds.AlertsByRule);
             foreach (var result in ruleResults)
             {
                 var ruleName = (string)result.RuleName;
@@ -499,8 +436,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             {
                 TotalAlerts = 0,
                 ActiveAlerts = 0,
-                AcknowledgedAlerts = 0,
-                ResolvedAlerts = 0,
+                AcknowledgedAlerts = 0,               
                 Last24Hours = 0,
                 Last7Days = 0,
                 LastAlertTime = null,
@@ -508,24 +444,10 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
                 {
                     ["0"] = 0, ["1"] = 0, ["2"] = 0, ["3"] = 0
                 },
-                AlertsByRule = new Dictionary<string, int>()
+                AlertsByRule = []
             };
             
             return Task.FromResult(stats);
         }
-    }
-
-    public async Task<ThresholdTestResult> TestThresholdRuleAsync(ThresholdRule rule)
-    {
-        // TODO: Get current metrics and test the rule
-        var result = new ThresholdTestResult
-        {
-            ConditionMet = false,
-            EvaluationDetails = "Test not implemented yet",
-            EvaluationWindow = rule.EvaluationWindow,
-            WouldTriggerAlert = false
-        };
-        
-        return await Task.FromResult(result);
-    }
+    } 
 }

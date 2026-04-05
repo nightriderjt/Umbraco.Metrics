@@ -707,7 +707,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                 icon="icon-check"
                 title="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}"
                 value="${stats.acknowledgedAlerts}"
-                detail="${this.localize?.term('threshold_resolvedAlerts') || 'Resolved'}: ${stats.resolvedAlerts}"
+                detail="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}: ${stats.acknowledgedAlerts}"
                 color="${stats.acknowledgedAlerts > 0 ? 'warning' : 'default'}"
               ></umbmetrics-metric-card>
 
@@ -766,14 +766,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                       @click="${() => this.#acknowledgeAlert(alert.id)}"
                     >
                       ${this.localize?.term('threshold_acknowledge') || 'Acknowledge'}
-                    </uui-button>
-                    <uui-button 
-                      look="primary" 
-                      color="positive"
-                      @click="${() => this.#resolveAlert(alert.id)}"
-                    >
-                      ${this.localize?.term('threshold_resolve') || 'Resolve'}
-                    </uui-button>
+                    </uui-button>                  
                   </div>
                 </div>
               `)}
@@ -820,42 +813,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     }
   }
 
-  async #resolveAlert(alertId: number) {
-    if (!this.#thresholdService || !this._contextCurrentUser?.name) {
-      return;
-    }
 
-    try {
-      await this.#thresholdService.resolveAlert(alertId, {
-        resolvedBy: this._contextCurrentUser.name,
-        notes: "Resolved from dashboard"
-      });
-      
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("positive", {
-          data: {
-            headline: this.localize?.term('threshold_alertResolved') || "Alert Resolved",
-            message: this.localize?.term('threshold_alertResolved') || "Alert has been resolved successfully",
-          },
-        });
-      }
-
-      await this.#loadThresholdAlerts();
-      await this.#loadAlertStats();
-    } catch (error) {
-      console.error("Error resolving alert:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: this.localize?.term('threshold_errorResolvingAlert') || "Error Resolving Alert",
-            message: error instanceof Error 
-              ? error.message 
-              : this.localize?.term('threshold_errorResolvingAlert') || "Failed to resolve alert",
-          },
-        });
-      }
-    }
-  }
 
   #renderTabContent() {
     switch (this._activeTab) {

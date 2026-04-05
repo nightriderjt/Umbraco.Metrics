@@ -162,49 +162,7 @@ public class ThresholdApiController : ManagementApiControllerBase
         }
     }
 
-    /// <summary>
-    /// Resolves an alert
-    /// </summary>
-    [HttpPost("alerts/{id:int}/resolve")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ResolveAlert(int id, [FromBody] ResolveAlertRequest request)
-    {
-        try
-        {
-            if (request == null || string.IsNullOrWhiteSpace(request.ResolvedBy))
-            {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Invalid request",
-                    Detail = "ResolvedBy is required",
-                    Status = StatusCodes.Status400BadRequest
-                });
-            }
-
-            var success = await _thresholdService.ResolveAlertAsync(id, request.ResolvedBy, request.Notes);
-            if (!success)
-            {
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Alert not found",
-                    Detail = $"Alert with ID {id} was not found",
-                    Status = StatusCodes.Status404NotFound
-                });
-            }
-
-            return Ok(new { message = "Alert resolved successfully" });
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                title: "Failed to resolve alert",
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
+ 
 
     /// <summary>
     /// Gets alert statistics
