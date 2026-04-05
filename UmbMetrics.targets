@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <UmbMetricsViews Include="$(MSBuildThisFileDirectory)..\contentFiles\any\any\Views\**" />
+  </ItemGroup>
+
+  <Target Name="CopyUmbMetricsViews" BeforeTargets="Build">
+    <Copy SourceFiles="@(UmbMetricsViews)" 
+          DestinationFiles="$(ProjectDir)Views\%(RecursiveDir)%(Filename)%(Extension)" 
+          SkipUnchangedFiles="true"
+          />
+  </Target>
+</Project>

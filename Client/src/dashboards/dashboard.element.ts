@@ -5,6 +5,7 @@ import {
   html,
   customElement,
   state,
+  repeat,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 import { UUIButtonElement } from "@umbraco-cms/backoffice/external/uui";
@@ -14,8 +15,13 @@ import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 import type { UmbAuthContext } from "@umbraco-cms/backoffice/auth";
 
 import { MetricsPerformanceService } from "../services/metrics-performance.service.js";
+import { ThresholdService } from "../services/threshold.service.js";
 import type { PerformanceMetrics } from "../types/performance-metrics.js";
 import type { UmbracoMetrics } from "../types/umbraco-metrics.js";
+import type { 
+  ThresholdAlert, 
+  ThresholdAlertStats
+} from "../types/threshold-models.js";
 
 import type { StatRow } from "../components/stat-card.element.js";
 import { getStatusColor, formatNumber } from "../utils/format-utils.js";
@@ -51,11 +57,19 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   @state()
   private _umbracoMetrics?: UmbracoMetrics;
 
+  @state()
+  private _thresholdAlerts: ThresholdAlert[] = [];
 
+  @state()
+  private _alertStats?: ThresholdAlertStats;
+
+  @state()
+  private _loadingAlerts: boolean = false;
 
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
   #metricsService?: MetricsPerformanceService;
+  #thresholdService?: ThresholdService;
   #unsubscribe?: () => void;
 
   constructor() {
@@ -79,6 +93,14 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       this.#authContext = authContext;
       
       this.#metricsService = new MetricsPerformanceService(async () => {
+        const token = await this.#authContext?.getLatestToken();
+        if (!token) {
+          throw new Error('No authentication token available');
+        }
+        return token;
+      });
+
+      this.#thresholdService = new ThresholdService(async () => {
         const token = await this.#authContext?.getLatestToken();
         if (!token) {
           throw new Error('No authentication token available');
@@ -165,10 +187,56 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     }
   }
 
+  async #loadThresholdAlerts() {
+    if (!this.#thresholdService) {
+      console.error('Threshold service not initialized');
+      return;
+    }
 
+    this._loadingAlerts = true;
+    try {
+      this._thresholdAlerts = await this.#thresholdService.getActiveAlerts();
+    } catch (error) {
+      console.error("Error loading threshold alerts:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: this.localize?.term('threshold_errorLoadingAlerts') || "Error Loading Alerts",
+            message: error instanceof Error 
+              ? error.message 
+              : this.localize?.term('threshold_errorLoadingAlerts') || "Failed to load threshold alerts",
+          },
+        });
+      }
+    } finally {
+      this._loadingAlerts = false;
+    }
+  }
+
+  async #loadAlertStats() {
+    if (!this.#thresholdService) {
+      console.error('Threshold service not initialized');
+      return;
+    }
+
+    try {
+      this._alertStats = await this.#thresholdService.getAlertStats();
+    } catch (error) {
+      console.error("Error loading alert stats:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: this.localize?.term('threshold_errorLoadingStats') || "Error Loading Stats",
+            message: error instanceof Error 
+              ? error.message 
+              : this.localize?.term('threshold_errorLoadingStats') || "Failed to load alert statistics",
+          },
+        });
+      }
+    }
+  }
 
   
-
 
   #openActiveRequestsSidebar = async () => {
     const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
@@ -588,6 +656,165 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     `;
   }
 
+  #renderThresholdsTab() {
+  
+    async () => {
+      await Promise.all([
+        this.#loadThresholdAlerts(),
+        this.#loadAlertStats()
+      ]);}
+   
+    if (this._loadingAlerts) {
+      return html`<p>${this.localize?.term('threshold_loadingAlerts') || 'Loading threshold alerts...'}</p>`;
+    }
+
+    const stats = this._alertStats;
+    const alerts = this._thresholdAlerts;
+
+    return html`
+      <div class="thresholds-tab">
+        <div class="thresholds-header">
+          <h3>${this.localize?.term('threshold_title') || 'Threshold Monitoring'}</h3>
+          <div class="thresholds-controls">
+            <uui-button 
+              look="primary" 
+              color="positive"
+              @click="${async () => {
+                await Promise.all([
+                  this.#loadThresholdAlerts(),
+                  this.#loadAlertStats()
+                ]);
+              }}"
+            >
+              <uui-icon name="icon-refresh"></uui-icon>
+              ${this.localize?.term('common_refresh') || 'Refresh'}
+            </uui-button>
+          </div>
+        </div>
+
+        ${stats ? html`
+          <div class="thresholds-stats">
+            <umbmetrics-metrics-grid columns="4">
+              <umbmetrics-metric-card
+                icon="icon-alert"
+                title="${this.localize?.term('threshold_activeAlerts') || 'Active Alerts'}"
+                value="${stats.activeAlerts}"
+                detail="${this.localize?.term('threshold_totalAlerts') || 'Total'}: ${stats.totalAlerts}"
+                color="${stats.activeAlerts > 0 ? 'danger' : 'positive'}"
+              ></umbmetrics-metric-card>
+
+              <umbmetrics-metric-card
+                icon="icon-check"
+                title="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}"
+                value="${stats.acknowledgedAlerts}"
+                detail="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}: ${stats.acknowledgedAlerts}"
+                color="${stats.acknowledgedAlerts > 0 ? 'warning' : 'default'}"
+              ></umbmetrics-metric-card>
+
+              <umbmetrics-metric-card
+                icon="icon-time"
+                title="${this.localize?.term('threshold_last24Hours') || 'Last 24 Hours'}"
+                value="${stats.last24Hours}"
+                detail="${this.localize?.term('threshold_last7Days') || 'Last 7 Days'}: ${stats.last7Days}"
+              ></umbmetrics-metric-card>
+
+              <umbmetrics-metric-card
+                icon="icon-chart"
+                title="${this.localize?.term('threshold_bySeverity') || 'By Severity'}"
+                value=""
+                detail="Low: ${stats.bySeverity['0']}, Med: ${stats.bySeverity['1']}, High: ${stats.bySeverity['2']}, Crit: ${stats.bySeverity['3']}"
+              ></umbmetrics-metric-card>
+            </umbmetrics-metrics-grid>
+          </div>
+        ` : ''}
+
+        <div class="thresholds-alerts">
+          <h4>${this.localize?.term('threshold_activeAlerts') || 'Active Alerts'}</h4>
+          
+          ${alerts.length === 0 ? html`
+            <p class="no-alerts">${this.localize?.term('threshold_noAlerts') || 'No active alerts'}</p>
+          ` : html`
+            <div class="alerts-list">
+              ${repeat(alerts, alert => alert.id, alert => html`
+                <div class="alert-item" data-severity="${alert.severity}">
+                  <div class="alert-header">
+                    <div class="alert-severity">
+                      <uui-icon name="icon-alert"></uui-icon>
+                      <span class="severity-label">${this.localize?.term(`threshold_${alert.severity}`) || alert.severity}</span>
+                    </div>
+                    <div class="alert-time">
+                      ${new Date(alert.triggeredAt).toLocaleString()}
+                    </div>
+                  </div>
+                  <div class="alert-content">
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-details">
+                      <span class="alert-detail">
+                        <strong>${this.localize?.term('threshold_triggeredValue') || 'Triggered Values'}:</strong>
+                        ${alert.triggeredValuesJson}
+                      </span>                 
+                      <span class="alert-detail">
+                        <strong>${this.localize?.term('threshold_ruleName') || 'Rule'}:</strong>
+                        ${alert.ruleName}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="alert-actions">
+                    <uui-button 
+                      look="primary" 
+                      color="warning"
+                      @click="${() => this.#acknowledgeAlert(alert.id)}"
+                    >
+                      ${this.localize?.term('threshold_acknowledge') || 'Acknowledge'}
+                    </uui-button>                  
+                  </div>
+                </div>
+              `)}
+            </div>
+          `}
+        </div>        
+      </div>
+    `;
+  }
+
+  async #acknowledgeAlert(alertId: number) {
+    if (!this.#thresholdService || !this._contextCurrentUser?.name) {
+      return;
+    }
+
+    try {
+      await this.#thresholdService.acknowledgeAlert(alertId, {
+        acknowledgedBy: this._contextCurrentUser.name
+      });
+      
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("positive", {
+          data: {
+            headline: this.localize?.term('threshold_alertAcknowledged') || "Alert Acknowledged",
+            message: this.localize?.term('threshold_alertAcknowledged') || "Alert has been acknowledged successfully",
+          },
+        });
+      }
+
+      await this.#loadThresholdAlerts();
+      await this.#loadAlertStats();
+    } catch (error) {
+      console.error("Error acknowledging alert:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: this.localize?.term('threshold_errorAcknowledgingAlert') || "Error Acknowledging Alert",
+            message: error instanceof Error 
+              ? error.message 
+              : this.localize?.term('threshold_errorAcknowledgingAlert') || "Failed to acknowledge alert",
+          },
+        });
+      }
+    }
+  }
+
+
+
   #renderTabContent() {
     switch (this._activeTab) {
       case 'overview':
@@ -596,6 +823,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         return this.#renderHeapTab();
       case 'umbraco':
         return this.#renderUmbracoTab();
+      case 'thresholds':
+        return this.#renderThresholdsTab();
       case 'utils':
         return this.#renderUtilsTab();
       default:
@@ -651,6 +880,13 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             @click="${() => this.#switchTab('umbraco')}"
           >
             <uui-icon name="icon-umbraco"></uui-icon> ${this.localize?.term('dashboard_umbracoMetrics') || 'Umbraco Metrics'}
+          </uui-button>
+          <uui-button 
+            look="${this._activeTab === 'thresholds' ? 'primary' : 'default'}"
+            color="${this._activeTab === 'thresholds' ? 'positive' : 'default'}"
+            @click="${() => this.#switchTab('thresholds')}"
+          >
+            <uui-icon name="icon-alert"></uui-icon> ${this.localize?.term('threshold_thresholds') || 'Thresholds'}
           </uui-button>
           <uui-button 
             look="${this._activeTab === 'utils' ? 'primary' : 'default'}"

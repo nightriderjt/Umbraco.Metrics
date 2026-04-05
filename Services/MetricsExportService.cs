@@ -1,6 +1,6 @@
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
@@ -34,7 +34,7 @@ public class MetricsExportService : IMetricsExportService
             {
                 return await _historicalExportService.ExportHistoricalMetricsAsync(options);
             }
-            
+
             // Current snapshot export
             if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
             {
@@ -76,7 +76,7 @@ public class MetricsExportService : IMetricsExportService
     {
         var performanceMetrics = await _performanceMetricsService.GetMetricsAsync();
         var umbracoMetrics = await _umbracoMetricsService.GetMetricsAsync();
-        
+
         var combinedMetrics = new ExportMetrics
         {
             Timestamp = DateTime.UtcNow,
@@ -104,13 +104,13 @@ public class MetricsExportService : IMetricsExportService
                 contentType = "text/csv";
                 fileExtension = "csv";
                 break;
-            
+
             case ExportFormat.Xml:
                 exportData = GenerateXml(data);
                 contentType = "application/xml";
                 fileExtension = "xml";
                 break;
-            
+
             case ExportFormat.Json:
             default:
                 exportData = GenerateJson(data);
@@ -147,10 +147,10 @@ public class MetricsExportService : IMetricsExportService
     private byte[] GenerateCsv<T>(T data)
     {
         var csvBuilder = new StringBuilder();
-        
+
         // Add UTF-8 BOM for Excel compatibility
         csvBuilder.Append('\uFEFF');
-        
+
         if (data is PerformanceMetrics performanceMetrics)
         {
             GeneratePerformanceMetricsCsv(csvBuilder, performanceMetrics);
@@ -175,17 +175,17 @@ public class MetricsExportService : IMetricsExportService
     private void GeneratePerformanceMetricsCsv(StringBuilder csvBuilder, PerformanceMetrics metrics)
     {
         csvBuilder.AppendLine("Category,Property,Value,Unit");
-        
+
         // Application Info
         csvBuilder.AppendLine($"Application Info,Process ID,{metrics.ApplicationInfo.ProcessId},");
         csvBuilder.AppendLine($"Application Info,Process Name,{metrics.ApplicationInfo.ProcessName},");
         csvBuilder.AppendLine($"Application Info,Start Time,{metrics.ApplicationInfo.StartTime:yyyy-MM-dd HH:mm:ss},");
         csvBuilder.AppendLine($"Application Info,Uptime (seconds),{metrics.ApplicationInfo.UptimeSeconds},");
         csvBuilder.AppendLine($"Application Info,.NET Version,{metrics.ApplicationInfo.DotNetVersion},");
-        
+
         // CPU Usage
         csvBuilder.AppendLine($"CPU,Usage,{metrics.CpuUsage:F2},%");
-        
+
         // Memory Usage
         csvBuilder.AppendLine($"Memory,Working Set,{metrics.MemoryUsage.WorkingSetMB:F2},MB");
         csvBuilder.AppendLine($"Memory,Private Memory,{metrics.MemoryUsage.PrivateMemoryMB:F2},MB");
@@ -193,13 +193,13 @@ public class MetricsExportService : IMetricsExportService
         csvBuilder.AppendLine($"Memory,Gen 0 Heap,{metrics.MemoryUsage.GcGen0HeapSizeMB:F2},MB");
         csvBuilder.AppendLine($"Memory,Gen 1 Heap,{metrics.MemoryUsage.GcGen1HeapSizeMB:F2},MB");
         csvBuilder.AppendLine($"Memory,Gen 2 Heap,{metrics.MemoryUsage.GcGen2HeapSizeMB:F2},MB");
-        
+
         // Thread Info
         csvBuilder.AppendLine($"Threads,Thread Count,{metrics.ThreadInfo.ThreadCount},");
         csvBuilder.AppendLine($"Threads,Thread Pool Threads,{metrics.ThreadInfo.ThreadPoolThreadCount},");
         csvBuilder.AppendLine($"Threads,Pending Work Items,{metrics.ThreadInfo.PendingWorkItemCount},");
         csvBuilder.AppendLine($"Threads,Completed Work Items,{metrics.ThreadInfo.CompletedWorkItemCount},");
-        
+
         // Request Metrics
         csvBuilder.AppendLine($"Requests,Total Requests,{metrics.RequestMetrics.TotalRequests},");
         csvBuilder.AppendLine($"Requests,Requests Per Second,{metrics.RequestMetrics.RequestsPerSecond:F2},/s");
@@ -207,7 +207,7 @@ public class MetricsExportService : IMetricsExportService
         csvBuilder.AppendLine($"Requests,Active Requests,{metrics.RequestMetrics.ActiveRequests},");
         csvBuilder.AppendLine($"Requests,Failed Requests,{metrics.RequestMetrics.FailedRequests},");
         csvBuilder.AppendLine($"Requests,Last Minute Requests,{metrics.RequestMetrics.LastMinuteRequests},");
-        
+
         // Garbage Collection
         csvBuilder.AppendLine($"Garbage Collection,Gen 0 Collections,{metrics.GarbageCollectionStats.Gen0Collections},");
         csvBuilder.AppendLine($"Garbage Collection,Gen 1 Collections,{metrics.GarbageCollectionStats.Gen1Collections},");
@@ -215,54 +215,54 @@ public class MetricsExportService : IMetricsExportService
         csvBuilder.AppendLine($"Garbage Collection,Total Pause Time,{metrics.GarbageCollectionStats.TotalPauseTimeMs:F2},ms");
         csvBuilder.AppendLine($"Garbage Collection,GC Mode,{(metrics.GarbageCollectionStats.IsServerGC ? "Server" : "Workstation")},");
         csvBuilder.AppendLine($"Garbage Collection,Latency Mode,{metrics.GarbageCollectionStats.GCLatencyMode},");
-        
+
         csvBuilder.AppendLine($"Timestamp,Export Time,{metrics.Timestamp:yyyy-MM-dd HH:mm:ss} UTC,");
     }
 
     private void GenerateUmbracoMetricsCsv(StringBuilder csvBuilder, UmbracoMetrics metrics)
     {
         csvBuilder.AppendLine("Category,Property,Value,Unit");
-        
+
         // Content Statistics
         csvBuilder.AppendLine($"Content,Total Nodes,{metrics.ContentStatistics.TotalContentNodes},");
         csvBuilder.AppendLine($"Content,Published Nodes,{metrics.ContentStatistics.PublishedNodes},");
         csvBuilder.AppendLine($"Content,Unpublished Nodes,{metrics.ContentStatistics.UnpublishedNodes},");
         csvBuilder.AppendLine($"Content,Trashed Nodes,{metrics.ContentStatistics.TrashedNodes},");
         csvBuilder.AppendLine($"Content,Content Types,{metrics.ContentStatistics.ContentTypeCount},");
-        
+
         // Media Statistics
         csvBuilder.AppendLine($"Media,Total Items,{metrics.MediaStatistics.TotalMediaItems},");
         csvBuilder.AppendLine($"Media,Total Size,{metrics.MediaStatistics.TotalMediaSizeMB:F2},MB");
         csvBuilder.AppendLine($"Media,Images,{metrics.MediaStatistics.ImagesCount},");
         csvBuilder.AppendLine($"Media,Documents,{metrics.MediaStatistics.DocumentsCount},");
         csvBuilder.AppendLine($"Media,Media Types,{metrics.MediaStatistics.MediaTypeCount},");
-        
+
         // Cache Statistics
         csvBuilder.AppendLine($"Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
         csvBuilder.AppendLine($"Cache,Runtime Cache Size,{metrics.CacheStatistics.RuntimeCacheSizeMB:F2},MB");
         csvBuilder.AppendLine($"Cache,NuCache Items,{metrics.CacheStatistics.NuCacheCount},");
         csvBuilder.AppendLine($"Cache,NuCache Size,{metrics.CacheStatistics.NuCacheSizeMB:F2},MB");
         csvBuilder.AppendLine($"Cache,Total Cache Size,{metrics.CacheStatistics.TotalCacheSize},");
-        
+
         // Backoffice Users
         csvBuilder.AppendLine($"Users,Total Users,{metrics.BackofficeUsers.TotalUsers},");
         csvBuilder.AppendLine($"Users,Active Users,{metrics.BackofficeUsers.ActiveUsers},");
         csvBuilder.AppendLine($"Users,Administrators,{metrics.BackofficeUsers.AdminUsers},");
         csvBuilder.AppendLine($"Users,Current Sessions,{metrics.BackofficeUsers.CurrentSessions},");
-        
+
         csvBuilder.AppendLine($"Timestamp,Export Time,{metrics.Timestamp:yyyy-MM-dd HH:mm:ss} UTC,");
     }
 
     private void GenerateCombinedMetricsCsv(StringBuilder csvBuilder, ExportMetrics metrics)
     {
         csvBuilder.AppendLine("Section,Category,Property,Value,Unit");
-        
+
         // Performance Metrics Section
         GenerateCombinedPerformanceSection(csvBuilder, metrics.PerformanceMetrics);
-        
+
         // Umbraco Metrics Section  
         GenerateCombinedUmbracoSection(csvBuilder, metrics.UmbracoMetrics);
-        
+
         csvBuilder.AppendLine($"Metadata,Export,Timestamp,{metrics.Timestamp:yyyy-MM-dd HH:mm:ss} UTC,");
         csvBuilder.AppendLine($"Metadata,Export,Scope,{metrics.Scope},");
         if (metrics.StartDate.HasValue)
@@ -274,7 +274,7 @@ public class MetricsExportService : IMetricsExportService
     private void GenerateCombinedPerformanceSection(StringBuilder csvBuilder, PerformanceMetrics metrics)
     {
         if (metrics == null) return;
-        
+
         csvBuilder.AppendLine($"Performance,Application,Process ID,{metrics.ApplicationInfo.ProcessId},");
         csvBuilder.AppendLine($"Performance,CPU,Usage,{metrics.CpuUsage:F2},%");
         csvBuilder.AppendLine($"Performance,Memory,Working Set,{metrics.MemoryUsage.WorkingSetMB:F2},MB");
@@ -286,7 +286,7 @@ public class MetricsExportService : IMetricsExportService
     private void GenerateCombinedUmbracoSection(StringBuilder csvBuilder, UmbracoMetrics metrics)
     {
         if (metrics == null) return;
-        
+
         csvBuilder.AppendLine($"Umbraco,Content,Total Nodes,{metrics.ContentStatistics.TotalContentNodes},");
         csvBuilder.AppendLine($"Umbraco,Media,Total Items,{metrics.MediaStatistics.TotalMediaItems},");
         csvBuilder.AppendLine($"Umbraco,Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
@@ -296,13 +296,13 @@ public class MetricsExportService : IMetricsExportService
     private void GenerateGenericCsv<T>(StringBuilder csvBuilder, T data)
     {
         var properties = typeof(T).GetProperties();
-        
+
         // Header row
         var headers = properties.Select(p => p.Name);
         csvBuilder.AppendLine(string.Join(",", headers));
-        
+
         // Data row
-        var values = properties.Select(p => 
+        var values = properties.Select(p =>
         {
             var value = p.GetValue(data);
             return EscapeCsvValue(value?.ToString() ?? "");
@@ -317,7 +317,7 @@ public class MetricsExportService : IMetricsExportService
         xmlBuilder.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         xmlBuilder.AppendLine("<MetricsExport>");
         xmlBuilder.AppendLine($"  <Timestamp>{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}</Timestamp>");
-        
+
         if (data is PerformanceMetrics performanceMetrics)
         {
             GeneratePerformanceMetricsXml(xmlBuilder, performanceMetrics);
@@ -326,9 +326,9 @@ public class MetricsExportService : IMetricsExportService
         {
             GenerateUmbracoMetricsXml(xmlBuilder, umbracoMetrics);
         }
-        
+
         xmlBuilder.AppendLine("</MetricsExport>");
-        
+
         return Encoding.UTF8.GetBytes(xmlBuilder.ToString());
     }
 
@@ -353,12 +353,12 @@ public class MetricsExportService : IMetricsExportService
     {
         if (string.IsNullOrEmpty(value))
             return "";
-            
+
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
         {
             return $"\"{value.Replace("\"", "\"\"")}\"";
         }
-        
+
         return value;
     }
 }

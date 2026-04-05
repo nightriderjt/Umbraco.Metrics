@@ -26,7 +26,7 @@ public class MetricsHub : Hub
         // Send initial metrics on connection
         var metrics = await _metricsService.GetMetricsAsync();
         await Clients.Caller.SendAsync("ReceiveMetrics", metrics);
-        
+
         await base.OnConnectedAsync();
     }
 

@@ -8,5 +8,5 @@ public interface IMetricsCleanUpService
     /// </summary>
     /// <param name="retentionDays">Optional custom retention days. If null, uses default from configuration.</param>
     Task CleanupOldDataAsync(int? retentionDays = null);
-  
+
 }

@@ -1,4 +1,3 @@
-using System.IO;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,7 +29,7 @@ public class MetricsCleanUpService : BackgroundService, IMetricsCleanUpService
             try
             {
                 await CleanupOldDataAsync();
-                await Task.Delay(_options.CleanupIntervalHours * 60*1000, stoppingToken);
+                await Task.Delay(_options.CleanupIntervalHours * 60 * 1000, stoppingToken);
             }
             catch (OperationCanceledException ex)
             {

@@ -251,11 +251,22 @@ Exported data can be easily integrated with:
 4. **For Large Datasets**: Use custom ranges to limit data volume
 5. **For Regular Reporting**: Schedule exports during off-peak hours
 
+## Threshold Monitoring
+
+Set up alerts for performance metrics.
+
+### Quick Start
+
+
+
+
+
+For detailed documentation, see the [Threshold Monitoring Wiki](https://github.com/nightriderjt/Umbraco.Metrics/wiki).
+
+
 ## What's Next?
 
 Future enhancements planned:
-- Alerting and notifications
-- Custom metric thresholds
 - Multi-server monitoring
 - Advanced analytics and visualization
 

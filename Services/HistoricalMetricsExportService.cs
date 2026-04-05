@@ -1,7 +1,6 @@
-using System.Globalization;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
@@ -32,7 +31,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             }
 
             // Get historical metrics based on scope
-            IReadOnlyList<PerformanceMetrics> performanceMetrics =[];
+            IReadOnlyList<PerformanceMetrics> performanceMetrics = [];
             Memory<UmbracoMetrics> umbracoMetrics = new();
 
             if (options.IncludePerformanceMetrics)
@@ -119,13 +118,13 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
                 contentType = "text/csv";
                 fileExtension = "csv";
                 break;
-            
+
             case ExportFormat.Xml:
                 exportData = GenerateHistoricalXml(historicalData);
                 contentType = "application/xml";
                 fileExtension = "xml";
                 break;
-            
+
             case ExportFormat.Json:
             default:
                 exportData = GenerateHistoricalJson(historicalData);
@@ -163,14 +162,14 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
     private byte[] GenerateHistoricalCsv(HistoricalExportData data)
     {
         var csvBuilder = new StringBuilder();
-        
+
         // Add UTF-8 BOM for Excel compatibility
         csvBuilder.Append('\uFEFF');
-        
+
         if (data.PerformanceMetrics.Count != 0)
         {
             GeneratePerformanceMetricsHistoricalCsv(csvBuilder, data.PerformanceMetrics);
-            
+
             // Add separator if we have both types of metrics
             if (data.UmbracoMetrics.Count != 0)
             {
@@ -178,12 +177,12 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
                 csvBuilder.AppendLine();
             }
         }
-        
+
         if (data.UmbracoMetrics.Count != 0)
         {
             GenerateUmbracoMetricsHistoricalCsv(csvBuilder, data.UmbracoMetrics);
         }
-        
+
         // Add metadata section
         csvBuilder.AppendLine();
         csvBuilder.AppendLine();
@@ -193,7 +192,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         csvBuilder.AppendLine($"Scope,{data.ExportOptions.Scope}");
         csvBuilder.AppendLine($"Format,{data.ExportOptions.Format}");
         csvBuilder.AppendLine($"Record Count,{data.RecordCount}");
-        
+
         if (data.ExportOptions.StartDate.HasValue)
             csvBuilder.AppendLine($"Start Date,{data.ExportOptions.StartDate.Value:yyyy-MM-dd HH:mm:ss} UTC");
         if (data.ExportOptions.EndDate.HasValue)
@@ -208,7 +207,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
         csvBuilder.AppendLine("Performance Metrics History");
         csvBuilder.AppendLine("Timestamp,CPU Usage (%),Working Set (MB),Thread Count,Total Requests,Active Requests,Requests Per Second,Average Response Time (ms)");
-        
+
         foreach (var metric in metrics.OrderBy(m => m.Timestamp))
         {
             csvBuilder.AppendLine(
@@ -230,7 +229,7 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
         csvBuilder.AppendLine("Umbraco Metrics History");
         csvBuilder.AppendLine("Timestamp,Total Content Nodes,Published Nodes,Total Media Items,Total Media Size (MB),Total Users,Active Users");
-        
+
         foreach (var metric in metrics.OrderBy(m => m.Timestamp))
         {
             csvBuilder.AppendLine(
@@ -253,12 +252,12 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
         xmlBuilder.AppendLine($"  <GeneratedAt>{data.GeneratedAt:yyyy-MM-ddTHH:mm:ssZ}</GeneratedAt>");
         xmlBuilder.AppendLine($"  <Scope>{data.ExportOptions.Scope}</Scope>");
         xmlBuilder.AppendLine($"  <RecordCount>{data.RecordCount}</RecordCount>");
-        
+
         if (data.ExportOptions.StartDate.HasValue)
             xmlBuilder.AppendLine($"  <StartDate>{data.ExportOptions.StartDate.Value:yyyy-MM-ddTHH:mm:ssZ}</StartDate>");
         if (data.ExportOptions.EndDate.HasValue)
             xmlBuilder.AppendLine($"  <EndDate>{data.ExportOptions.EndDate.Value:yyyy-MM-ddTHH:mm:ssZ}</EndDate>");
-        
+
         if (data.PerformanceMetrics.Count != 0)
         {
             xmlBuilder.AppendLine("  <PerformanceMetrics>");
@@ -275,9 +274,9 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
             }
             xmlBuilder.AppendLine("  </PerformanceMetrics>");
         }
-        
+
         xmlBuilder.AppendLine("</HistoricalMetricsExport>");
-        
+
         return Encoding.UTF8.GetBytes(xmlBuilder.ToString());
     }
 }

@@ -83,7 +83,7 @@ public class MetricsApiController : ManagementApiControllerBase
     [HttpGet("active-requests")]
     public IActionResult GetActiveRequests()
     {
-        var activeRequests = MetricsMiddleware.GetActiveRequestDetails(ControllerContext.HttpContext,_webHostEnvironment);
+        var activeRequests = MetricsMiddleware.GetActiveRequestDetails(ControllerContext.HttpContext, _webHostEnvironment);
         return Ok(activeRequests);
     }
 
