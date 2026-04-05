@@ -12,10 +12,7 @@ public class EmailNotificationSettings
     // Email templates - these can be file paths or inline HTML
     public string AlertTriggeredSubjectTemplate { get; set; } = "[ALERT] {RuleName} - {ServerName}";
     public string AlertTriggeredBodyTemplatePath { get; set; } = string.Empty;
-
-    // Delivery settings
-    public int MaxRetryAttempts { get; set; } = 3;
-    public int RetryDelaySeconds { get; set; } = 30;
+    
     public bool IsEnabled { get; set; } = true;
 
     // Validation

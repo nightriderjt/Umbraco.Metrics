@@ -32,7 +32,7 @@ public class MetricsBroadcastService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(new TimeSpan(0, 2, 0), stoppingToken);
+        await Task.Delay(new TimeSpan(0, 5, 0), stoppingToken);
         _logger.LogInformation("Metrics broadcast service started");
         _isRunning = true;
         while (!stoppingToken.IsCancellationRequested)
