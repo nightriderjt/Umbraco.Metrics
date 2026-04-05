@@ -253,63 +253,15 @@ Exported data can be easily integrated with:
 
 ## Threshold Monitoring
 
-Get automatic alerts when metrics cross your defined limits.
+Set up alerts for performance metrics.
 
-### Quick Setup
+### Quick Start
 
-Add rules to `appsettings.json`:
 
-```json
-{"umbMetrics":
-"EmailNotifications": {
-    "FromAddress": "metrics@yourdomain.com",
-    "FromName": "Umbraco Metrics",
-    "DefaultRecipients": [
-      "admin@yourdomain.com",
-      "devops@yourdomain.com"
-    ],
-    "AlertTriggeredSubjectTemplate": "[ALERT] {RuleName} - {ServerName}",
-    "AlertTriggeredBodyTemplatePath": "",
-    "MaxRetryAttempts": 3,
-    "RetryDelaySeconds": 30,
-    "IsEnabled": true
-  },
-  "ThresholdRules": {
-    "Rules": [
-      {
-        "Name": "High CPU Alert",
-        "Description": "Alert when CPU > 80% for 2 minutes",
-        "RootCondition": {
-          "Type": "Single",
-          "Metric": "CpuUsage",
-          "Operator": "GreaterThan",
-          "Value": 80.0
-        },
-        "EvaluationWindow": "00:02:00",
-        "Severity": "Warning",
-        "IsEnabled": true
-      }
-    ]
-  }
-}
 
-```
 
-### What You Get
 
-- **Dashboard alerts** when thresholds are crossed
-- **Email notifications** for critical issues  
-- **Webhook support** for Slack, Teams, etc.
-- **Flexible rules** with AND/OR logic
-- **Cooldown periods** to prevent alert spam
-
-### How to Start
-
-1. Add rules to `appsettings.json`
-2. Restart your application
-3. View alerts in the UmbMetrics dashboard
-
-See `appsettings.example.json` for more examples.
+For detailed documentation, see the [Threshold Monitoring Wiki](https://github.com/nightriderjt/Umbraco.Metrics/wiki).
 
 
 ## What's Next?
