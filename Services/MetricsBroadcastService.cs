@@ -32,14 +32,14 @@ public class MetricsBroadcastService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Delay(new TimeSpan(0,2,0), stoppingToken);
         _logger.LogInformation("Metrics broadcast service started");
         _isRunning = true;
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var metrics = await _metricsService.GetMetricsAsync();
-                
+                var metrics = await _metricsService.GetMetricsAsync();                
                 // Broadcast to all connected clients
                 await _hubContext.Clients.All.SendAsync(
                     "ReceiveMetrics", 
