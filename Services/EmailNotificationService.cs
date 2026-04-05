@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
@@ -40,7 +37,7 @@ public class EmailNotificationService : IEmailNotificationService
         try
         {
             var settings = _emailSettings.Value;
-            
+
             if (!settings.IsEnabled || !settings.IsValid())
             {
                 _logger.LogWarning("Email notifications are disabled or configuration is invalid");
@@ -58,7 +55,7 @@ public class EmailNotificationService : IEmailNotificationService
             var body = await GetEmailBodyAsync(settings.AlertTriggeredBodyTemplatePath, alert, rule, metrics);
 
             var success = await SendEmailAsync(recipients, subject, body, true);
-            
+
             if (success)
             {
                 alert.EmailSent = true;
@@ -76,18 +73,18 @@ public class EmailNotificationService : IEmailNotificationService
         }
     }
 
-  
 
- 
 
-  
+
+
+
 
     private async Task<bool> SendEmailAsync(List<string> recipients, string subject, string body, bool isHtml)
     {
         try
         {
             var settings = _emailSettings.Value;
-            
+
             foreach (var recipient in recipients)
             {
                 if (!string.IsNullOrWhiteSpace(recipient))
@@ -95,12 +92,12 @@ public class EmailNotificationService : IEmailNotificationService
                     // Create email message - use empty string for From if not configured (Umbraco will use default)
                     var fromAddress = string.IsNullOrWhiteSpace(settings.FromAddress) ? string.Empty : settings.FromAddress;
                     var message = new EmailMessage(fromAddress, recipient, subject, body, isHtml);
-                
 
-                    await _emailSender.SendAsync(message, "Umbraco Metrics", expires:null);
+
+                    await _emailSender.SendAsync(message, "Umbraco Metrics", expires: null);
                 }
             }
-            
+
             _logger.LogInformation("Email sent successfully to {RecipientCount} recipients", recipients.Count);
             return true;
         }
@@ -129,22 +126,22 @@ public class EmailNotificationService : IEmailNotificationService
 
         // Use default template
         var defaultTemplate = await File.ReadAllTextAsync(Path.Combine(_env.ContentRootPath, "Views/UmbMetrics/Emailtemplates/alert-triggered.html"));
-            
-        
+
+
         return FormatTemplate(defaultTemplate, alert, rule, metrics);
     }
 
     private string FormatTemplate(string template, ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics? metrics)
     {
         var triggeredValues = alert.GetTriggeredValues();
-        
+
         var replacements = new Dictionary<string, string>
         {
             ["{RuleName}"] = rule.Name,
             ["{RuleDescription}"] = rule.Description,
             ["{Severity}"] = rule.Severity.ToString(),
-            ["{TriggeredAt}"] = alert.TriggeredAt.ToString("yyyy-MM-dd HH:mm:ss UTC"),          
-            ["{Duration}"] = alert.Duration.ToString(@"hh\:mm\:ss"), 
+            ["{TriggeredAt}"] = alert.TriggeredAt.ToString("yyyy-MM-dd HH:mm:ss UTC"),
+            ["{Duration}"] = alert.Duration.ToString(@"hh\:mm\:ss"),
             ["{ServerName}"] = Environment.MachineName,
             ["{Condition}"] = rule.RootCondition.ToString(),
             ["{DashboardUrl}"] = "/umbraco/section/settings/dashboard/umb-metrics",
@@ -158,14 +155,14 @@ public class EmailNotificationService : IEmailNotificationService
             replacements["{MemoryUsage}"] = metrics.MemoryUsage.WorkingSetMB.ToString("F1");
             replacements["{ActiveRequests}"] = metrics.RequestMetrics.ActiveRequests.ToString();
             replacements["{AverageResponseTime}"] = metrics.RequestMetrics.AverageResponseTimeMs.ToString("F1");
-            
+
             // Generate metric rows for the table
             var metricRows = new StringBuilder();
             metricRows.AppendLine("<tr><td>CPU Usage</td><td>" + metrics.CpuUsage.ToString("F1") + "%</td><td>" + GetThresholdValue(rule, MetricType.CpuUsage) + "</td></tr>");
             metricRows.AppendLine("<tr><td>Memory Usage</td><td>" + metrics.MemoryUsage.WorkingSetMB.ToString("F1") + " MB</td><td>" + GetThresholdValue(rule, MetricType.MemoryUsage) + "</td></tr>");
             metricRows.AppendLine("<tr><td>Active Requests</td><td>" + metrics.RequestMetrics.ActiveRequests + "</td><td>" + GetThresholdValue(rule, MetricType.ActiveRequests) + "</td></tr>");
             metricRows.AppendLine("<tr><td>Avg Response Time</td><td>" + metrics.RequestMetrics.AverageResponseTimeMs.ToString("F1") + " ms</td><td>" + GetThresholdValue(rule, MetricType.AverageResponseTime) + "</td></tr>");
-            
+
             replacements["{MetricRows}"] = metricRows.ToString();
         }
         else
@@ -191,7 +188,7 @@ public class EmailNotificationService : IEmailNotificationService
 
         // Search for the condition that matches the specified metric type
         var condition = FindConditionByMetricType(rule.RootCondition, metricType);
-        
+
         if (condition == null || !condition.Value.HasValue || !condition.Operator.HasValue)
         {
             return "N/A";
@@ -199,7 +196,7 @@ public class EmailNotificationService : IEmailNotificationService
 
         // Format the threshold value based on the metric type
         var formattedValue = FormatThresholdValue(condition.Value.Value, metricType);
-        
+
         // Return formatted string with operator
         return $"{GetOperatorSymbol(condition.Operator.Value)} {formattedValue}";
     }
@@ -277,13 +274,13 @@ public class EmailNotificationService : IEmailNotificationService
         try
         {
             using var db = _databaseFactory.CreateDatabase();
-            
+
             var rowsAffected = db.Execute(
                 UmbMetrics.Constants.SqlQueries.Thresholds.UpdateEmailStatus,
                 emailSent,
                 emailSentAt,
                 alertId);
-            
+
             if (rowsAffected > 0)
             {
                 _logger.LogDebug("Updated email status for alert {AlertId} in database", alertId);

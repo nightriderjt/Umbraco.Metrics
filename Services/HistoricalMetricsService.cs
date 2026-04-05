@@ -7,11 +7,12 @@ using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
-public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsService
+
+public class HistoricalMetricsService : BackgroundService, IHistoricalMetricsService
 {
     private readonly IPerformanceMetricsService _performanceMetricsService;
     private readonly ILogger<HistoricalMetricsService> _logger;
-    private readonly HistoricalMetricsOptions _options; 
+    private readonly HistoricalMetricsOptions _options;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -25,8 +26,8 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         IOptions<HistoricalMetricsOptions> options)
     {
         _performanceMetricsService = performanceMetricsService;
-        _logger = logger; 
-        _options = options.Value;     
+        _logger = logger;
+        _options = options.Value;
         // Ensure storage directory exists
         EnsureStorageDirectory();
     }
@@ -51,7 +52,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         var files = GetDailyFilesForDateRange(startDate, endDate);
 
         for (int i = 0; i < files.Count; i++)
-        {         
+        {
             var file = files[i];
             await foreach (var metric in StreamMetricsFromFileAsync(file))
             {
@@ -64,7 +65,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
     {
         using var reader = new StreamReader(filePath);
         string? line;
-  
+
         while ((line = await reader.ReadLineAsync()) != null)
         {
             PerformanceMetrics? metric = null;
@@ -79,7 +80,7 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
             if (metric != null) yield return metric;
         }
     }
- 
+
 
 
 
@@ -94,17 +95,17 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         {
             var files = Directory.GetFiles(_options.StoragePath, "metrics-*.json");
             stats.TotalFiles = files.Length;
-            
+
             if (files.Length > 0)
             {
                 stats.TotalSizeBytes = files.Sum(f => new FileInfo(f).Length);
-                
+
                 var dates = files
                     .Select(f => Utils.TryParseDateFromFileName(f, out var date) ? date : (DateTime?)null)
                     .Where(d => d.HasValue)
                     .Select(d => d!.Value)
                     .ToList();
-                    
+
                 if (dates.Count > 0)
                 {
                     stats.OldestRecord = dates.Min();
@@ -126,21 +127,21 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         {
             try
             {
-            await SaveMetricsAsync(); 
-            await Task.Delay(_options.SaveIntervalSeconds*1000, stoppingToken);
-            } 
+                await SaveMetricsAsync();
+                await Task.Delay(_options.SaveIntervalSeconds * 1000, stoppingToken);
+            }
             catch (OperationCanceledException ex)
             {
 
                 _logger.LogInformation(ex, "Historical Metrics Service stopped");
-            }                   
-        }     
+            }
+        }
     }
- 
 
-   
 
-   
+
+
+
 
     private async Task SaveMetricsToFileAsync(PerformanceMetrics metrics)
     {
@@ -151,10 +152,10 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
             var fileName = $"metrics-{datePart}.json";
             var filePath = Path.Combine(_options.StoragePath, fileName);
 
-    
+
 
             var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
-            
+
             // Append to file with newline
             await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             await using var writer = new StreamWriter(stream, Encoding.UTF8);
@@ -178,22 +179,22 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
             {
                 // Read all lines from the file
                 var lines = await File.ReadAllLinesAsync(filePath, Encoding.UTF8);
-                
+
                 // Keep only the most recent lines that fit within the size limit
                 var keptLines = new List<string>();
                 var currentSize = 0L;
-                
+
                 // Start from the end (most recent) and work backwards
                 for (int i = lines.Length - 1; i >= 0; i--)
                 {
                     var lineSize = Encoding.UTF8.GetByteCount(lines[i]) + 2; // +2 for newline
                     if (currentSize + lineSize > _options.MaxFileSizeBytes)
                         break;
-                    
+
                     keptLines.Insert(0, lines[i]); // Insert at beginning to maintain order
                     currentSize += lineSize;
                 }
-                
+
                 // Write back the kept lines
                 await File.WriteAllLinesAsync(filePath, keptLines, Encoding.UTF8);
                 _logger.LogDebug("Trimmed file {FilePath} to stay within size limit", filePath);
@@ -221,10 +222,10 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
         }
     }
 
-    private List<string>  GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
+    private List<string> GetDailyFilesForDateRange(DateTime startDate, DateTime endDate)
     {
         var files = new List<string>();
-        
+
         // Generate all possible daily file names for the date range
         var currentDate = startDate.Date;
         while (currentDate <= endDate.Date)
@@ -232,20 +233,20 @@ public class HistoricalMetricsService :BackgroundService, IHistoricalMetricsServ
             var fileName = $"metrics-{currentDate:yyyyMMdd}.json";
             var filePath = Path.Combine(_options.StoragePath
             , fileName);
-            
+
             if (File.Exists(filePath))
             {
                 files.Add(filePath);
-            }            
+            }
             currentDate = currentDate.AddDays(1);
         }
-        
+
         return files;
     }
 
-   
 
-    
+
+
 
 
 }

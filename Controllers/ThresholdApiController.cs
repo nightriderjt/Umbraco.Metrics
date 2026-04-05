@@ -2,9 +2,6 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Api.Management.Controllers;
@@ -30,7 +27,7 @@ public class ThresholdApiController : ManagementApiControllerBase
     {
         _thresholdService = thresholdService;
         _emailService = emailService;
-      
+
     }
 
     /// <summary>
@@ -90,9 +87,9 @@ public class ThresholdApiController : ManagementApiControllerBase
         }
     }
 
- 
 
- 
+
+
 
 
     /// <summary>
@@ -162,7 +159,7 @@ public class ThresholdApiController : ManagementApiControllerBase
         }
     }
 
- 
+
 
     /// <summary>
     /// Gets alert statistics

@@ -15,9 +15,9 @@ namespace UmbMetrics.Notifications
 
         public ThresholdAlertTriggered(ILogger<ThresholdAlertTriggered> logger, IUmbracoDatabaseFactory databaseFactory, IEmailNotificationService emailService)
         {
-           _logger = logger;
-           _databaseFactory = databaseFactory;
-            _emailService = emailService;        
+            _logger = logger;
+            _databaseFactory = databaseFactory;
+            _emailService = emailService;
         }
         public void Handle(ThresholdAlertTriggeredNotification notification)
         {
@@ -49,13 +49,10 @@ namespace UmbMetrics.Notifications
                 };
 
                 alert.SetTriggeredValues(triggeredValues);
-
                 // Save alert to database
                 await SaveAlertToDatabaseAsync(alert);
-
                 // Update rule tracking (in memory only since rules are from configuration)
                 rule.LastTriggeredAt = DateTime.UtcNow;
-
 
                 // Send notifications
                 await SendNotificationsAsync(alert, rule, metrics);
@@ -92,7 +89,7 @@ namespace UmbMetrics.Notifications
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving alert to database for rule: {RuleName}", alert.RuleName);
-                throw;
+
             }
         }
         private async Task SendNotificationsAsync(ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics metrics)
@@ -101,11 +98,6 @@ namespace UmbMetrics.Notifications
             {
                 // Send email notifications           
                 await _emailService.SendAlertEmailAsync(alert, rule, metrics);
-                //// Send webhook notifications
-                //if (rule.WebhookEndpoints.Any(e => e.IsEnabled))
-                //{
-                //    await _webhookService.SendAlertWebhooksAsync(alert, rule, metrics);
-                //}
             }
             catch (Exception ex)
             {

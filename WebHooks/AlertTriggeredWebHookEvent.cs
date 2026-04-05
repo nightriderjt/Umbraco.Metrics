@@ -1,7 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UmbMetrics.Notifications;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Services;
@@ -21,9 +18,10 @@ namespace UmbMetrics.WebHooks
 
         public override object? ConvertNotificationToRequestPayload(ThresholdAlertTriggeredNotification notification)
         {
-            return new { 
-            notification._rule.Name,
-            notification._metrics
+            return new
+            {
+                notification._rule.Name,
+                notification._metrics
             };
         }
     }

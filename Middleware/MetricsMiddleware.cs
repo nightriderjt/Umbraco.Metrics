@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics;
-using Umbraco.Cms.Core.Media.EmbedProviders;
 using UmbMetrics.Models;
 
 namespace UmbMetrics.Middleware;
@@ -21,7 +19,7 @@ public class MetricsMiddleware
     private static readonly ConcurrentDictionary<string, ActiveRequestInfo> _activeRequestDetails = new();
     private static readonly DateTime _startTime = DateTime.UtcNow;
 
-    public MetricsMiddleware(RequestDelegate next,IWebHostEnvironment  webHostEnvironment)
+    public MetricsMiddleware(RequestDelegate next, IWebHostEnvironment webHostEnvironment)
     {
         _next = next;
         _webHostEnvironment = webHostEnvironment;
@@ -30,7 +28,7 @@ public class MetricsMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
 
-        if (!ExcludeSystemPaths(context,_webHostEnvironment))
+        if (!ExcludeSystemPaths(context, _webHostEnvironment))
         {
             var requestId = Guid.NewGuid().ToString();
             var stopwatch = Stopwatch.StartNew();
@@ -97,20 +95,20 @@ public class MetricsMiddleware
 
     }
 
-    private  static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
+    private static bool ExcludeSystemPaths(HttpContext context, IWebHostEnvironment env)
     {
         if (env.IsDevelopment()) return false;
-        return !(context.Request.Path.Value?.Contains("metrics")??false)
-                    && !(context.Request.Path.Value?.Contains("serverEventHub")??false)
-                    && !(context.Request.Path.Value?.Contains("active-requests")??false)
-                    && !(context.Request.QueryString.Value?.Contains("access_token")??false);
+        return !(context.Request.Path.Value?.Contains("metrics") ?? false)
+                    && !(context.Request.Path.Value?.Contains("serverEventHub") ?? false)
+                    && !(context.Request.Path.Value?.Contains("active-requests") ?? false)
+                    && !(context.Request.QueryString.Value?.Contains("access_token") ?? false);
     }
 
     public static long TotalRequests => _totalRequests;
     public static long FailedRequests => _failedRequests;
     public static int ActiveRequests => _activeRequests;
 
-    public  static IEnumerable<ActiveRequestInfo> GetActiveRequestDetails(HttpContext context, IWebHostEnvironment env)
+    public static IEnumerable<ActiveRequestInfo> GetActiveRequestDetails(HttpContext context, IWebHostEnvironment env)
     {
         return _activeRequestDetails.Values
             .OrderByDescending(r => r.StartTime)

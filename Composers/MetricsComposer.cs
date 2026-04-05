@@ -30,7 +30,7 @@ public class MetricsComposer : IComposer
         builder.Services.AddHostedService<HistoricalMetricsService>();
         builder.Services.AddHostedService<MetricsCleanUpService>();
         var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-       
+
 
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
@@ -42,27 +42,27 @@ public class MetricsComposer : IComposer
             options.EnableAutoCleanup = true;
             options.CleanupIntervalHours = 24;
         });
-        
+
         // Register email notification settings configuration
         builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection("UmbMetrics:EmailNotifications"));
-        
+
         // Register threshold rules configuration
         builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection("UmbMetrics:ThresholdRules"));
-        
+
         builder.Services.AddSignalR();
-       
+
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
         builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
-    
+
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             });
- // Register background service for broadcasting metrics
+        // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
         builder.AddNotificationHandler<ThresholdAlertTriggeredNotification, ThresholdAlertTriggered>();
         builder.WebhookEvents().Add<AlertTriggeredWebHookEvent>();

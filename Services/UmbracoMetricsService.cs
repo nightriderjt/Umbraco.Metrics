@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using UmbMetrics.Models;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Hosting;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Persistence;
-using System.Text.Json;
-using UmbMetrics.Models;
 
 namespace UmbMetrics.Services;
 
@@ -96,7 +96,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         try
         {
             using var db = _databaseFactory.CreateDatabase();
-            
+
             var publishedContent = db.ExecuteScalar<int>(UmbMetrics.Constants.SqlQueries.Cache.PublishedContentCount);
 
             var mediaCount = db.ExecuteScalar<int>(
@@ -206,7 +206,7 @@ public class UmbracoMetricsService : IUmbracoMetricsService
             return 256;
         }
     }
-    private static JsonSerializerOptions SerializerOptions()=> new()
+    private static JsonSerializerOptions SerializerOptions() => new()
     {
         MaxDepth = 3,
         ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles

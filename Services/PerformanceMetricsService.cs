@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 
@@ -10,7 +10,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
     private readonly ILogger<PerformanceMetricsService> _logger;
     private static readonly DateTime _startTime = DateTime.UtcNow;
     private static readonly Process _currentProcess = Process.GetCurrentProcess();
-    
+
     public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger)
     {
         _logger = logger;
@@ -46,16 +46,16 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         {
             var startTime = DateTime.UtcNow;
             var startCpuUsage = _currentProcess.TotalProcessorTime;
-            
+
             await Task.Delay(500);
-            
+
             var endTime = DateTime.UtcNow;
             var endCpuUsage = _currentProcess.TotalProcessorTime;
-            
+
             var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
             var totalMsPassed = (endTime - startTime).TotalMilliseconds;
             var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
-            
+
             return Math.Round(cpuUsageTotal * 100, 2);
         }
         catch (Exception ex)
@@ -71,7 +71,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         {
             _currentProcess.Refresh();
             var gcInfo = GC.GetGCMemoryInfo();
-            
+
             return new MemoryMetrics
             {
                 WorkingSetMB = Math.Round(_currentProcess.WorkingSet64 / 1024.0 / 1024.0, 2),
@@ -117,7 +117,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         try
         {
             var gcInfo = GC.GetGCMemoryInfo();
-            
+
             return new GarbageCollectionMetrics
             {
                 Gen0Collections = GC.CollectionCount(0),
@@ -159,7 +159,7 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         {
             _currentProcess.Refresh();
             var uptime = DateTime.Now.Subtract(_currentProcess.StartTime);
-            
+
             return new ApplicationInfo
             {
                 ProcessId = Environment.ProcessId,

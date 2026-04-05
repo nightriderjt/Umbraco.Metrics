@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using UmbMetrics.Models;
-using UmbMetrics.Services;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.HealthChecks;
 using Umbraco.Cms.Core.Services;
@@ -34,7 +28,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     {
         _thresholdRulesSettings = provider.GetRequiredService<IOptions<ThresholdRulesSettings>>();
         _emailNotificationSettings = provider.GetRequiredService<IOptions<EmailNotificationSettings>>();
-        _thresholdEvaluationService = provider.GetRequiredService<IThresholdEvaluationService>();   
+        _thresholdEvaluationService = provider.GetRequiredService<IThresholdEvaluationService>();
         _runtimeState = provider.GetRequiredService<IRuntimeState>();
         _monitorIsRunning = MetricsBroadcastService._isRunning;
     }
@@ -57,32 +51,32 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     {
         // Handle actions for each health check
         switch (action.Alias)
-        {            
-                
+        {
+
             case "configure-email-settings":
                 return new HealthCheckStatus("Please configure email notification settings in appsettings.json under UmbMetrics:EmailNotifications")
                 {
                     ResultType = StatusResultType.Info
                 };
-                
+
             case "run-migration":
                 return new HealthCheckStatus("Please run the database migration to create threshold tables")
                 {
                     ResultType = StatusResultType.Info
                 };
-                
+
             case "restart-application":
                 return new HealthCheckStatus("Please restart the application to start the threshold monitoring service")
                 {
                     ResultType = StatusResultType.Info
                 };
-                
+
             case "configure-alert-resolution":
                 return new HealthCheckStatus("Please configure alert notification settings in threshold rules")
                 {
                     ResultType = StatusResultType.Info
                 };
-                
+
             default:
                 throw new InvalidOperationException($"Unknown action: {action.Alias}");
         }
@@ -92,7 +86,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     {
         var settings = _thresholdRulesSettings.Value;
         var isHealthy = settings != null && settings.Rules != null && settings.Rules.Count > 0;
-        
+
         return new HealthCheckStatus(isHealthy ? "Threshold rules configuration is valid" : "Please configure threshold rules in appsettings.json under UmbMetrics:ThresholdRules")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
@@ -103,7 +97,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     private HealthCheckStatus CheckEmailNotificationSettings()
     {
         var settings = _emailNotificationSettings.Value;
-        var isHealthy = settings != null && 
+        var isHealthy = settings != null &&
                        settings.IsEnabled &&
                        !string.IsNullOrEmpty(settings.FromAddress) &&
                        settings.DefaultRecipients != null && settings.DefaultRecipients.Count > 0;
@@ -120,7 +114,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         // Check if the threshold monitoring service can access database tables
         // This is a simplified check - in a real implementation, you would check if tables exist
         var isHealthy = _runtimeState.Level == Umbraco.Cms.Core.RuntimeLevel.Run;
-        
+
         return new HealthCheckStatus(isHealthy ? "Required threshold database tables exist" : "Please run the database migration to create threshold tables")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
@@ -133,7 +127,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         // Check if the threshold monitoring service is running
         // This is a simplified check - in a real implementation, you would check the service status
         var isHealthy = _monitorIsRunning;
-        
+
         return new HealthCheckStatus(isHealthy ? "Threshold monitoring service is running" : "Please restart the application to start the threshold monitoring service")
         {
             ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Error,
@@ -144,10 +138,10 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     private HealthCheckStatus CheckAlertResolutionConfiguration()
     {
         var settings = _thresholdRulesSettings.Value;
-        var hasNotificationSettings = settings?.Rules?.Any(r => 
+        var hasNotificationSettings = settings?.Rules?.Any(r =>
             (r.EmailRecipients != null && r.EmailRecipients.Count > 0) ||
             (r.WebhookEndpoints != null && r.WebhookEndpoints.Count > 0)) == true;
-        
+
         return new HealthCheckStatus(hasNotificationSettings ? "Alert notification settings are configured" : "Please configure alert notification settings in appsettings.json under UmbMetrics:ThresholdRules")
         {
             ResultType = hasNotificationSettings ? StatusResultType.Success : StatusResultType.Warning,

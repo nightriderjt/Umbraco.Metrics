@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using UmbMetrics.Models;
 using UmbMetrics.Notifications;
 using UmbMetrics.Services.Interfaces;
@@ -11,7 +10,7 @@ namespace UmbMetrics.Services;
 
 public class ThresholdEvaluationService : IThresholdEvaluationService
 {
-    private readonly ILogger<ThresholdEvaluationService> _logger; 
+    private readonly ILogger<ThresholdEvaluationService> _logger;
     private readonly IOptions<ThresholdRulesSettings> _thresholdRulesSettings;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
 
@@ -23,15 +22,15 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     private readonly TimeSpan _cacheRefreshInterval = TimeSpan.FromMinutes(5);
 
     public ThresholdEvaluationService(
-        ILogger<ThresholdEvaluationService> logger,     
-     
+        ILogger<ThresholdEvaluationService> logger,
+
         IOptions<ThresholdRulesSettings> thresholdRulesSettings,
-        IUmbracoDatabaseFactory databaseFactory,      
+        IUmbracoDatabaseFactory databaseFactory,
           IEventAggregator eventAggregator)
     {
-        _logger = logger;           
+        _logger = logger;
         _thresholdRulesSettings = thresholdRulesSettings;
-        _databaseFactory = databaseFactory;       
+        _databaseFactory = databaseFactory;
         _eventAggregator = eventAggregator;
 
         // Load rules eagerly on startup
@@ -43,20 +42,20 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         try
         {
             await RefreshRulesCacheIfNeededAsync();
-            
+
             var enabledRules = _rulesCache.Where(r => r.IsEnabled).ToList();
-            
-            foreach (var rule in enabledRules.Where(x=> !x.IsInCooldown))
+
+            foreach (var rule in enabledRules.Where(x => !x.IsInCooldown))
             {
                 try
                 {
-                    
+
                     var conditionMet = await EvaluateRuleAsync(rule, metrics);
-                    
-                    if (conditionMet && rule.ShouldEvaluate )
+
+                    if (conditionMet && rule.ShouldEvaluate)
                     {
                         _eventAggregator.Publish(new ThresholdAlertTriggeredNotification(rule, metrics));
-                      
+
                     }
                 }
                 catch (Exception ex)
@@ -75,13 +74,13 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     {
         // Record evaluation time
         RecordEvaluationTime(rule.Name);
-        
+
         // Check if we have enough data points for the evaluation window
         if (!HasEnoughDataPoints(rule.Name, rule.EvaluationWindow))
         {
             return false;
         }
-        
+
         // Evaluate the condition
         return EvaluateCondition(rule.RootCondition, metrics);
     }
@@ -96,7 +95,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         {
             return EvaluateCompositeCondition(condition, metrics);
         }
-        
+
         return false;
     }
 
@@ -108,7 +107,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         }
 
         double metricValue = GetMetricValue(condition.Metric.Value, metrics);
-        
+
         return CompareValues(metricValue, condition.Operator.Value, condition.Value.Value);
     }
 
@@ -120,7 +119,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         }
 
         var childResults = condition.Children.Select(c => EvaluateCondition(c, metrics)).ToList();
-        
+
         return condition.Type switch
         {
             ConditionType.And => childResults.All(r => r),
@@ -169,9 +168,9 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             {
                 _ruleEvaluationHistory[ruleName] = new List<DateTime>();
             }
-            
+
             _ruleEvaluationHistory[ruleName].Add(DateTime.UtcNow);
-            
+
             // Keep only last 1000 evaluations to prevent memory leak
             if (_ruleEvaluationHistory[ruleName].Count > 1000)
             {
@@ -190,20 +189,20 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             {
                 return false;
             }
-            
+
             var cutoff = DateTime.UtcNow - evaluationWindow;
             var evaluationsInWindow = _ruleEvaluationHistory[ruleName].Count(t => t >= cutoff);
-            
+
             return evaluationsInWindow >= 2;
             // We need at least 2 evaluations in the window to make a determination
         }
     }
 
-  
 
 
 
- 
+
+
 
     private async Task RefreshRulesCacheIfNeededAsync()
     {
@@ -220,7 +219,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
             // Load rules from configuration
             var settings = _thresholdRulesSettings.Value;
             _rulesCache.Clear();
-            
+
             if (settings.Rules != null)
             {
                 foreach (var rule in settings.Rules)
@@ -235,7 +234,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
                     }
                 }
             }
-            
+
             _lastCacheRefresh = DateTime.UtcNow;
             _logger.LogInformation("Loaded {RuleCount} threshold rules from configuration", _rulesCache.Count);
         }
@@ -251,7 +250,7 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         try
         {
             using var db = _databaseFactory.CreateDatabase();
-            
+
             var alerts = db.Fetch<ThresholdAlert>(Constants.SqlQueries.Thresholds.GetActiveAlerts, (int)AlertStatus.Active);
             return Task.FromResult(alerts.AsEnumerable());
         }
@@ -278,9 +277,9 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         return Task.FromResult<ThresholdRule?>(null);
     }
 
- 
 
-  
+
+
 
 
 
@@ -289,14 +288,14 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         try
         {
             using var db = _databaseFactory.CreateDatabase();
-            
+
             var rowsAffected = db.Execute(Constants.SqlQueries.Thresholds.AcknowledgeAlert,
                 (int)AlertStatus.Acknowledged,
                 DateTime.UtcNow,
                 acknowledgedBy,
                 alertId,
                 (int)AlertStatus.Active);
-            
+
             return Task.FromResult(rowsAffected > 0);
         }
         catch (Exception ex)
@@ -306,17 +305,17 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
         }
     }
 
-   
+
 
     public Task<ThresholdAlertStats> GetAlertStatsAsync()
     {
         try
         {
-            using var db = _databaseFactory.CreateDatabase();            
+            using var db = _databaseFactory.CreateDatabase();
             var stats = new ThresholdAlertStats
             {
                 TotalAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.TotalAlertsCount),
-                ActiveAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.AlertsCountByStatus,new {status= (int)AlertStatus.Active }),
+                ActiveAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.AlertsCountByStatus, new { status = (int)AlertStatus.Active }),
                 AcknowledgedAlerts = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.AlertsCountByStatus, new { status = (int)AlertStatus.Acknowledged }),
                 Last24Hours = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.Last24HoursAlertsCount),
                 Last7Days = db.ExecuteScalar<int>(Constants.SqlQueries.Thresholds.Last7DaysAlertsCount),
@@ -324,14 +323,14 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
                 BySeverity = [],
                 AlertsByRule = []
             };
-            
+
             // Get severity counts
             var severityResults = db.Fetch<SeverityResult>(Constants.SqlQueries.Thresholds.AlertsBySeverity);
             foreach (var result in severityResults)
-            {              
+            {
                 stats.BySeverity[result.Severity.ToString()] = (int)result.Count;
             }
-            
+
             // Get rule counts
             var ruleResults = db.Fetch<dynamic>(Constants.SqlQueries.Thresholds.AlertsByRule);
             foreach (var result in ruleResults)
@@ -339,30 +338,33 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
                 var ruleName = (string)result.RuleName;
                 stats.AlertsByRule[ruleName] = (int)result.Count;
             }
-            
+
             return Task.FromResult(stats);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting alert statistics from database");
-            
+
             // Return empty stats on error
             var stats = new ThresholdAlertStats
             {
                 TotalAlerts = 0,
                 ActiveAlerts = 0,
-                AcknowledgedAlerts = 0,               
+                AcknowledgedAlerts = 0,
                 Last24Hours = 0,
                 Last7Days = 0,
                 LastAlertTime = null,
                 BySeverity = new Dictionary<string, int>
                 {
-                    ["0"] = 0, ["1"] = 0, ["2"] = 0, ["3"] = 0
+                    ["0"] = 0,
+                    ["1"] = 0,
+                    ["2"] = 0,
+                    ["3"] = 0
                 },
                 AlertsByRule = []
             };
-            
+
             return Task.FromResult(stats);
         }
-    } 
+    }
 }

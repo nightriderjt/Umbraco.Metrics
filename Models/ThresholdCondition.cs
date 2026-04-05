@@ -4,19 +4,19 @@ public class ThresholdCondition
 {
     public int Id { get; set; }
     public ConditionType Type { get; set; }
-    
+
     // For single conditions
     public MetricType? Metric { get; set; }
     public ComparisonOperator? Operator { get; set; }
     public double? Value { get; set; }
-    
+
     // For nested conditions
     public List<ThresholdCondition> Children { get; set; } = new();
-    
+
     // Helper methods
     public bool IsSingleCondition => Type == ConditionType.Single;
     public bool IsCompositeCondition => Type == ConditionType.And || Type == ConditionType.Or;
-    
+
     public override string ToString()
     {
         if (IsSingleCondition && Metric.HasValue && Operator.HasValue && Value.HasValue)
@@ -30,7 +30,7 @@ public class ThresholdCondition
         }
         return "Invalid Condition";
     }
-    
+
     // Validation
     public bool IsValid()
     {

@@ -8,7 +8,7 @@ public interface IEmailNotificationService
     /// Sends an alert notification email
     /// </summary>
     Task<bool> SendAlertEmailAsync(ThresholdAlert alert, ThresholdRule rule, PerformanceMetrics metrics);
-    
+
 }
 
 

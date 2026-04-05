@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Migrations;
@@ -75,17 +74,17 @@ public class CreateThresholdTables : AsyncMigrationBase
                 .WithColumn("Id").AsInt32().Identity()
                 .WithColumn("RuleId").AsInt32().NotNullable()
                 .WithColumn("RuleName").AsString(200).NotNullable()
-                .WithColumn("TriggeredAt").AsDateTime().NotNullable().WithDefaultValue(DateTime.UtcNow)                
+                .WithColumn("TriggeredAt").AsDateTime().NotNullable().WithDefaultValue(DateTime.UtcNow)
                 .WithColumn("AcknowledgedAt").AsDateTime().Nullable()
                 .WithColumn("Status").AsInt32().NotNullable().WithDefaultValue(0)
                 .WithColumn("Severity").AsInt32().NotNullable().WithDefaultValue(1)
                 .WithColumn("TriggeredValuesJson").AsString().Nullable()
                 .WithColumn("EmailSent").AsBoolean().NotNullable().WithDefaultValue(0)
                 .WithColumn("EmailSentAt").AsDateTime().Nullable()
-                .WithColumn("WebhookDeliveriesJson").AsString().Nullable()                
+                .WithColumn("WebhookDeliveriesJson").AsString().Nullable()
                 .Do();
 
-          
+
         }
         Logger.LogInformation("Threshold monitoring tables created successfully.");
     }
