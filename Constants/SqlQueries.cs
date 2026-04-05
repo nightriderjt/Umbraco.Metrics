@@ -175,5 +175,14 @@ public static class SqlQueries
         /// Get alerts count by rule name
         /// </summary>
         public const string AlertsByRule = "SELECT RuleName, COUNT(*) as Count FROM UmbMetrics_ThresholdAlerts GROUP BY RuleName";
+
+        /// <summary>
+        /// Update email sent status for an alert
+        /// Parameters: @0 = EmailSent (true), @1 = EmailSentAt, @2 = AlertId
+        /// </summary>
+        public const string UpdateEmailStatus = 
+            @"UPDATE UmbMetrics_ThresholdAlerts 
+              SET EmailSent = @0, EmailSentAt = @1
+              WHERE Id = @2";
     }
 }
