@@ -10,7 +10,7 @@ namespace UmbMetrics.Middleware;
 public class MetricsMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IWebHostEnvironment _webHostEnvironment;
+ 
     private static long _totalRequests = 0;
     private static long _failedRequests = 0;
     private static int _activeRequests = 0;
@@ -19,16 +19,17 @@ public class MetricsMiddleware
     private static readonly ConcurrentDictionary<string, ActiveRequestInfo> _activeRequestDetails = new();
     private static readonly DateTime _startTime = DateTime.UtcNow;
 
-    public MetricsMiddleware(RequestDelegate next, IWebHostEnvironment webHostEnvironment)
+    public MetricsMiddleware(RequestDelegate next)
     {
         _next = next;
-        _webHostEnvironment = webHostEnvironment;
+      
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
 
-       
+        if (IsValid(context))
+        {
             var requestId = Guid.NewGuid().ToString();
             var stopwatch = Stopwatch.StartNew();
 
@@ -84,9 +85,19 @@ public class MetricsMiddleware
                     _responseTimes.TryDequeue(out _);
                 }
             }
+        }
+        else
+        {
+            await _next(context);
+        }
     }
 
+    private static bool IsValid(HttpContext context)
+    {
+        return !(context.Request.Path.Value?.Contains("serverEventHub")??false) 
+            && !(context.Request.Path.Value?.Contains("metrics-hub")??false);  
 
+    }
 
     public static long TotalRequests => _totalRequests;
     public static long FailedRequests => _failedRequests;
