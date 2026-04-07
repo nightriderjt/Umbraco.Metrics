@@ -3,10 +3,18 @@
     <UmbMetricsViews Include="$(MSBuildThisFileDirectory)..\contentFiles\any\any\Views\**" />
   </ItemGroup>
 
-  <Target Name="CopyUmbMetricsViews" BeforeTargets="Build">
+  <Target Name="CopyUmbMetricsToProject" BeforeTargets="Build">
     <Copy SourceFiles="@(UmbMetricsViews)" 
           DestinationFiles="$(ProjectDir)Views\%(RecursiveDir)%(Filename)%(Extension)" 
           SkipUnchangedFiles="true"
           />
+  </Target>
+  <Target Name="IncludeUmbMetricsInPublish" BeforeTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(UmbMetricsViews)">
+        <RelativePath>Views\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
   </Target>
 </Project>

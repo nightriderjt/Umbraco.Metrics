@@ -10,7 +10,7 @@
     <PackageId>UmbMetrics</PackageId>
     <Product>UmbMetrics</Product>
     <Title>UmbMetrics</Title>
-    <Version>17.3.0.2</Version>
+    <Version>17.3.0.3</Version>
     <PackageTags>umbraco;umbraco-marketplace;metrics;performance;monitoring</PackageTags>
     <Authors>Stelios Zisis</Authors>
     <PackageProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</PackageProjectUrl>
