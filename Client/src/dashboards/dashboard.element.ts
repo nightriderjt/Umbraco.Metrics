@@ -887,8 +887,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             <umbmetrics-metric-card
               icon="icon-timer"
               title="Avg Duration"
-              value="${(avgDuration)}"
-              detail="Max: ${(maxDuration)}"
+              value="${(avgDuration.toFixed(2))} ms"
+              detail="Max: ${(maxDuration.toFixed(2))} ms"
               color="${getDurationColor(avgDuration)}"
             ></umbmetrics-metric-card>
           </umbmetrics-metrics-grid>
@@ -934,7 +934,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                     </td>
                     <td>
                       <span class="operation-duration ${getDurationColor(op.duration)}">
-                        ${(op.duration)}
+                        ${(op.duration.toFixed(2))} ms
                       </span>
                     </td>
                     <td>
