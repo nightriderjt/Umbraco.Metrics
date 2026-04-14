@@ -9,4 +9,5 @@ public class PerformanceMetrics
     public GarbageCollectionMetrics GarbageCollectionStats { get; set; } = new();
     public RequestMetrics RequestMetrics { get; set; } = new();
     public ApplicationInfo ApplicationInfo { get; set; } = new();
+    public List<SqlOperation> SqlOperations { get; set; } = [];
 }

@@ -15,8 +15,8 @@ public class ThresholdEvaluationService : IThresholdEvaluationService
     private readonly IUmbracoDatabaseFactory _databaseFactory;
 
     private readonly IEventAggregator _eventAggregator;
-    private readonly List<ThresholdRule> _rulesCache = new();
-    private readonly Dictionary<string, List<DateTime>> _ruleEvaluationHistory = new();
+    private readonly List<ThresholdRule> _rulesCache = [];
+    private readonly Dictionary<string, List<DateTime>> _ruleEvaluationHistory = [];
     private readonly object _lock = new();
     private DateTime _lastCacheRefresh = DateTime.MinValue;
     private readonly TimeSpan _cacheRefreshInterval = TimeSpan.FromMinutes(5);

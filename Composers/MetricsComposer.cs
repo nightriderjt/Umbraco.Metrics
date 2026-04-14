@@ -1,9 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 using UmbMetrics.Notifications;
+using UmbMetrics.Observers;
 using UmbMetrics.Services;
 using UmbMetrics.Services.Interfaces;
 using UmbMetrics.WebHooks;
@@ -19,16 +23,21 @@ public class MetricsComposer : IComposer
     public void Compose(IUmbracoBuilder builder)
     {
         // Register metrics service
-        builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
+        builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();         
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
         builder.Services.AddScoped<IMetricsExportService, MetricsExportService>();
-
+       
         // Register historical metrics services
         builder.Services.AddSingleton<IHistoricalMetricsService, HistoricalMetricsService>();
         builder.Services.AddSingleton<IMetricsCleanUpService, MetricsCleanUpService>();
         builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
         builder.Services.AddHostedService<MetricsCleanUpService>();
+        var enableSqlTrace=builder.Config.GetValue<bool?>("UmbMetrics:EnableSqlTrace")??false;
+        if (enableSqlTrace)
+        {
+            builder.Services.AddHostedService<SqlTrackingBootstrapper>();
+        }      
         var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
 
 
@@ -54,7 +63,7 @@ public class MetricsComposer : IComposer
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
-        builder.Services.AddScoped<IUmbMetricslNotificationService, UmbMetricslNotificationService>();
+        var serviceCollection = builder.Services.AddScoped<IUmbMetricslNotificationService, UmbMetricslNotificationService>();
 
         // Register HttpClient for webhooks
         builder.Services.AddHttpClient("WebhookClient")
@@ -65,7 +74,10 @@ public class MetricsComposer : IComposer
         // Register background service for broadcasting metrics
         builder.Services.AddHostedService<MetricsBroadcastService>();
         builder.AddNotificationHandler<ThresholdAlertTriggeredNotification, ThresholdAlertTriggered>();
-        builder.WebhookEvents().Add<AlertTriggeredWebHookEvent>();
+         builder.WebhookEvents().Add<AlertTriggeredWebHookEvent>();
+
+
+       
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
         {
@@ -81,8 +93,7 @@ public class MetricsComposer : IComposer
             options.AddFilter(new UmbracoPipelineFilter("umbHub")
             {
                 Endpoints = app => app.UseEndpoints(endpoints =>
-                {
-                    // 'endpoints' is your IEndpointRouteBuilder!
+                {                    
                     endpoints.MapHub<UmbMetrics.Hubs.MetricsHub>("/umbraco/metrics-hub");
                 })
             });

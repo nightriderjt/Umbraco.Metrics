@@ -116,6 +116,137 @@ uui-box.wide {
   line-height: 1.5;
 }
 
+/* Database Tab Styles */
+.database-tab {
+  padding: 1rem 0;
+}
+
+.database-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.database-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--uui-color-text);
+}
+
+.database-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.database-stats {
+  margin-bottom: 2rem;
+}
+
+.database-operations {
+  margin-bottom: 2rem;
+}
+
+.database-operations h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--uui-color-text);
+}
+
+.no-operations {
+  text-align: center;
+  padding: 2rem;
+  color: var(--uui-color-text-alt);
+  font-style: italic;
+  background: var(--uui-color-surface);
+  border-radius: var(--uui-border-radius);
+  border: 1px dashed var(--uui-color-border);
+}
+
+.operations-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--uui-color-surface);
+  border: 1px solid var(--uui-color-border);
+  border-radius: var(--uui-border-radius);
+  overflow: hidden;
+}
+
+.operations-table thead {
+  background: var(--uui-color-surface-alt);
+}
+
+.operations-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--uui-color-text);
+  border-bottom: 1px solid var(--uui-color-border);
+}
+
+.operations-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--uui-color-border);
+  color: var(--uui-color-text);
+}
+
+.operations-table tr:last-child td {
+  border-bottom: none;
+}
+
+.operations-table tr:hover {
+  background: var(--uui-color-surface-hover);
+}
+
+.operation-success {
+  color: var(--uui-color-positive);
+  font-weight: 600;
+}
+
+.operation-failure {
+  color: var(--uui-color-danger);
+  font-weight: 600;
+}
+
+.operation-duration {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.operation-duration.long {
+  color: var(--uui-color-danger);
+}
+
+.operation-duration.medium {
+  color: var(--uui-color-warning);
+}
+
+.operation-duration.short {
+  color: var(--uui-color-positive);
+}
+
+.operation-query {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--uui-color-text-alt);
+}
+
+.operation-query:hover {
+  overflow: visible;
+  white-space: normal;
+  background: var(--uui-color-surface-alt);
+  padding: 0.25rem;
+  border-radius: var(--uui-border-radius);
+  position: relative;
+  z-index: 1;
+}
+
 /* Thresholds Tab Styles */
 .thresholds-tab {
   padding: 1rem 0;

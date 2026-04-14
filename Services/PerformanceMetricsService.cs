@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
@@ -7,10 +8,9 @@ namespace UmbMetrics.Services;
 
 public class PerformanceMetricsService : IPerformanceMetricsService
 {
-    private readonly ILogger<PerformanceMetricsService> _logger;
-    private static readonly DateTime _startTime = DateTime.UtcNow;
+    private readonly ILogger<PerformanceMetricsService> _logger;    
     private static readonly Process _currentProcess = Process.GetCurrentProcess();
-
+    public   ConcurrentDictionary<Guid,SqlOperation> SqlOperations { get;  set; } = [];
     public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger)
     {
         _logger = logger;
@@ -28,7 +28,8 @@ public class PerformanceMetricsService : IPerformanceMetricsService
                 ThreadInfo = GetThreadInfo(),
                 GarbageCollectionStats = GetGarbageCollectionStats(),
                 RequestMetrics = GetRequestMetrics(),
-                ApplicationInfo = GetApplicationInfo()
+                ApplicationInfo = GetApplicationInfo(),
+                SqlOperations = SqlOperations.Values.ToList() ?? []
             };
 
             return metrics;
