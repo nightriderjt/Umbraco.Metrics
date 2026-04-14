@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -32,7 +33,11 @@ public class MetricsComposer : IComposer
         builder.Services.AddScoped<IHistoricalMetricsExportService, HistoricalMetricsExportService>();
         builder.Services.AddHostedService<HistoricalMetricsService>();
         builder.Services.AddHostedService<MetricsCleanUpService>();
-        builder.Services.AddHostedService<SqlTrackingBootstrapper>();
+        var enableSqlTrace=builder.Config.GetValue<bool?>("UmbMetrics:EnableSqlTrace")??false;
+        if (enableSqlTrace)
+        {
+            builder.Services.AddHostedService<SqlTrackingBootstrapper>();
+        }      
         var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
 
 
