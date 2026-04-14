@@ -45,7 +45,7 @@ public class MetricsBroadcastService : BackgroundService
                     "ReceiveMetrics",
                     metrics,
                     stoppingToken);
-                // Start the evaluation 5 minutesd after the service starts to allow time for initial metrics collection and avoid false positives on thresholds
+                // Start the evaluation 5 minutes after the service starts to allow time for initial metrics collection and avoid false positives on thresholds
                 if (DateTime.UtcNow.Subtract(initialized).Minutes >= 5)
                 {
                     await _thresholdEvaluationService.EvaluateThresholdsAsync(metrics);

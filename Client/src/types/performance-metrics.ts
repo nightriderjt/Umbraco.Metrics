@@ -1,3 +1,13 @@
+export interface SqlOperation {
+  operationKey: string;
+  operationValue?: string;
+  startCommand: string;
+  endCommand: string;
+  success?: boolean;
+  error?: string;
+  duration: number; // TimeSpan serialized as ISO 8601 duration string
+}
+
 export interface PerformanceMetrics {
   timestamp: string;
   cpuUsage: number;
@@ -6,6 +16,7 @@ export interface PerformanceMetrics {
   garbageCollectionStats: GarbageCollectionMetrics;
   requestMetrics: RequestMetrics;
   applicationInfo: ApplicationInfo;
+  sqlOperations: SqlOperation[];
 }
 
 export interface MemoryMetrics {

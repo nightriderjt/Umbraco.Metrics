@@ -8,7 +8,7 @@ import signal
 import sys
 
 class LoadTester:
-    def __init__(self, url, num_users=2000, duration_seconds=180):
+    def __init__(self, url, num_users=2, duration_seconds=5):
         self.url = url
         self.num_users = num_users
         self.duration_seconds = duration_seconds
@@ -27,8 +27,9 @@ class LoadTester:
         """Make a single HTTP request and record timing"""
         start_time = time.time()
         try:
+            headers = {"User-Agent": "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
             # Disable SSL verification for local testing
-            async with session.get(self.url, timeout=aiohttp.ClientTimeout(total=10), ssl=False) as response:
+            async with session.get(self.url, timeout=aiohttp.ClientTimeout(total=10), ssl=True,headers=headers) as response:
                 end_time = time.time()
                 response_time = (end_time - start_time) * 1000  # Convert to milliseconds
                 
@@ -77,7 +78,7 @@ class LoadTester:
             response_time, status = await self.make_request(session, user_id, request_id)
             
             # Small random delay between requests to simulate realistic user behavior
-            await asyncio.sleep(0.1)  # 100ms delay between requests
+            await asyncio.sleep(0.2)  # 100ms delay between requests
             
     async def run_test(self):
         """Run the load test with multiple concurrent users"""
@@ -90,6 +91,7 @@ class LoadTester:
         start_time = time.time()
         
         # Create a connector with connection limits
+        
         connector = aiohttp.TCPConnector(limit=self.num_users * 2, limit_per_host=self.num_users, ssl=False)
         
         async with aiohttp.ClientSession(connector=connector) as session:
@@ -177,9 +179,9 @@ class LoadTester:
 
 async def main():
     # Configuration - using original parameters
-    URL = "https://localhost:44359"  # Replace with your target URL
-    NUM_USERS = 50  # Original value
-    DURATION_SECONDS = 180  # Original value (3 minutes)
+    URL = "http://www.blod.gr."  # Replace with your target URL
+    NUM_USERS = 2  # Original value
+    DURATION_SECONDS = 20  # Original value (3 minutes)
     
     # Create load tester instance
     tester = LoadTester(URL, NUM_USERS, DURATION_SECONDS)

@@ -47,3 +47,11 @@ export function formatUptime(seconds: number): string {
   const secs = Math.floor(seconds % 60);
   return `${days}d ${hours}h ${minutes}m ${secs}s`;
 }
+
+export function getDurationColor  (duration: number) {
+      if (duration > 1000) return 'danger';
+      if (duration > 100) return 'warning';
+      return 'positive';
+    };
+
+    

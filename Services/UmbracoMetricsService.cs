@@ -9,26 +9,21 @@ using Umbraco.Cms.Infrastructure.Persistence;
 namespace UmbMetrics.Services;
 
 public class UmbracoMetricsService : IUmbracoMetricsService
-{
-    private readonly IContentService _contentService;
-    private readonly IMediaService _mediaService;
+{   
+   
     private readonly IUserService _userService;
     private readonly AppCaches _appCaches;
     private readonly ILogger<UmbracoMetricsService> _logger;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
     private readonly IHostingEnvironment _hostingEnvironment;
 
-    public UmbracoMetricsService(
-        IContentService contentService,
-        IMediaService mediaService,
+    public UmbracoMetricsService(    
         IUserService userService,
         AppCaches appCaches,
         ILogger<UmbracoMetricsService> logger,
         IUmbracoDatabaseFactory databaseFactory,
         IHostingEnvironment hostingEnvironment)
-    {
-        _contentService = contentService;
-        _mediaService = mediaService;
+    {      
         _userService = userService;
         _appCaches = appCaches;
         _logger = logger;

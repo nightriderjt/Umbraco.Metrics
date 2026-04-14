@@ -24,7 +24,7 @@ import type {
 } from "../types/threshold-models.js";
 
 import type { StatRow } from "../components/stat-card.element.js";
-import { getStatusColor, formatNumber } from "../utils/format-utils.js";
+import { getStatusColor, formatNumber,   getDurationColor } from "../utils/format-utils.js";
 import "../components/app-info-banner.element.js";
 import "../components/metric-card.element.js";
 import "../components/metrics-grid.element.js";
@@ -815,6 +815,143 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
 
 
+  #renderDatabaseTab() {
+    if (!this._performanceMetrics) {
+      return html`<p>${this.localize?.term('dashboard_clickToLoadDatabase') || 'Click "Refresh Metrics" to load database operations'}</p>`;
+    }
+
+    const sqlOperations = this._performanceMetrics.sqlOperations || [];
+    
+   
+    
+    // Create operations with duration in milliseconds for sorting
+    const operationsWithDuration = sqlOperations.map(op => ({
+      ...op,
+      durationMs: op.duration
+    }));
+    
+    // Sort operations by duration descending (biggest duration first)
+    const sortedOperations = [...operationsWithDuration].sort((a, b) => b.durationMs - a.durationMs);
+    
+    // Calculate statistics
+    const totalOperations = sortedOperations.length;
+    const successfulOperations = sortedOperations.filter(op => op.success).length;
+    const failedOperations = totalOperations - successfulOperations;
+    const totalDuration = sortedOperations.reduce((sum, op) => sum + op.durationMs, 0);
+    const avgDuration = totalOperations > 0 ? totalDuration / totalOperations : 0;
+    const maxDuration = totalOperations > 0 ? Math.max(...sortedOperations.map(op => op.durationMs)) : 0;
+
+    
+
+    return html`
+      <div class="database-tab">
+        <div class="database-header">
+          <h3>${this.localize?.term('dashboard_database') || 'Database Operations'}</h3>
+          <div class="database-controls">
+            <uui-button 
+              look="primary" 
+              color="positive"
+              @click="${this.#onClickRefreshMetrics}"
+            >
+              <uui-icon name="icon-refresh"></uui-icon>
+              ${this.localize?.term('common_refresh') || 'Refresh'}
+            </uui-button>
+          </div>
+        </div>
+
+        <div class="database-stats">
+          <umbmetrics-metrics-grid columns="4">
+            <umbmetrics-metric-card
+              icon="icon-database"
+              title="Total Operations"
+              value="${totalOperations}"
+              detail="Last refresh"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-check"
+              title="Successful"
+              value="${successfulOperations}"
+              detail="${totalOperations > 0 ? ((successfulOperations / totalOperations) * 100).toFixed(1) + '%' : '0%'}"
+              color="${successfulOperations === totalOperations ? 'positive' : 'default'}"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-alert"
+              title="Failed"
+              value="${failedOperations}"
+              detail="${totalOperations > 0 ? ((failedOperations / totalOperations) * 100).toFixed(1) + '%' : '0%'}"
+              color="${failedOperations > 0 ? 'danger' : 'positive'}"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-timer"
+              title="Avg Duration"
+              value="${(avgDuration)}"
+              detail="Max: ${(maxDuration)}"
+              color="${getDurationColor(avgDuration)}"
+            ></umbmetrics-metric-card>
+          </umbmetrics-metrics-grid>
+        </div>
+
+        <div class="database-operations">
+          <h4>SQL Operations (Sorted by Duration - Longest First)</h4>
+          
+          ${sortedOperations.length === 0 ? html`
+            <p class="no-operations">${this.localize?.term('dashboard_noData') || 'No database operations recorded'}</p>
+          ` : html`
+            <table class="operations-table">
+              <thead>
+                <tr>
+                  <th>Operation</th>
+                  <th>Status</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Duration</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${repeat(sortedOperations, (op) => op.operationKey, (op) => html`
+                  <tr>
+                    <td>
+                      <div class="operation-query" title="${op.operationValue || 'N/A'}">
+                        ${op.operationValue || 'N/A'}
+                      </div>
+                    </td>
+                    <td>
+                      ${op.success ? html`
+                        <span class="operation-success">Success</span>
+                      ` : html`
+                        <span class="operation-failure">Failed</span>
+                      `}
+                    </td>
+                    <td>
+                      ${new Date(op.startCommand).toLocaleTimeString()}
+                    </td>
+                     <td>
+                      ${new Date(op.endCommand).toLocaleTimeString()}
+                    </td>
+                    <td>
+                      <span class="operation-duration ${getDurationColor(op.duration)}">
+                        ${(op.duration)}
+                      </span>
+                    </td>
+                    <td>
+                      ${op.error ? html`
+                        <span title="${op.error}">${op.error.substring(0, 50)}${op.error.length > 50 ? '...' : ''}</span>
+                      ` : 'N/A'}
+                    </td>
+                  </tr>
+                `)}
+              </tbody>
+            </table>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
   #renderTabContent() {
     switch (this._activeTab) {
       case 'overview':
@@ -823,6 +960,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         return this.#renderHeapTab();
       case 'umbraco':
         return this.#renderUmbracoTab();
+      case 'database':
+        return this.#renderDatabaseTab();
       case 'thresholds':
         return this.#renderThresholdsTab();
       case 'utils':
@@ -875,12 +1014,19 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             <uui-icon name="icon-box"></uui-icon> ${this.localize?.term('dashboard_heapAndGC') || 'Heap & GC'}
           </uui-button>
           <uui-button 
+            look="${this._activeTab === 'database' ? 'primary' : 'default'}"
+            color="${this._activeTab === 'database' ? 'positive' : 'default'}"
+            @click="${() => this.#switchTab('database')}"
+          >
+            <uui-icon name="icon-database"></uui-icon> ${this.localize?.term('dashboard_database') || 'Database'}
+          </uui-button>
+          <uui-button 
             look="${this._activeTab === 'umbraco' ? 'primary' : 'default'}"
             color="${this._activeTab === 'umbraco' ? 'positive' : 'default'}"
             @click="${() => this.#switchTab('umbraco')}"
           >
             <uui-icon name="icon-umbraco"></uui-icon> ${this.localize?.term('dashboard_umbracoMetrics') || 'Umbraco Metrics'}
-          </uui-button>
+          </uui-button>          
           <uui-button 
             look="${this._activeTab === 'thresholds' ? 'primary' : 'default'}"
             color="${this._activeTab === 'thresholds' ? 'positive' : 'default'}"
