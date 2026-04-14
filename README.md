@@ -120,6 +120,12 @@ Monitor real-time request activity with detailed insights:
 - Track request status codes and client information
 - Monitor request queue and thread usage
 
+### SQL Query Tracing
+Monitor database performance with SQL query tracing (disabled by default for security):
+- Track SQL query execution times and performance
+- Identify slow or problematic database queries
+- Monitor query success/failure status
+
 ## Real-Time Updates
 
 Enable the "Real-time Updates" toggle to watch your metrics update live. Perfect for:
