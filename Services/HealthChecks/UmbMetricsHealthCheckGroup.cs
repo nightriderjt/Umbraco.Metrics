@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using UmbMetrics.Models;
 using UmbMetrics.Services.Interfaces;
 using Umbraco.Cms.Core.HealthChecks;
 using Umbraco.Cms.Core.Services;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace UmbMetrics.Services.HealthChecks;
 
@@ -21,6 +24,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
     private readonly IOptions<EmailNotificationSettings> _emailNotificationSettings;
     private readonly IThresholdEvaluationService _thresholdEvaluationService;
     private readonly bool _monitorIsRunning;
+    private readonly IConfiguration _config;
     private readonly IRuntimeState _runtimeState;
 
     public UmbMetricsHealthCheckGroup(IServiceProvider provider)
@@ -31,6 +35,7 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
         _thresholdEvaluationService = provider.GetRequiredService<IThresholdEvaluationService>();
         _runtimeState = provider.GetRequiredService<IRuntimeState>();
         _monitorIsRunning = MetricsBroadcastService._isRunning;
+        _config = provider.GetRequiredService<IConfiguration>();
     }
 
     public override Task<IEnumerable<HealthCheckStatus>> GetStatusAsync()
@@ -41,7 +46,8 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
             CheckEmailNotificationSettings(),
             CheckThresholdDatabaseTables(),
             CheckThresholdMonitoringService(),
-            CheckAlertResolutionConfiguration()
+            CheckAlertResolutionConfiguration(),
+            CheckSqlTraceConfiguration()
         };
 
         return Task.FromResult<IEnumerable<HealthCheckStatus>>(results);
@@ -93,7 +99,17 @@ public class UmbMetricsHealthCheckGroup : HealthCheck
             Actions = []
         };
     }
+    private HealthCheckStatus CheckSqlTraceConfiguration()
+    {
+        var traceEnabled = _config.GetValue<bool?>("UmbMetrics:EnableSqlTrace") ?? false;
+        var isHealthy = !traceEnabled;
 
+        return new HealthCheckStatus(isHealthy ? "SQL trace is disabled" : "Sql Trace is enabled. Risk of sensitive data leakage. Use only for debug purposes. Please disable SQL trace in appsettings.json under UmbMetrics:EnableSqlTrace")
+        {
+            ResultType = isHealthy ? StatusResultType.Success : StatusResultType.Warning,
+            Actions = []
+        };
+    }
     private HealthCheckStatus CheckEmailNotificationSettings()
     {
         var settings = _emailNotificationSettings.Value;
