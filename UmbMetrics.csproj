@@ -24,10 +24,10 @@
     
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Core" Version="17.3.1" />
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.3.1" />
-    <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.3.1" />
-    <PackageReference Include="Umbraco.Cms.Api.Management" Version="17.3.1" />
+    <PackageReference Include="Umbraco.Cms.Core" Version="17.3.3" />
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.3.3" />
+    <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.3.3" />
+    <PackageReference Include="Umbraco.Cms.Api.Management" Version="17.3.3" />
   </ItemGroup>
 
   <ItemGroup>
