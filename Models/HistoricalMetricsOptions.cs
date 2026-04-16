@@ -8,4 +8,5 @@ public class HistoricalMetricsOptions
     public long MaxFileSizeBytes { get; set; } = 100 * 1024 * 1024; // 100 MB default
     public bool EnableAutoCleanup { get; set; } = true;
     public int CleanupIntervalHours { get; set; } = 24;
+    public bool LogSqlTrace { get; set; } = false;
 }
