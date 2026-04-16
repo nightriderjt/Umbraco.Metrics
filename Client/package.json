@@ -1,7 +1,7 @@
 {
   "name": "umb-metrics",
   "private": true,
-  "version": "17.3.3.0",
+  "version": "17.3.4.0",
   "type": "module",
   "scripts": {
     "watch": "tsc && vite build --watch",
@@ -11,11 +11,11 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.95.0",
     "@microsoft/signalr": "10.0.0",
-    "@umbraco-cms/backoffice": "17.3.3",
+    "@umbraco-cms/backoffice": "17.3.4",
     "chalk": "^5.6.2",
     "cross-env": "^10.1.0",
     "node-fetch": "^3.3.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9"
+    "vite": "^8.0.8"
   }
 }

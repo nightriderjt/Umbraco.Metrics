@@ -151,10 +151,20 @@ public class HistoricalMetricsService : BackgroundService, IHistoricalMetricsSer
             var datePart = metrics.Timestamp.ToString("yyyyMMdd");
             var fileName = $"metrics-{datePart}.json";
             var filePath = Path.Combine(_options.StoragePath, fileName);
+            var _metrics = new PerformanceMetrics
+            {
+                 ApplicationInfo = metrics.ApplicationInfo,
+                  CpuUsage = metrics.CpuUsage,
+                   GarbageCollectionStats = metrics.GarbageCollectionStats,
+                    MemoryUsage = metrics.MemoryUsage,
+                     RequestMetrics = metrics.RequestMetrics,
+                      SqlOperations =_options.LogSqlTrace? metrics.SqlOperations : [],
+                       ThreadInfo = metrics.ThreadInfo,
+                        Timestamp = metrics.Timestamp
+            };
 
 
-
-            var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
+            var json = JsonSerializer.Serialize(_metrics, _jsonSerializerOptions);
 
             // Append to file with newline
             await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);

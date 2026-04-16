@@ -43,7 +43,11 @@ export default {
     "generateReport": "Δημιουργία Αναφοράς",
     "scheduledTasks": "Προγραμματισμένες Εργασίες",
     "scheduledTasksDescription": "Προγραμματισμός αυτόματων εξαγωγών και εργασιών συλλογής δεδομένων",
-    "scheduleExport": "Προγραμματισμός Εξαγωγής"
+    "scheduleExport": "Προγραμματισμός Εξαγωγής",
+    "filterByStatus": "Φιλτράρισμα κατά κατάσταση",
+    "allQueries": "Όλα τα Ερωτήματα",
+    "successfulQueries": "Μόνο Επιτυχημένα",
+    "failedQueries": "Μόνο Αποτυχημένα"
   },
 
   // Export Modal
@@ -224,7 +228,17 @@ export default {
     "settings": "Ρυθμίσεις",
     "help": "Βοήθεια",
     "about": "Σχετικά",
-    "or": "ή"
+    "or": "ή",
+    "previous": "Προηγούμενο",
+    "next": "Επόμενο",
+    "page": "Σελίδα",
+    "of": "από",
+    "items": "στοιχεία",
+    "itemsPerPage": "Στοιχεία ανά σελίδα",
+    "goToPage": "Μετάβαση στη σελίδα",
+    "showing": "Εμφάνιση",
+    "to": "έως",
+    "ofTotal": "από συνολικά"
   },
 
   // Stat Card Info Tooltips
