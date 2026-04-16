@@ -164,7 +164,7 @@ public class HistoricalMetricsService : BackgroundService, IHistoricalMetricsSer
             };
 
 
-            var json = JsonSerializer.Serialize(metrics, _jsonSerializerOptions);
+            var json = JsonSerializer.Serialize(_metrics, _jsonSerializerOptions);
 
             // Append to file with newline
             await using var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
