@@ -41,7 +41,11 @@ export default {
     "generateReport": "Generate Report",
     "scheduledTasks": "Scheduled Tasks",
     "scheduledTasksDescription": "Schedule automatic exports and data collection tasks",
-    "scheduleExport": "Schedule Export"
+    "scheduleExport": "Schedule Export",
+    "filterByStatus": "Filter by status",
+    "allQueries": "All Queries",
+    "successfulQueries": "Successful Only",
+    "failedQueries": "Failed Only"
   },
 
   // Export Modal
@@ -222,7 +226,17 @@ export default {
     "settings": "Settings",
     "help": "Help",
     "about": "About",
-    "or": "or"
+    "or": "or",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "items": "items",
+    "itemsPerPage": "Items per page",
+    "goToPage": "Go to page",
+    "showing": "Showing",
+    "to": "to",
+    "ofTotal": "of total"
   },
 
   // Stat Card Info Tooltips

@@ -66,6 +66,15 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   @state()
   private _loadingAlerts: boolean = false;
 
+  @state()
+  private _currentPage: number = 1;
+
+  @state()
+  private _itemsPerPage: number = 10;
+
+  @state()
+  private _queryFilter: string = 'all'; // 'all', 'success', 'failed'
+
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
   #metricsService?: MetricsPerformanceService;
@@ -149,6 +158,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
     try {
       this._performanceMetrics = await this.#metricsService.getPerformanceMetrics();
+      // Reset paging when new data is loaded
+      this._currentPage = 1;
     } catch (error) {
       console.error("Error loading performance metrics:", error);
       if (this.#notificationContext) {
@@ -359,6 +370,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   #switchTab = (tabName: string) => {
     this._activeTab = tabName;
+    // Reset paging when switching tabs
+    this._currentPage = 1;
   };
 
   #renderOverviewTab() {
@@ -822,16 +835,22 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
     const sqlOperations = this._performanceMetrics.sqlOperations || [];
     
-   
-    
     // Create operations with duration in milliseconds for sorting
     const operationsWithDuration = sqlOperations.map(op => ({
       ...op,
       durationMs: op.duration
     }));
     
+    // Apply filter
+    let filteredOperations = [...operationsWithDuration];
+    if (this._queryFilter === 'success') {
+      filteredOperations = filteredOperations.filter(op => op.success);
+    } else if (this._queryFilter === 'failed') {
+      filteredOperations = filteredOperations.filter(op => !op.success);
+    }
+    
     // Sort operations by duration descending (biggest duration first)
-    const sortedOperations = [...operationsWithDuration].sort((a, b) => b.durationMs - a.durationMs);
+    const sortedOperations = filteredOperations.sort((a, b) => b.durationMs - a.durationMs);
     
     // Calculate statistics
     const totalOperations = sortedOperations.length;
@@ -841,7 +860,28 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     const avgDuration = totalOperations > 0 ? totalDuration / totalOperations : 0;
     const maxDuration = totalOperations > 0 ? Math.max(...sortedOperations.map(op => op.durationMs)) : 0;
 
-    
+    // Calculate paging
+    const totalPages = Math.ceil(totalOperations / this._itemsPerPage);
+    const startIndex = (this._currentPage - 1) * this._itemsPerPage;
+    const endIndex = Math.min(startIndex + this._itemsPerPage, totalOperations);
+    const pagedOperations = sortedOperations.slice(startIndex, endIndex);
+
+    // Helper methods for paging and filtering
+    const goToPage = (page: number) => {
+      if (page >= 1 && page <= totalPages) {
+        this._currentPage = page;
+      }
+    };
+
+    const changeItemsPerPage = (items: number) => {
+      this._itemsPerPage = items;
+      this._currentPage = 1; // Reset to first page when changing items per page
+    };
+
+    const changeQueryFilter = (filter: string) => {
+      this._queryFilter = filter;
+      this._currentPage = 1; // Reset to first page when changing filter
+    };
 
     return html`
       <div class="database-tab">
@@ -895,57 +935,166 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         </div>
 
         <div class="database-operations">
-          <h4>SQL Operations (Sorted by Duration - Longest First)</h4>
+          <div class="operations-header">
+            <h4>SQL Operations (Sorted by Duration - Longest First)</h4>           
+              <div class="paging-controls">
+                <div class="query-filter">
+                  <label>${this.localize?.term('dashboard_filterByStatus') || 'Filter by status'}:</label>
+                  <select 
+                    .value="${this._queryFilter}"
+                    @change="${(e: Event) => changeQueryFilter((e.target as HTMLSelectElement).value)}"
+                  >
+                    <option value="all">${this.localize?.term('dashboard_allQueries') || 'All Queries'}</option>
+                    <option value="success">${this.localize?.term('dashboard_successfulQueries') || 'Successful Only'}</option>
+                    <option value="failed">${this.localize?.term('dashboard_failedQueries') || 'Failed Only'}</option>
+                  </select>
+                </div>
+                <div class="items-per-page">
+                  <label>${this.localize?.term('common_itemsPerPage') || 'Items per page'}:</label>
+                  <select 
+                    .value="${this._itemsPerPage.toString()}"
+                    @change="${(e: Event) => changeItemsPerPage(parseInt((e.target as HTMLSelectElement).value))}"
+                  >
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </div>
+                <div class="paging-info">
+                  ${this.localize?.term('common_showing') || 'Showing'} ${endIndex==0?0: startIndex + 1} ${this.localize?.term('common_to') || 'to'} ${endIndex} ${this.localize?.term('common_ofTotal') || 'of total'} ${totalOperations}
+                </div>
+              </div>           
+          </div>
           
           ${sortedOperations.length === 0 ? html`
             <p class="no-operations">${this.localize?.term('dashboard_noData') || 'No database operations recorded'}</p>
           ` : html`
-            <table class="operations-table">
-              <thead>
-                <tr>
-                  <th>Operation</th>
-                  <th>Status</th>
-                  <th>Start Time</th>
-                  <th>End Time</th>
-                  <th>Duration</th>
-                  <th>Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${repeat(sortedOperations, (op) => op.operationKey, (op) => html`
-                  <tr>
-                    <td>
-                      <div class="operation-query" title="${op.operationValue || 'N/A'}">
-                        ${op.operationValue || 'N/A'}
-                      </div>
-                    </td>
-                    <td>
-                      ${op.success ? html`
-                        <span class="operation-success">Success</span>
-                      ` : html`
-                        <span class="operation-failure">Failed</span>
-                      `}
-                    </td>
-                    <td>
-                      ${new Date(op.startCommand).toLocaleTimeString()}
-                    </td>
-                     <td>
-                      ${new Date(op.endCommand).toLocaleTimeString()}
-                    </td>
-                    <td>
-                      <span class="operation-duration ${getDurationColor(op.duration)}">
-                        ${(op.duration.toFixed(2))} ms
-                      </span>
-                    </td>
-                    <td>
-                      ${op.error ? html`
-                        <span title="${op.error}">${op.error.substring(0, 50)}${op.error.length > 50 ? '...' : ''}</span>
-                      ` : 'N/A'}
-                    </td>
-                  </tr>
-                `)}
-              </tbody>
-            </table>
+            <div class="operations-table-container">
+              <div class="operations-table-wrapper">
+                <table class="operations-table">
+                  <thead>
+                    <tr>
+                      <th>Operation</th>
+                      <th>Status</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
+                      <th>Duration</th>
+                      <th>Error</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${repeat(pagedOperations, (op) => op.operationKey, (op) => html`
+                      <tr>
+                        <td>
+                          <div class="operation-query" title="${op.operationValue || 'N/A'}">
+                            ${op.operationValue || 'N/A'}
+                          </div>
+                        </td>
+                        <td>
+                          ${op.success ? html`
+                            <span class="operation-success">Success</span>
+                          ` : html`
+                            <span class="operation-failure">Failed</span>
+                          `}
+                        </td>
+                        <td>
+                          ${new Date(op.startCommand).toLocaleTimeString()}
+                        </td>
+                         <td>
+                          ${new Date(op.endCommand).toLocaleTimeString()}
+                        </td>
+                        <td>
+                          <span class="operation-duration ${getDurationColor(op.duration)}">
+                            ${(op.duration.toFixed(2))} ms
+                          </span>
+                        </td>
+                        <td>
+                          ${op.error ? html`
+                            <span title="${op.error}">${op.error.substring(0, 50)}${op.error.length > 50 ? '...' : ''}</span>
+                          ` : 'N/A'}
+                        </td>
+                      </tr>
+                    `)}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            ${totalPages > 1 ? html`
+              <div class="pagination">
+                <uui-button
+                  look="default"
+                  ?disabled="${this._currentPage === 1}"
+                  @click="${() => goToPage(this._currentPage - 1)}"
+                >
+                  <uui-icon name="icon-chevron-left"></uui-icon>
+                  ${this.localize?.term('common_previous') || 'Previous'}
+                </uui-button>
+                
+                <div class="page-numbers">
+                  ${Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (this._currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (this._currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = this._currentPage - 2 + i;
+                    }
+                    
+                    return html`
+                      <uui-button
+                        look="${pageNum === this._currentPage ? 'primary' : 'default'}"
+                        color="${pageNum === this._currentPage ? 'positive' : 'default'}"
+                        @click="${() => goToPage(pageNum)}"
+                      >
+                        ${pageNum}
+                      </uui-button>
+                    `;
+                  })}
+                  
+                  ${totalPages > 5 && this._currentPage < totalPages - 2 ? html`
+                    <span class="ellipsis">...</span>
+                    <uui-button
+                      look="default"
+                      @click="${() => goToPage(totalPages)}"
+                    >
+                      ${totalPages}
+                    </uui-button>
+                  ` : ''}
+                </div>
+                
+                <uui-button
+                  look="default"
+                  ?disabled="${this._currentPage === totalPages}"
+                  @click="${() => goToPage(this._currentPage + 1)}"
+                >
+                  ${this.localize?.term('common_next') || 'Next'}
+                  <uui-icon name="icon-chevron-right"></uui-icon>
+                </uui-button>
+                
+                <div class="page-jump">
+                  <label>${this.localize?.term('common_goToPage') || 'Go to page'}:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="${totalPages}"
+                    .value="${this._currentPage}"
+                    @change="${(e: Event) => {
+                      const page = parseInt((e.target as HTMLInputElement).value);
+                      if (page >= 1 && page <= totalPages) {
+                        goToPage(page);
+                      }
+                    }}"
+                  />
+                  <span>${this.localize?.term('common_of') || 'of'} ${totalPages}</span>
+                </div>
+              </div>
+            ` : ''}
           `}
         </div>
       </div>
