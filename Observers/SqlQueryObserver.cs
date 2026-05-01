@@ -138,8 +138,7 @@ namespace UmbMetrics.Observers
                    typeName.Contains("SqlQueryObserver") ||
                    typeName.Contains("Diagnostic") ||
                    typeName.StartsWith("System.") ||
-            typeName.StartsWith("Microsoft.") ||
-            typeName.StartsWith("Swashbuckle") ||
+            typeName.StartsWith("Microsoft.") ||            
             typeName.StartsWith("StackExchange")
                            ;
         }
