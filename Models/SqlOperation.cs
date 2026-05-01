@@ -8,6 +8,7 @@ namespace UmbMetrics.Models
     {
         public Guid OperationKey { get; set; }
         public string? OperationValue { get; set; }
+        public string? QueryHash { get; set; }
         public DateTime StartCommand { get; set; }
         public DateTime EndCommand { get; set; }
         public Boolean? Success { get; set; }

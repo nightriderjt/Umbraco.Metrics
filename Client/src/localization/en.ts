@@ -45,7 +45,14 @@ export default {
     "filterByStatus": "Filter by status",
     "allQueries": "All Queries",
     "successfulQueries": "Successful Only",
-    "failedQueries": "Failed Only"
+    "failedQueries": "Failed Only",
+    "sqlOperationsGrouped": "SQL Operations (Grouped by Query)",
+    "query": "Query",
+    "executions": "Executions",
+    "avgDuration": "Avg Duration",
+    "maxDuration": "Max Duration",
+    "successRate": "Success Rate",
+    "groups": "groups"
   },
 
   // Export Modal

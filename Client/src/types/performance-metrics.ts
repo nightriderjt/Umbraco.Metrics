@@ -9,6 +9,7 @@ export interface SqlStackTrace {
 export interface SqlOperation {
   operationKey: string;
   operationValue?: string;
+  queryHash?: string;
   startCommand: string;
   endCommand: string;
   success?: boolean;

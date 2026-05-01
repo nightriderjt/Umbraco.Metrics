@@ -171,10 +171,7 @@ export class SqlStacktraceElement extends UmbModalElement {
             <span class="tree-caller${hasDetails ? ' has-details' : ''}">${node.caller || 'N/A'}</span>
             <span class="tree-method-separator">.</span>
             <span class="tree-method">${node.method || 'N/A'}</span>
-          </div>
-          ${node.lineNumber > 0 ? html`
-            <span class="tree-line">:${node.lineNumber}</span>
-          ` : ''}
+          </div>         
         </div>
 
         ${isExpanded ? html`

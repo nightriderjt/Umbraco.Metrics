@@ -47,7 +47,14 @@ export default {
     "filterByStatus": "Φιλτράρισμα κατά κατάσταση",
     "allQueries": "Όλα τα Ερωτήματα",
     "successfulQueries": "Μόνο Επιτυχημένα",
-    "failedQueries": "Μόνο Αποτυχημένα"
+    "failedQueries": "Μόνο Αποτυχημένα",
+    "sqlOperationsGrouped": "Λειτουργίες SQL (Ομαδοποιημένες ανά Ερώτημα)",
+    "query": "Ερώτημα",
+    "executions": "Εκτελέσεις",
+    "avgDuration": "Μέση Διάρκεια",
+    "maxDuration": "Μέγιστη Διάρκεια",
+    "successRate": "Ποσοστό Επιτυχίας",
+    "groups": "ομάδες"
   },
 
   // Export Modal

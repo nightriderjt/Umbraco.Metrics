@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+
 
 namespace UmbMetrics.Observers
 {   
     using System.Data.Common;
     using System.Diagnostics;
     using System.Reflection;
-    using System.Xml.Linq;
+
     using UmbMetrics.Models;
     using UmbMetrics.Observers.Interfaces;
     using UmbMetrics.Services;
@@ -15,6 +20,12 @@ namespace UmbMetrics.Observers
     public class SqlQueryObserver : IDbObserver
     {
         private readonly IPerformanceMetricsService _performanceMetricsService;
+
+        /// <summary>
+        /// Cache of PDB metadata readers to avoid repeated file I/O
+        /// </summary>
+        private static readonly Dictionary<string, MetadataReader?> _pdbReaderCache = new();
+
 
         public SqlQueryObserver(IPerformanceMetricsService performanceMetricsService)
         {
@@ -31,9 +42,11 @@ namespace UmbMetrics.Observers
                  
                 case "Microsoft.Data.SqlClient.WriteCommandBefore":
                     var command = (DbCommand)value.Value.GetType().GetProperty("Command").GetValue(value.Value);
-                    string sql = command.CommandText;                 
+                    string sql = command.CommandText;
+                    // Generate a deterministic hash from the SQL query text for grouping
+                    string queryHash = ComputeQueryHash(sql);
                     var callerMethod = GetFullStackTrace();
-                    _performanceMetricsService.SqlOperations.TryAdd(operationId, new SqlOperation { OperationValue = sql, StartCommand = DateTime.UtcNow, OperationKey = operationId, HasStackTrace = callerMethod != null });
+                    _performanceMetricsService.SqlOperations.TryAdd(operationId, new SqlOperation { OperationValue = sql, QueryHash = queryHash, StartCommand = DateTime.UtcNow, OperationKey = operationId, HasStackTrace = callerMethod != null });
                     if (callerMethod != null)
                     {
                         _performanceMetricsService.SqlStackTraces.TryAdd(operationId, callerMethod);
@@ -84,12 +97,18 @@ namespace UmbMetrics.Observers
                 if (IsInfrastructure(type.Assembly, type.FullName) || IsInternalStateFrame(method))
                     continue;
 
+                // Try to get file/line info - first from StackFrame, then fallback to PDB reader
+                string? fileName = frame.GetFileName();
+                int lineNumber = frame.GetFileLineNumber();
+
+             
+
                 var newNode = new SqlStackTrace
                 {
                     Caller = type.FullName,
                     Method = method.Name,
-                    FileName = frame.GetFileName(),
-                    LineNumber = frame.GetFileLineNumber()
+                    FileName = fileName,
+                    LineNumber = lineNumber
                 };
 
                 if (root == null)
@@ -106,6 +125,8 @@ namespace UmbMetrics.Observers
 
             return root;
         }
+
+ 
 
         private bool IsInfrastructure(Assembly assembly, string typeName)
         {
@@ -159,7 +180,47 @@ namespace UmbMetrics.Observers
             return false;
         }
 
+        /// <summary>
+        /// Computes a deterministic hash from SQL query text for grouping identical queries.
+        /// Normalizes whitespace before hashing to group queries that differ only in formatting.
+        /// </summary>
+        private static string ComputeQueryHash(string sql)
+        {
+            if (string.IsNullOrWhiteSpace(sql))
+                return string.Empty;
 
+            // Normalize: trim and collapse multiple whitespace characters into single space
+            var normalized = new StringBuilder(sql.Length);
+            bool lastWasSpace = false;
+            foreach (char c in sql.Trim())
+            {
+                if (char.IsWhiteSpace(c))
+                {
+                    if (!lastWasSpace)
+                    {
+                        normalized.Append(' ');
+                        lastWasSpace = true;
+                    }
+                }
+                else
+                {
+                    normalized.Append(c);
+                    lastWasSpace = false;
+                }
+            }
 
+            // Use SHA256 for a deterministic hash
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            byte[] inputBytes = Encoding.UTF8.GetBytes(normalized.ToString());
+            byte[] hashBytes = sha256.ComputeHash(inputBytes);
+
+            // Convert to hex string (first 16 chars for a compact but unique identifier)
+            var hash = new StringBuilder(16);
+            for (int i = 0; i < 8; i++)
+            {
+                hash.Append(hashBytes[i].ToString("x2"));
+            }
+            return hash.ToString();
+        }
     }
 }
