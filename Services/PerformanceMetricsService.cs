@@ -11,9 +11,16 @@ public class PerformanceMetricsService : IPerformanceMetricsService
     private readonly ILogger<PerformanceMetricsService> _logger;    
     private static readonly Process _currentProcess = Process.GetCurrentProcess();
     public   ConcurrentDictionary<Guid,SqlOperation> SqlOperations { get;  set; } = [];
+    public   ConcurrentDictionary<Guid,SqlStackTrace> SqlStackTraces { get;  set; } = [];
     public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger)
     {
         _logger = logger;
+    }
+
+    public SqlStackTrace? GetSqlStackTrace(Guid operationId)
+    {
+        SqlStackTraces.TryGetValue(operationId, out var stackTrace);
+        return stackTrace;
     }
 
     public async Task<PerformanceMetrics> GetMetricsAsync()

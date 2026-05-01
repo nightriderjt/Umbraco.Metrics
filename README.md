@@ -50,7 +50,9 @@ When something goes wrong, immediately see what's happening with your server. No
 
 ## How It Works
 
-Once installed, UmbMetrics adds a new dashboard to your Umbraco **Settings** section. Simply navigate to it to see your metrics. Toggle on real-time updates to watch your metrics refresh automatically every 1 second - perfect for monitoring during deployments, traffic spikes, or performance testing.
+Once installed, UmbMetrics adds a dedicated **UmbMetrics** section to your Umbraco backoffice (from version 17.3.4.1+). Simply navigate to it to see your metrics. Toggle on real-time updates to watch your metrics refresh automatically every 1 second - perfect for monitoring during deployments, traffic spikes, or performance testing.
+
+> **Note:** The dashboard has moved from the Settings section to its own backoffice section. Ensure your backoffice user has the appropriate Umbraco permissions to access the new section.
 
 ### Two Views, Complete Picture
 
@@ -102,7 +104,9 @@ public class CustomMetricsComposer : IComposer
 
 ### Step 3: Access the Dashboard
 
-After installation and configuration, restart your Umbraco site and navigate to `Settings` -> `Umbraco Metrics` to access your monitoring dashboard.
+After installation and configuration, restart your Umbraco site and navigate to the **UmbMetrics** section in your Umbraco backoffice to access your monitoring dashboard.
+
+> **Note:** From version 17.3.4.1+, the dashboard has moved from the Settings section to its own dedicated backoffice section. Make sure your backoffice user has the appropriate permissions to access the new section.
 
 ## Advanced Features
 
@@ -125,6 +129,14 @@ Monitor database performance with SQL query tracing (disabled by default for sec
 - Track SQL query execution times and performance
 - Identify slow or problematic database queries
 - Monitor query success/failure status
+
+#### SQL Stack Trace
+Identify the exact code path that triggered a SQL query with stack trace capture:
+- **Call chain visualization**: View the full call stack as an interactive tree with expand/collapse
+- **On-demand fetching**: Stack traces are fetched only when you click the trace icon, keeping the operations table lightweight
+- **Infrastructure filtering**: Automatically filters out System.*, Microsoft.*, and async state machine frames for cleaner output
+- **File & line information**: Expand any node to see the source file and line number
+- **Visual cues**: Nodes with file/line details are highlighted in red for quick identification
 
 ## Real-Time Updates
 

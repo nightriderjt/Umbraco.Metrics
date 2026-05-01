@@ -277,6 +277,19 @@ export default {
     "customRetentionHelp": "Εισάγετε αριθμό ημερών για διατήρηση ιστορικών δεδομένων μετρικών (1-365)"
   },
 
+  // SQL Stack Trace
+  "sqlStacktrace": {
+    "title": "Στοίβα Κλήσεων SQL",
+    "operation": "Λειτουργία",
+    "callChain": "Αλυσίδα Κλήσεων",
+    "caller": "Καλών",
+    "method": "Μέθοδος",
+    "file": "Αρχείο",
+    "line": "Γραμμή",
+    "noStackTrace": "Δεν υπάρχει διαθέσιμη στοίβα κλήσεων",
+    "viewStackTrace": "Προβολή Στοίβας Κλήσεων"
+  },
+
   // Threshold Monitoring
   "threshold": {
     "title": "Παρακολούθηση Ορίων",

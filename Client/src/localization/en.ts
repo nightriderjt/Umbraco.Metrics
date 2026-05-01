@@ -275,6 +275,19 @@ export default {
     "customRetentionHelp": "Enter number of days to keep historical metrics data (1-365)"
   },
 
+  // SQL Stack Trace
+  "sqlStacktrace": {
+    "title": "SQL Stack Trace",
+    "operation": "Operation",
+    "callChain": "Call Chain",
+    "caller": "Caller",
+    "method": "Method",
+    "file": "File",
+    "line": "Line",
+    "noStackTrace": "No stack trace available",
+    "viewStackTrace": "View Stack Trace"
+  },
+
   // Threshold Monitoring
   "threshold": {
     "title": "Threshold Monitoring",

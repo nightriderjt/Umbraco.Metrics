@@ -36,6 +36,7 @@ import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
 import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
 import { UMB_METRICS_CLEANUP_DIALOG } from "../components/cleanup-dialog.token.js";
+import { SQL_STACKTRACE_MODAL } from "../components/sql-stacktrace.modal.js";
 
 @customElement("umbmetrics-dashboard")
 export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
@@ -275,6 +276,19 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       UMB_METRICS_CLEANUP_DIALOG   
     );
   }
+
+  #openSqlStacktraceModal = async (op: any) => {
+    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    
+    modalManager?.open(
+      this, 
+      SQL_STACKTRACE_MODAL,
+      {
+        data: { operationKey: op.operationKey, operationValue: op.operationValue }
+      }
+    );
+  }
+
   #toggleAutoRefresh = async () => {
     this._autoRefresh = !this._autoRefresh;
 
@@ -982,6 +996,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                       <th>End Time</th>
                       <th>Duration</th>
                       <th>Error</th>
+                      <th>Trace</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1014,6 +1029,20 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                           ${op.error ? html`
                             <span title="${op.error}">${op.error.substring(0, 50)}${op.error.length > 50 ? '...' : ''}</span>
                           ` : 'N/A'}
+                        </td>
+                        <td>
+                          ${op.hasStackTrace ? html`
+                            <uui-button
+                              look="default"
+                              compact
+                              title="${this.localize?.term('sqlStacktrace_viewStackTrace') || 'View Stack Trace'}"
+                              @click="${() => this.#openSqlStacktraceModal(op)}"
+                            >
+                              <uui-icon name="icon-bug"></uui-icon>
+                            </uui-button>
+                          ` : html`
+                            <span class="no-trace">&mdash;</span>
+                          `}
                         </td>
                       </tr>
                     `)}
@@ -1083,7 +1112,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                     type="number"
                     min="1"
                     max="${totalPages}"
-                    .value="${this._currentPage}"
+                    .value="${this._currentPage.toString()}"
                     @change="${(e: Event) => {
                       const page = parseInt((e.target as HTMLInputElement).value);
                       if (page >= 1 && page <= totalPages) {
