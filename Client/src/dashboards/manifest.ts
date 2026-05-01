@@ -1,3 +1,5 @@
+import { UmbMetrics_Section } from "../types/constants.js";
+
 export const manifests: Array<UmbExtensionManifest> = [
   {
     name: "Umb Metrics Dashboard",
@@ -11,7 +13,7 @@ export const manifests: Array<UmbExtensionManifest> = [
     conditions: [
       {
         alias: "Umb.Condition.SectionAlias",
-        match: "Umb.Section.Settings",
+        match: UmbMetrics_Section,
       },
     ],
   },
