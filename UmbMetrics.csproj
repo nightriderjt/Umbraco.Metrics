@@ -10,7 +10,7 @@
     <PackageId>UmbMetrics</PackageId>
     <Product>UmbMetrics</Product>
     <Title>UmbMetrics</Title>
-    <Version>17.3.4.0</Version>
+    <Version>17.3.4.1</Version>
     <PackageTags>umbraco;umbraco-marketplace;metrics;performance;monitoring</PackageTags>
     <Authors>Stelios Zisis</Authors>
     <PackageProjectUrl>https://github.com/nightriderjt/Umbraco.Metrics</PackageProjectUrl>
@@ -23,7 +23,17 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Reflection.Metadata" Version="10.0.7" />
     <PackageReference Include="Umbraco.Cms.Core" Version="17.3.4" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.3.4" />
     <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.3.4" />

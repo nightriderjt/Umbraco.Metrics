@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
 using UmbMetrics.Notifications;
@@ -78,6 +80,12 @@ public class MetricsComposer : IComposer
 
 
        
+        // Configure JSON serialization to handle deep stack trace linked lists
+        builder.Services.PostConfigure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        {           
+            options.JsonSerializerOptions.MaxDepth = 256;
+        });
+
         // Register middleware
         builder.Services.Configure<UmbracoPipelineOptions>(options =>
         {

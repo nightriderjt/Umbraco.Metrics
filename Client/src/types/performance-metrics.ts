@@ -1,11 +1,21 @@
+export interface SqlStackTrace {
+  caller?: string;
+  method?: string;
+  fileName?: string;
+  lineNumber: number;
+  child?: SqlStackTrace;
+}
+
 export interface SqlOperation {
   operationKey: string;
   operationValue?: string;
+  queryHash?: string;
   startCommand: string;
   endCommand: string;
   success?: boolean;
   error?: string;
   duration: number; // TimeSpan serialized as ISO 8601 duration string
+  hasStackTrace?: boolean;
 }
 
 export interface PerformanceMetrics {

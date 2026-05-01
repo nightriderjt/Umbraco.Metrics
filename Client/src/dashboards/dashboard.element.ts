@@ -36,6 +36,7 @@ import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sidebar.modal.js";
 import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
 import { UMB_METRICS_CLEANUP_DIALOG } from "../components/cleanup-dialog.token.js";
+import { SQL_STACKTRACE_MODAL } from "../components/sql-stacktrace.modal.js";
 
 @customElement("umbmetrics-dashboard")
 export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
@@ -74,6 +75,9 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   @state()
   private _queryFilter: string = 'all'; // 'all', 'success', 'failed'
+
+  @state()
+  private _expandedGroups: Set<string> = new Set();
 
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
@@ -275,6 +279,19 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       UMB_METRICS_CLEANUP_DIALOG   
     );
   }
+
+  #openSqlStacktraceModal = async (op: any) => {
+    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    
+    modalManager?.open(
+      this, 
+      SQL_STACKTRACE_MODAL,
+      {
+        data: { operationKey: op.operationKey, operationValue: op.operationValue }
+      }
+    );
+  }
+
   #toggleAutoRefresh = async () => {
     this._autoRefresh = !this._autoRefresh;
 
@@ -828,6 +845,16 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
 
 
+  #toggleGroup = (groupKey: string) => {
+    const newSet = new Set(this._expandedGroups);
+    if (newSet.has(groupKey)) {
+      newSet.delete(groupKey);
+    } else {
+      newSet.add(groupKey);
+    }
+    this._expandedGroups = newSet;
+  };
+
   #renderDatabaseTab() {
     if (!this._performanceMetrics) {
       return html`<p>${this.localize?.term('dashboard_clickToLoadDatabase') || 'Click "Refresh Metrics" to load database operations'}</p>`;
@@ -849,22 +876,45 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       filteredOperations = filteredOperations.filter(op => !op.success);
     }
     
-    // Sort operations by duration descending (biggest duration first)
-    const sortedOperations = filteredOperations.sort((a, b) => b.durationMs - a.durationMs);
+    // Group operations by queryHash (computed on backend from SQL query text)
+    const groups = new Map<string, typeof filteredOperations>();
+    for (const op of filteredOperations) {
+      const key = op.queryHash || '__no_hash__';
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(op);
+    }
+    
+    // Sort groups by max duration descending (worst-performing query first)
+    const sortedGroups = Array.from(groups.entries())
+      .map(([hash, ops]) => ({
+        hash,
+        queryText: ops[0]?.operationValue || '(empty)',
+        operations: ops,
+        count: ops.length,
+        maxDuration: Math.max(...ops.map(o => o.durationMs)),
+        avgDuration: ops.reduce((sum, o) => sum + o.durationMs, 0) / ops.length,
+        totalDuration: ops.reduce((sum, o) => sum + o.durationMs, 0),
+        successCount: ops.filter(o => o.success).length,
+        failedCount: ops.filter(o => !o.success).length,
+      }))
+      .sort((a, b) => b.maxDuration - a.maxDuration);
     
     // Calculate statistics
-    const totalOperations = sortedOperations.length;
-    const successfulOperations = sortedOperations.filter(op => op.success).length;
+    const totalOperations = filteredOperations.length;
+    const successfulOperations = filteredOperations.filter(op => op.success).length;
     const failedOperations = totalOperations - successfulOperations;
-    const totalDuration = sortedOperations.reduce((sum, op) => sum + op.durationMs, 0);
+    const totalDuration = filteredOperations.reduce((sum, op) => sum + op.durationMs, 0);
     const avgDuration = totalOperations > 0 ? totalDuration / totalOperations : 0;
-    const maxDuration = totalOperations > 0 ? Math.max(...sortedOperations.map(op => op.durationMs)) : 0;
+    const maxDuration = totalOperations > 0 ? Math.max(...filteredOperations.map(op => op.durationMs)) : 0;
 
-    // Calculate paging
-    const totalPages = Math.ceil(totalOperations / this._itemsPerPage);
+    // Calculate paging for groups
+    const totalGroups = sortedGroups.length;
+    const totalPages = Math.ceil(totalGroups / this._itemsPerPage);
     const startIndex = (this._currentPage - 1) * this._itemsPerPage;
-    const endIndex = Math.min(startIndex + this._itemsPerPage, totalOperations);
-    const pagedOperations = sortedOperations.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + this._itemsPerPage, totalGroups);
+    const pagedGroups = sortedGroups.slice(startIndex, endIndex);
 
     // Helper methods for paging and filtering
     const goToPage = (page: number) => {
@@ -905,7 +955,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
               icon="icon-database"
               title="Total Operations"
               value="${totalOperations}"
-              detail="Last refresh"
+              detail="${this.localize?.term('dashboard_groups') || 'Groups'}: ${totalGroups}"
             ></umbmetrics-metric-card>
 
             <umbmetrics-metric-card
@@ -936,7 +986,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
         <div class="database-operations">
           <div class="operations-header">
-            <h4>SQL Operations (Sorted by Duration - Longest First)</h4>           
+            <h4>${this.localize?.term('dashboard_sqlOperationsGrouped') || 'SQL Operations (Grouped by Query)'}</h4>           
               <div class="paging-controls">
                 <div class="query-filter">
                   <label>${this.localize?.term('dashboard_filterByStatus') || 'Filter by status'}:</label>
@@ -963,12 +1013,12 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                   </select>
                 </div>
                 <div class="paging-info">
-                  ${this.localize?.term('common_showing') || 'Showing'} ${endIndex==0?0: startIndex + 1} ${this.localize?.term('common_to') || 'to'} ${endIndex} ${this.localize?.term('common_ofTotal') || 'of total'} ${totalOperations}
+                  ${this.localize?.term('common_showing') || 'Showing'} ${endIndex==0?0: startIndex + 1} ${this.localize?.term('common_to') || 'to'} ${endIndex} ${this.localize?.term('common_ofTotal') || 'of total'} ${totalGroups} ${this.localize?.term('dashboard_groups') || 'groups'}
                 </div>
               </div>           
           </div>
           
-          ${sortedOperations.length === 0 ? html`
+          ${sortedGroups.length === 0 ? html`
             <p class="no-operations">${this.localize?.term('dashboard_noData') || 'No database operations recorded'}</p>
           ` : html`
             <div class="operations-table-container">
@@ -976,47 +1026,90 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                 <table class="operations-table">
                   <thead>
                     <tr>
-                      <th>Operation</th>
-                      <th>Status</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                      <th>Duration</th>
-                      <th>Error</th>
+                      <th class="col-expand"></th>
+                      <th>${this.localize?.term('dashboard_query') || 'Query'}</th>
+                      <th>${this.localize?.term('dashboard_executions') || 'Executions'}</th>
+                      <th>${this.localize?.term('dashboard_avgDuration') || 'Avg Duration'}</th>
+                      <th>${this.localize?.term('dashboard_maxDuration') || 'Max Duration'}</th>
+                      <th>${this.localize?.term('dashboard_successRate') || 'Success Rate'}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    ${repeat(pagedOperations, (op) => op.operationKey, (op) => html`
-                      <tr>
-                        <td>
-                          <div class="operation-query" title="${op.operationValue || 'N/A'}">
-                            ${op.operationValue || 'N/A'}
-                          </div>
-                        </td>
-                        <td>
-                          ${op.success ? html`
-                            <span class="operation-success">Success</span>
-                          ` : html`
-                            <span class="operation-failure">Failed</span>
-                          `}
-                        </td>
-                        <td>
-                          ${new Date(op.startCommand).toLocaleTimeString()}
-                        </td>
-                         <td>
-                          ${new Date(op.endCommand).toLocaleTimeString()}
-                        </td>
-                        <td>
-                          <span class="operation-duration ${getDurationColor(op.duration)}">
-                            ${(op.duration.toFixed(2))} ms
-                          </span>
-                        </td>
-                        <td>
-                          ${op.error ? html`
-                            <span title="${op.error}">${op.error.substring(0, 50)}${op.error.length > 50 ? '...' : ''}</span>
-                          ` : 'N/A'}
-                        </td>
-                      </tr>
-                    `)}
+                    ${repeat(pagedGroups, (g) => g.hash, (group) => {
+                      const groupKey = group.hash;
+                      const isExpanded = this._expandedGroups.has(groupKey);
+                      const successRate = group.count > 0 ? ((group.successCount / group.count) * 100).toFixed(1) : '0.0';
+                      
+                      return html`
+                        <tr class="group-header ${isExpanded ? 'expanded' : ''}" @click="${() => this.#toggleGroup(groupKey)}">
+                          <td class="col-expand">
+                            <uui-icon name="${isExpanded ? 'icon-arrow-down' : 'icon-arrow-right'}"></uui-icon>
+                          </td>
+                          <td>
+                            <div class="group-query" title="${group.queryText}">
+                              <span class="group-query-text">${group.queryText}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="group-stat">${group.count}</span>
+                          </td>
+                          <td>
+                            <span class="operation-duration ${getDurationColor(group.avgDuration)}">
+                              ${(group.avgDuration.toFixed(2))} ms
+                            </span>
+                          </td>
+                          <td>
+                            <span class="operation-duration ${getDurationColor(group.maxDuration)}">
+                              ${(group.maxDuration.toFixed(2))} ms
+                            </span>
+                          </td>
+                          <td>
+                            <span class="group-stat ${group.failedCount > 0 ? 'operation-failure' : 'operation-success'}">
+                              ${successRate}%
+                            </span>
+                          </td>
+                        </tr>
+                        ${isExpanded ? group.operations.map(op => html`
+                          <tr class="group-child">
+                            <td class="col-expand"></td>
+                            <td>
+                              <div class="operation-query" title="${op.operationValue || 'N/A'}">
+                                ${op.operationValue || 'N/A'}
+                              </div>
+                            </td>
+                            <td>
+                              ${op.success ? html`
+                                <span class="operation-success">${this.localize?.term('common_success') || 'Success'}</span>
+                              ` : html`
+                                <span class="operation-failure">${this.localize?.term('common_failed') || 'Failed'}</span>
+                              `}
+                            </td>
+                            <td>
+                              ${new Date(op.startCommand).toLocaleTimeString()}
+                            </td>
+                            <td>
+                              <span class="operation-duration ${getDurationColor(op.duration)}">
+                                ${(op.duration.toFixed(2))} ms
+                              </span>
+                            </td>
+                            <td>
+                              ${op.hasStackTrace ? html`
+                                <uui-button
+                                  look="default"
+                                  compact
+                                  title="${this.localize?.term('sqlStacktrace_viewStackTrace') || 'View Stack Trace'}"
+                                  @click="${(e: Event) => { e.stopPropagation(); this.#openSqlStacktraceModal(op); }}"
+                                >
+                                  <uui-icon name="icon-bug"></uui-icon>
+                                </uui-button>
+                              ` : html`
+                                <span class="no-trace">&mdash;</span>
+                              `}
+                            </td>
+                          </tr>
+                        `) : ''}
+                      `;
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1083,7 +1176,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
                     type="number"
                     min="1"
                     max="${totalPages}"
-                    .value="${this._currentPage}"
+                    .value="${this._currentPage.toString()}"
                     @change="${(e: Event) => {
                       const page = parseInt((e.target as HTMLInputElement).value);
                       if (page >= 1 && page <= totalPages) {

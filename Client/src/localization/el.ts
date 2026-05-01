@@ -47,7 +47,14 @@ export default {
     "filterByStatus": "Φιλτράρισμα κατά κατάσταση",
     "allQueries": "Όλα τα Ερωτήματα",
     "successfulQueries": "Μόνο Επιτυχημένα",
-    "failedQueries": "Μόνο Αποτυχημένα"
+    "failedQueries": "Μόνο Αποτυχημένα",
+    "sqlOperationsGrouped": "Λειτουργίες SQL (Ομαδοποιημένες ανά Ερώτημα)",
+    "query": "Ερώτημα",
+    "executions": "Εκτελέσεις",
+    "avgDuration": "Μέση Διάρκεια",
+    "maxDuration": "Μέγιστη Διάρκεια",
+    "successRate": "Ποσοστό Επιτυχίας",
+    "groups": "ομάδες"
   },
 
   // Export Modal
@@ -275,6 +282,19 @@ export default {
     "retentionDaysPlaceholder": "Αριθμός ημερών",
     "days": "ημέρες",
     "customRetentionHelp": "Εισάγετε αριθμό ημερών για διατήρηση ιστορικών δεδομένων μετρικών (1-365)"
+  },
+
+  // SQL Stack Trace
+  "sqlStacktrace": {
+    "title": "Στοίβα Κλήσεων SQL",
+    "operation": "Λειτουργία",
+    "callChain": "Αλυσίδα Κλήσεων",
+    "caller": "Καλών",
+    "method": "Μέθοδος",
+    "file": "Αρχείο",
+    "line": "Γραμμή",
+    "noStackTrace": "Δεν υπάρχει διαθέσιμη στοίβα κλήσεων",
+    "viewStackTrace": "Προβολή Στοίβας Κλήσεων"
   },
 
   // Threshold Monitoring

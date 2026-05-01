@@ -286,6 +286,36 @@ export class MetricsPerformanceService {
     return await response.json();
   }
 
+  /**
+   * Fetches SQL stack trace for a specific operation
+   */
+  async getSqlStackTrace(operationId: string): Promise<any> {
+    const token = await this.#tokenProvider();
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+
+    const response = await fetch(`${this.API_BASE_URL}/sql-trace/${operationId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(
+        `Failed to fetch SQL stack trace: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  }
+
   #notifyListeners(metrics: PerformanceMetrics): void {
     this.#listeners.forEach(listener => {
       try {

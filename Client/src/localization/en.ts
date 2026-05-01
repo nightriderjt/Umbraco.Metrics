@@ -45,7 +45,14 @@ export default {
     "filterByStatus": "Filter by status",
     "allQueries": "All Queries",
     "successfulQueries": "Successful Only",
-    "failedQueries": "Failed Only"
+    "failedQueries": "Failed Only",
+    "sqlOperationsGrouped": "SQL Operations (Grouped by Query)",
+    "query": "Query",
+    "executions": "Executions",
+    "avgDuration": "Avg Duration",
+    "maxDuration": "Max Duration",
+    "successRate": "Success Rate",
+    "groups": "groups"
   },
 
   // Export Modal
@@ -273,6 +280,19 @@ export default {
     "retentionDaysPlaceholder": "Number of days",
     "days": "days",
     "customRetentionHelp": "Enter number of days to keep historical metrics data (1-365)"
+  },
+
+  // SQL Stack Trace
+  "sqlStacktrace": {
+    "title": "SQL Stack Trace",
+    "operation": "Operation",
+    "callChain": "Call Chain",
+    "caller": "Caller",
+    "method": "Method",
+    "file": "File",
+    "line": "Line",
+    "noStackTrace": "No stack trace available",
+    "viewStackTrace": "View Stack Trace"
   },
 
   // Threshold Monitoring
