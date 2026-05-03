@@ -23,9 +23,13 @@ export interface MediaStatistics {
 }
 
 export interface CacheStatistics {
-  runtimeCacheCount: number;
+  memoryCacheEntryCount: number;
+  totalCacheHits: number;
+  totalCacheMisses: number;
+  cacheHitRatio: number;
   nuCacheCount: number;
-  requestCacheHitRatio: number;
+  nuCacheSizeBytes: number;
+  nuCacheSizeMB: number;
   totalCacheSize: string;
 }
 

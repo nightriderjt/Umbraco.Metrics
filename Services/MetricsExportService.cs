@@ -238,8 +238,8 @@ public class MetricsExportService : IMetricsExportService
         csvBuilder.AppendLine($"Media,Media Types,{metrics.MediaStatistics.MediaTypeCount},");
 
         // Cache Statistics
-        csvBuilder.AppendLine($"Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
-        csvBuilder.AppendLine($"Cache,Runtime Cache Size,{metrics.CacheStatistics.RuntimeCacheSizeMB:F2},MB");
+        csvBuilder.AppendLine($"Cache,Memory Cache Entries,{metrics.CacheStatistics.MemoryCacheEntryCount},");
+        csvBuilder.AppendLine($"Cache,Cache Hit Ratio,{metrics.CacheStatistics.CacheHitRatio:P2},");
         csvBuilder.AppendLine($"Cache,NuCache Items,{metrics.CacheStatistics.NuCacheCount},");
         csvBuilder.AppendLine($"Cache,NuCache Size,{metrics.CacheStatistics.NuCacheSizeMB:F2},MB");
         csvBuilder.AppendLine($"Cache,Total Cache Size,{metrics.CacheStatistics.TotalCacheSize},");
@@ -289,7 +289,7 @@ public class MetricsExportService : IMetricsExportService
 
         csvBuilder.AppendLine($"Umbraco,Content,Total Nodes,{metrics.ContentStatistics.TotalContentNodes},");
         csvBuilder.AppendLine($"Umbraco,Media,Total Items,{metrics.MediaStatistics.TotalMediaItems},");
-        csvBuilder.AppendLine($"Umbraco,Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
+        csvBuilder.AppendLine($"Umbraco,Cache,Memory Cache Entries,{metrics.CacheStatistics.MemoryCacheEntryCount},");
         csvBuilder.AppendLine($"Umbraco,Users,Total Users,{metrics.BackofficeUsers.TotalUsers},");
     }
 
@@ -301,7 +301,7 @@ public class MetricsExportService : IMetricsExportService
         var headers = properties.Select(p => p.Name);
         csvBuilder.AppendLine(string.Join(",", headers));
 
-        // Data row
+        // Data rowa
         var values = properties.Select(p =>
         {
             var value = p.GetValue(data);

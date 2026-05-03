@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,12 @@ public class MetricsComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
+        // Enable MemoryCache statistics tracking so GetCurrentStatistics() returns data
+        builder.Services.AddOptions<MemoryCacheOptions>().Configure(x =>
+        {
+            x.TrackStatistics = true;          
+        });
+
         // Register metrics service
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();         
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
@@ -41,7 +48,7 @@ public class MetricsComposer : IComposer
             builder.Services.AddHostedService<SqlTrackingBootstrapper>();
         }      
         var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-
+       
 
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {

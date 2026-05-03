@@ -140,6 +140,8 @@ export default {
     "activeRequests": "Active Requests",
     "totalContentNodes": "Total Content Nodes",
     "totalMediaItems": "Total Media Items",
+    "memoryCacheEntries": "Memory Cache Entries",
+    "cacheHitRatio": "Cache Hit Ratio",
     "runtimeCacheItems": "Runtime Cache Items",
     "totalUsers": "Total Users",
     "processId": "Process ID",

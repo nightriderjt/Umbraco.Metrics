@@ -142,6 +142,8 @@ export default {
     "activeRequests": "Ενεργές Αιτήσεις",
     "totalContentNodes": "Συνολικοί Κόμβοι Περιεχομένου",
     "totalMediaItems": "Συνολικά Αντικείμενα Πολυμέσων",
+    "memoryCacheEntries": "Καταχωρήσεις Cache Μνήμης",
+    "cacheHitRatio": "Αναλογία Επιτυχιών Cache",
     "runtimeCacheItems": "Αντικείμενα Cache Εκτέλεσης",
     "totalUsers": "Συνολικοί Χρήστες",
     "processId": "ID Διεργασίας",

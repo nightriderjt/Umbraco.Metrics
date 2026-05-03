@@ -556,7 +556,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     ];
 
     const cacheStats: StatRow[] = [
-      { label: 'Runtime Cache', value: `${formatNumber(m.cacheStatistics.runtimeCacheCount)} items` },
+      { label: 'Memory Cache', value: `${formatNumber(m.cacheStatistics.memoryCacheEntryCount)} entries` },
+      { label: 'Cache Hit Ratio', value: `${(m.cacheStatistics.cacheHitRatio * 100).toFixed(1)}%` },
       { label: 'NuCache', value: `${formatNumber(m.cacheStatistics.nuCacheCount)} items` },
       { label: 'Total Size', value: m.cacheStatistics.totalCacheSize },
     ];
