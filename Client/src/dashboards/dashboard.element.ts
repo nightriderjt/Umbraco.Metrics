@@ -148,8 +148,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       } else {
         await Promise.all([
           this.#loadPerformanceMetrics(),
-          this.#loadUmbracoMetrics(),
-          this.#loadDeliveryPulseMetrics()
+          this.#loadUmbracoMetrics()        
         ]);
       }
       buttonElement.state = "success";
@@ -168,6 +167,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
     try {
       this._performanceMetrics = await this.#metricsService.getPerformanceMetrics();
       // Reset paging when new data is loaded
+      this._deliveryPulseMetrics=this._performanceMetrics.deliveryPulse;
       this._currentPage = 1;
     } catch (error) {
       console.error("Error loading performance metrics:", error);
@@ -349,6 +349,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
       this.#unsubscribe = this.#metricsService.onMetricsUpdate((metrics) => {
         this._performanceMetrics = metrics;
+        this._deliveryPulseMetrics = metrics.deliveryPulse;
         this._isConnected = true;
       });
 
@@ -889,7 +890,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             <uui-button 
               look="primary" 
               color="positive"
-              @click="${this.#onClickRefreshMetrics}"
+              @click="${this.#loadDeliveryPulseMetrics}"
             >
               <uui-icon name="icon-refresh"></uui-icon>
               ${this.localize?.term('common_refresh') || 'Refresh'}
