@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,13 +46,12 @@ public class MetricsComposer : IComposer
         {
             builder.Services.AddHostedService<SqlTrackingBootstrapper>();
         }      
-        var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-       
+        var contentRootPath = AppContext.BaseDirectory;
 
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
             // Configure default options
-            options.StoragePath = Path.Combine(environment.ContentRootPath, "umbraco/Data/TEMP/MetricsHistory");
+            options.StoragePath = Path.Combine(contentRootPath, "umbraco/Data/TEMP/MetricsHistory");
             options.SaveIntervalSeconds = 5;
             options.RetentionDays = 30;
             options.MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
