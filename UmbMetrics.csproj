@@ -33,7 +33,6 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Reflection.Metadata" Version="10.0.7" />
     <PackageReference Include="Umbraco.Cms.Core" Version="17.3.4" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="17.3.4" />
     <PackageReference Include="Umbraco.Cms.Api.Common" Version="17.3.4" />
