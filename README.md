@@ -105,7 +105,31 @@ public class CustomMetricsComposer : IComposer
 }
 ```
 
-### Step 3: Access the Dashboard
+### Step 3: Configure Delivery Pulse (Optional)
+
+If you want to monitor Umbraco Delivery API performance, add the Delivery Pulse configuration to your `appsettings.json` under the `umbMetrics` section:
+
+```json
+{
+  "umbMetrics": {    
+    "DeliveryPulse": {
+      "EnableDeliveryPulse": true,
+      "TrackRequestSizes": false,
+      "MaxTrackedEndpoints": 100
+    }
+  }
+}
+```
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `EnableDeliveryPulse` | bool | `false` | Enable/disable Delivery API request tracking |
+| `TrackRequestSizes` | bool | `false` | Capture request/response body sizes (adds overhead) |
+| `MaxTrackedEndpoints` | int | `100` | Maximum number of unique endpoints to track |
+
+When enabled, the Delivery Pulse middleware intercepts requests to `/umbraco/delivery/api/v1/` and logs per-endpoint performance data including request count, latency, errors, and 404s. The data is available in the **Delivery Pulse** tab of the UmbMetrics dashboard.
+
+### Step 4: Access the Dashboard
 
 After installation and configuration, restart your Umbraco site and navigate to the **UmbMetrics** section in your Umbraco backoffice to access your monitoring dashboard.
 
