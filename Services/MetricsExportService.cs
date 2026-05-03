@@ -27,36 +27,28 @@ public class MetricsExportService : IMetricsExportService
 
     public async Task<ExportResult> ExportMetricsAsync(ExportOptions options)
     {
-        try
+        // Check if this is a historical export
+        if (options.Scope == ExportScope.Historical || options.Scope == ExportScope.Custom)
         {
-            // Check if this is a historical export
-            if (options.Scope == ExportScope.Historical || options.Scope == ExportScope.Custom)
-            {
-                return await _historicalExportService.ExportHistoricalMetricsAsync(options);
-            }
-
-            // Current snapshot export
-            if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
-            {
-                return await ExportCombinedMetricsAsync(options);
-            }
-            else if (options.IncludePerformanceMetrics)
-            {
-                return await ExportPerformanceMetricsAsync(options);
-            }
-            else if (options.IncludeUmbracoMetrics)
-            {
-                return await ExportUmbracoMetricsAsync(options);
-            }
-            else
-            {
-                throw new ArgumentException("At least one metric type must be selected for export");
-            }
+            return await _historicalExportService.ExportHistoricalMetricsAsync(options);
         }
-        catch (Exception ex)
+
+        // Current snapshot export
+        if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
         {
-            _logger.LogError(ex, "Error exporting metrics");
-            throw;
+            return await ExportCombinedMetricsAsync(options);
+        }
+        else if (options.IncludePerformanceMetrics)
+        {
+            return await ExportPerformanceMetricsAsync(options);
+        }
+        else if (options.IncludeUmbracoMetrics)
+        {
+            return await ExportUmbracoMetricsAsync(options);
+        }
+        else
+        {
+            throw new ArgumentException("At least one metric type must be selected for export");
         }
     }
 

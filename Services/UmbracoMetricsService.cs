@@ -27,24 +27,16 @@ public class UmbracoMetricsService : IUmbracoMetricsService
 
     public async Task<UmbracoMetrics> GetMetricsAsync()
     {
-        try
+        var metrics = new UmbracoMetrics
         {
-            var metrics = new UmbracoMetrics
-            {
-                Timestamp = DateTime.UtcNow,
-                ContentStatistics = await GetContentStatisticsAsync(),
-                MediaStatistics = await GetMediaStatisticsAsync(),
-                CacheStatistics = GetCacheStatistics(),
-                BackofficeUsers = await GetBackofficeUserInfoAsync()
-            };
+            Timestamp = DateTime.UtcNow,
+            ContentStatistics = await GetContentStatisticsAsync(),
+            MediaStatistics = await GetMediaStatisticsAsync(),
+            CacheStatistics = GetCacheStatistics(),
+            BackofficeUsers = await GetBackofficeUserInfoAsync()
+        };
 
-            return metrics;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving Umbraco metrics");
-            throw;
-        }
+        return metrics;
     }
 
     private CacheStatistics GetCacheStatistics()

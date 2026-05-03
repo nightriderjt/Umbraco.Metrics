@@ -25,27 +25,19 @@ public class PerformanceMetricsService : IPerformanceMetricsService
 
     public async Task<PerformanceMetrics> GetMetricsAsync()
     {
-        try
+        var metrics = new PerformanceMetrics
         {
-            var metrics = new PerformanceMetrics
-            {
-                Timestamp = DateTime.UtcNow,
-                CpuUsage = await GetCpuUsageAsync(),
-                MemoryUsage = GetMemoryUsage(),
-                ThreadInfo = GetThreadInfo(),
-                GarbageCollectionStats = GetGarbageCollectionStats(),
-                RequestMetrics = GetRequestMetrics(),
-                ApplicationInfo = GetApplicationInfo(),
-                SqlOperations = SqlOperations.Values.ToList() ?? []
-            };
+            Timestamp = DateTime.UtcNow,
+            CpuUsage = await GetCpuUsageAsync(),
+            MemoryUsage = GetMemoryUsage(),
+            ThreadInfo = GetThreadInfo(),
+            GarbageCollectionStats = GetGarbageCollectionStats(),
+            RequestMetrics = GetRequestMetrics(),
+            ApplicationInfo = GetApplicationInfo(),
+            SqlOperations = SqlOperations.Values.ToList() ?? []
+        };
 
-            return metrics;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving performance metrics");
-            throw;
-        }
+        return metrics;
     }
 
     private async Task<double> GetCpuUsageAsync()
