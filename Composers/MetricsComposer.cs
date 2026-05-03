@@ -60,13 +60,22 @@ public class MetricsComposer : IComposer
         });
 
         // Register email notification settings configuration
-        builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection("UmbMetrics:EmailNotifications"));
+        builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection(EmailNotificationSettings.SectionName));
 
         // Register threshold rules configuration
-        builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection("UmbMetrics:ThresholdRules"));
+        builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection(ThresholdRulesSettings.SectionName));
 
         builder.Services.AddSignalR();
 
+
+        // Register Delivery Pulse services
+        var enableDeliveryPulse = builder.Config.GetValue<bool?>("UmbMetrics:DeliveryPulse:EnableDeliveryPulse") ?? false;
+        if (enableDeliveryPulse)
+        {
+            builder.Services.Configure<DeliveryPulseOptions>(builder.Config.GetSection(DeliveryPulseOptions.SectionName));
+            builder.Services.AddSingleton<IDeliveryPulseMetricsService, DeliveryPulseMetricsService>();      
+        }
+      
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
@@ -99,6 +108,10 @@ public class MetricsComposer : IComposer
                 applicationBuilder =>
                 {
                     applicationBuilder.UseMiddleware<MetricsMiddleware>();
+                    if (enableDeliveryPulse)
+                    {
+                        applicationBuilder.UseMiddleware<DeliveryPulseMiddleware>();
+                    }                 
                 },
                 applicationBuilder => { },
                 applicationBuilder => { }

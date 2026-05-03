@@ -25,6 +25,7 @@ public class MetricsApiController : ManagementApiControllerBase
     private readonly IHistoricalMetricsService _historicalMetricsService;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IMetricsCleanUpService _metricsCleanUpService;
+    private readonly IDeliveryPulseMetricsService? _deliveryPulseMetricsService;
 
     public MetricsApiController(
         IPerformanceMetricsService metricsService,
@@ -32,7 +33,8 @@ public class MetricsApiController : ManagementApiControllerBase
         IMetricsExportService exportService,
         IHistoricalMetricsService historicalMetricsService,
         IWebHostEnvironment webHostEnvironment,
-        IMetricsCleanUpService metricsCleanUpService)
+        IMetricsCleanUpService metricsCleanUpService,
+        IDeliveryPulseMetricsService? deliveryPulseMetricsService=null)
     {
         _metricsService = metricsService;
         _umbracoMetricsService = umbracoMetricsService;
@@ -40,6 +42,7 @@ public class MetricsApiController : ManagementApiControllerBase
         _historicalMetricsService = historicalMetricsService;
         _webHostEnvironment = webHostEnvironment;
         _metricsCleanUpService = metricsCleanUpService;
+        _deliveryPulseMetricsService = deliveryPulseMetricsService;
     }
 
     /// <summary>
@@ -356,6 +359,29 @@ public class MetricsApiController : ManagementApiControllerBase
         {
             return Problem(
                 title: "Failed to save metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Gets Delivery Pulse metrics for the Delivery API
+    /// </summary>
+    [HttpGet("delivery-pulse")]
+    [ProducesResponseType(typeof(DeliveryPulseMetrics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public IActionResult GetDeliveryPulseMetrics()
+    {
+        try
+        {
+            var metrics = _deliveryPulseMetricsService?.GetMetrics() ?? new DeliveryPulseMetrics();
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve Delivery Pulse metrics",
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError
             );

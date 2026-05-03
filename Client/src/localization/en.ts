@@ -52,7 +52,27 @@ export default {
     "avgDuration": "Avg Duration",
     "maxDuration": "Max Duration",
     "successRate": "Success Rate",
-    "groups": "groups"
+    "groups": "groups",
+    "deliveryPulse": "Delivery Pulse",
+    "clickToLoadDeliveryPulse": "Click \"Refresh Metrics\" to load Delivery API performance data"
+  },
+
+  // Delivery Pulse
+  "deliveryPulse": {
+    "totalRequests": "Total Requests",
+    "sinceStartup": "Since startup",
+    "errors": "Errors",
+    "5xxResponses": "5xx responses",
+    "404s": "404 Not Found",
+    "notFoundCount": "Not found responses",
+    "avgLatency": "Avg Latency",
+    "maxLatency": "Max Latency",
+    "topEndpoints": "Top Endpoints",
+    "noEndpoints": "No Delivery API requests recorded yet",
+    "path": "Path",
+    "method": "Method",
+    "requests": "Requests",
+    "lastAccessed": "Last Accessed"
   },
 
   // Export Modal

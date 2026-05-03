@@ -17,6 +17,7 @@ import type { UmbAuthContext } from "@umbraco-cms/backoffice/auth";
 import { MetricsPerformanceService } from "../services/metrics-performance.service.js";
 import { ThresholdService } from "../services/threshold.service.js";
 import type { PerformanceMetrics } from "../types/performance-metrics.js";
+import type { DeliveryPulseMetrics } from "../types/delivery-pulse-metrics.js";
 import type { UmbracoMetrics } from "../types/umbraco-metrics.js";
 import type { 
   ThresholdAlert, 
@@ -57,6 +58,9 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
   @state()
   private _umbracoMetrics?: UmbracoMetrics;
+
+  @state()
+  private _deliveryPulseMetrics?: DeliveryPulseMetrics;
 
   @state()
   private _thresholdAlerts: ThresholdAlert[] = [];
@@ -144,7 +148,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       } else {
         await Promise.all([
           this.#loadPerformanceMetrics(),
-          this.#loadUmbracoMetrics()
+          this.#loadUmbracoMetrics(),
+          this.#loadDeliveryPulseMetrics()
         ]);
       }
       buttonElement.state = "success";
@@ -178,6 +183,29 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
       }
     }
   };
+
+  async #loadDeliveryPulseMetrics() {
+    if (!this.#metricsService) {
+      console.error('Metrics service not initialized');
+      return;
+    }
+
+    try {
+      this._deliveryPulseMetrics = await this.#metricsService.getDeliveryPulseMetrics();
+    } catch (error) {
+      console.error("Error loading delivery pulse metrics:", error);
+      if (this.#notificationContext) {
+        this.#notificationContext.peek("danger", {
+          data: {
+            headline: "Error",
+            message: error instanceof Error 
+              ? error.message 
+              : "Failed to load delivery pulse metrics",
+          },
+        });
+      }
+    }
+  }
 
   async #loadUmbracoMetrics() {
     if (!this.#metricsService) {
@@ -846,6 +874,134 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
 
 
 
+  #renderDeliveryPulseTab() {
+    if (!this._deliveryPulseMetrics) {
+      return html`<p>${this.localize?.term('dashboard_clickToLoadDeliveryPulse') || 'Click "Refresh Metrics" to load Delivery API performance data'}</p>`;
+    }
+
+    const m = this._deliveryPulseMetrics;
+
+    return html`
+      <div class="database-tab">
+        <div class="database-header">
+          <h3>${this.localize?.term('dashboard_deliveryPulse') || 'Delivery Pulse'}</h3>
+          <div class="database-controls">
+            <uui-button 
+              look="primary" 
+              color="positive"
+              @click="${this.#onClickRefreshMetrics}"
+            >
+              <uui-icon name="icon-refresh"></uui-icon>
+              ${this.localize?.term('common_refresh') || 'Refresh'}
+            </uui-button>
+          </div>
+        </div>
+
+        <div class="database-stats">
+          <umbmetrics-metrics-grid columns="4">
+            <umbmetrics-metric-card
+              icon="icon-nodes"
+              title="${this.localize?.term('deliveryPulse_totalRequests') || 'Total Requests'}"
+              value="${m.totalRequests}"
+              detail="${this.localize?.term('deliveryPulse_sinceStartup') || 'Since startup'}"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-alert"
+              title="${this.localize?.term('deliveryPulse_errors') || 'Errors'}"
+              value="${m.totalErrors}"
+              detail="${this.localize?.term('deliveryPulse_5xxResponses') || '5xx responses'}"
+              color="${m.totalErrors > 0 ? 'danger' : 'positive'}"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-wrong"
+              title="${this.localize?.term('deliveryPulse_404s') || '404 Not Found'}"
+              value="${m.total404s}"
+              detail="${this.localize?.term('deliveryPulse_notFoundCount') || 'Not found responses'}"
+              color="${m.total404s > 0 ? 'warning' : 'positive'}"
+            ></umbmetrics-metric-card>
+
+            <umbmetrics-metric-card
+              icon="icon-timer"
+              title="${this.localize?.term('deliveryPulse_avgLatency') || 'Avg Latency'}"
+              value="${m.averageLatencyMs.toFixed(1)} ms"
+              detail="${this.localize?.term('deliveryPulse_maxLatency') || 'Max'}: ${m.maxLatencyMs.toFixed(1)} ms"
+              color="${getDurationColor(m.averageLatencyMs)}"
+            ></umbmetrics-metric-card>
+          </umbmetrics-metrics-grid>
+        </div>
+
+        <div class="delivery-pulse-endpoints">
+          <h4>${this.localize?.term('deliveryPulse_topEndpoints') || 'Top Endpoints'}</h4>
+          
+          ${m.topEndpoints.length === 0 ? html`
+            <p class="no-endpoints">${this.localize?.term('deliveryPulse_noEndpoints') || 'No Delivery API requests recorded yet'}</p>
+          ` : html`
+            <div class="endpoints-table-container">
+              <div class="endpoints-table-wrapper">
+                <table class="endpoints-table">
+                  <thead>
+                    <tr>
+                      <th>${this.localize?.term('deliveryPulse_path') || 'Path'}</th>
+                      <th>${this.localize?.term('deliveryPulse_method') || 'Method'}</th>
+                      <th>${this.localize?.term('deliveryPulse_requests') || 'Requests'}</th>
+                      <th>${this.localize?.term('deliveryPulse_avgLatency') || 'Avg Latency'}</th>
+                      <th>${this.localize?.term('deliveryPulse_maxLatency') || 'Max Latency'}</th>
+                      <th>${this.localize?.term('deliveryPulse_errors') || 'Errors'}</th>
+                      <th>${this.localize?.term('deliveryPulse_404s') || '404s'}</th>
+                      <th>${this.localize?.term('deliveryPulse_lastAccessed') || 'Last Accessed'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${repeat(m.topEndpoints, (ep) => ep.path + ep.method, (ep) => html`
+                      <tr>
+                        <td>
+                          <div class="endpoint-path" title="${ep.path}">
+                            <span class="endpoint-path-text">${ep.path}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="endpoint-method method-${ep.method.toLowerCase()}">${ep.method}</span>
+                        </td>
+                        <td>
+                          <span class="endpoint-stat">${ep.requestCount}</span>
+                        </td>
+                        <td>
+                          <span class="endpoint-duration ${getDurationColor(ep.averageLatencyMs)}">
+                            ${ep.averageLatencyMs.toFixed(1)} ms
+                          </span>
+                        </td>
+                        <td>
+                          <span class="endpoint-duration ${getDurationColor(ep.maxLatencyMs)}">
+                            ${ep.maxLatencyMs.toFixed(1)} ms
+                          </span>
+                        </td>
+                        <td>
+                          <span class="endpoint-stat ${ep.errorCount > 0 ? 'stat-error' : 'stat-ok'}">
+                            ${ep.errorCount}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="endpoint-stat ${ep.notFoundCount > 0 ? 'stat-warning' : 'stat-ok'}">
+                            ${ep.notFoundCount}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="endpoint-time">${new Date(ep.lastAccessed).toLocaleString()}</span>
+                        </td>
+                      </tr>
+                    `)}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
   #toggleGroup = (groupKey: string) => {
     const newSet = new Set(this._expandedGroups);
     if (newSet.has(groupKey)) {
@@ -1203,6 +1359,8 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         return this.#renderHeapTab();
       case 'umbraco':
         return this.#renderUmbracoTab();
+      case 'deliveryPulse':
+        return this.#renderDeliveryPulseTab();
       case 'database':
         return this.#renderDatabaseTab();
       case 'thresholds':
@@ -1255,6 +1413,13 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
             @click="${() => this.#switchTab('heap')}"
           >
             <uui-icon name="icon-box"></uui-icon> ${this.localize?.term('dashboard_heapAndGC') || 'Heap & GC'}
+          </uui-button>
+          <uui-button 
+            look="${this._activeTab === 'deliveryPulse' ? 'primary' : 'default'}"
+            color="${this._activeTab === 'deliveryPulse' ? 'positive' : 'default'}"
+            @click="${() => this.#switchTab('deliveryPulse')}"
+          >
+            <uui-icon name="icon-nodes"></uui-icon> ${this.localize?.term('dashboard_deliveryPulse') || 'Delivery Pulse'}
           </uui-button>
           <uui-button 
             look="${this._activeTab === 'database' ? 'primary' : 'default'}"

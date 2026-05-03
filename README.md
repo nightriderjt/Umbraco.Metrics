@@ -54,13 +54,16 @@ Once installed, UmbMetrics adds a dedicated **UmbMetrics** section to your Umbra
 
 > **Note:** The dashboard has moved from the Settings section to its own backoffice section. Ensure your backoffice user has the appropriate Umbraco permissions to access the new section.
 
-### Two Views, Complete Picture
+### Three Views, Complete Picture
 
 **Overview Dashboard**
 Get a bird's-eye view of your application: CPU, memory, requests, threads, and timing - everything you need to assess overall health in seconds.
 
 **Heap & Garbage Collection**
 Deep dive into .NET's memory management: see how the garbage collector is performing, understand memory allocation patterns, and identify potential memory leaks.
+
+**Delivery Pulse**
+Monitor your Umbraco Delivery API performance in real-time. Track per-endpoint latency, error rates, 404 counts, and optionally request/response body sizes. The Delivery Pulse tab sits between Heap & GC and Database tabs for easy access.
 
 ## Requirements
 

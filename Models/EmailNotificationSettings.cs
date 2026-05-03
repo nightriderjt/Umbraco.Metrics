@@ -2,6 +2,7 @@ namespace UmbMetrics.Models;
 
 public class EmailNotificationSettings
 {
+    public const string SectionName = "UmbMetrics:EmailNotifications";
     // Sender Information (optional - can use Umbraco's default sender)
     public string FromAddress { get; set; } = string.Empty;
     public string FromName { get; set; } = "Umbraco Metrics";

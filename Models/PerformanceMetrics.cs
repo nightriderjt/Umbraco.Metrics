@@ -10,4 +10,5 @@ public class PerformanceMetrics
     public RequestMetrics RequestMetrics { get; set; } = new();
     public ApplicationInfo ApplicationInfo { get; set; } = new();
     public List<SqlOperation> SqlOperations { get; set; } = [];
+    public DeliveryPulseMetrics? DeliveryPulse { get; set; }
 }

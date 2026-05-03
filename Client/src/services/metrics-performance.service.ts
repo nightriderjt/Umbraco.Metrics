@@ -1,5 +1,6 @@
 import type { PerformanceMetrics } from '../types/performance-metrics.js';
 import type { ActiveRequestInfo } from '../types/active-request.js';
+import type { DeliveryPulseMetrics } from '../types/delivery-pulse-metrics.js';
 import * as signalR from '@microsoft/signalr';
 import { UmbracoMetrics } from '../types/umbraco-metrics.js';
 
@@ -310,6 +311,37 @@ export class MetricsPerformanceService {
       }
       throw new Error(
         `Failed to fetch SQL stack trace: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Fetches Delivery Pulse metrics from the server
+   */
+  async getDeliveryPulseMetrics(): Promise<DeliveryPulseMetrics> {
+    const token = await this.#tokenProvider();
+
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+
+    const response = await fetch(`${this.API_BASE_URL}/delivery-pulse`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Unauthorized: Please ensure you are logged into the Umbraco backoffice');
+      }
+
+      throw new Error(
+        `Failed to fetch Delivery Pulse metrics: ${response.status} ${response.statusText}`
       );
     }
 
