@@ -100,6 +100,8 @@ public class MetricsApiController : ManagementApiControllerBase
     }
 
     [HttpGet("umb")]
+    [ProducesResponseType(typeof(UmbracoMetrics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetUmbracoMetrics()
     {
         try
@@ -109,7 +111,11 @@ public class MetricsApiController : ManagementApiControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return Problem(
+                title: "Failed to retrieve Umbraco metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
         }
     }
 
