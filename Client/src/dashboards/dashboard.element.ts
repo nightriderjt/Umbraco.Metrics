@@ -5,10 +5,8 @@ import {
   html,
   customElement,
   state,
-  repeat,
 } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
-import { UUIButtonElement } from "@umbraco-cms/backoffice/external/uui";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
 import { UMB_CURRENT_USER_CONTEXT, UmbCurrentUserModel } from "@umbraco-cms/backoffice/current-user";
 import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
@@ -21,15 +19,13 @@ import type { DeliveryPulseMetrics } from "../types/delivery-pulse-metrics.js";
 import type { UmbracoMetrics } from "../types/umbraco-metrics.js";
 import type { 
   ThresholdAlert, 
-  ThresholdAlertStats
+  ThresholdAlertStats,
+  AcknowledgeAlertRequest
 } from "../types/threshold-models.js";
 
-import type { StatRow } from "../components/stat-card.element.js";
-import { getStatusColor, formatNumber,   getDurationColor } from "../utils/format-utils.js";
 import "../components/app-info-banner.element.js";
 import "../components/metric-card.element.js";
 import "../components/metrics-grid.element.js";
-import "../components/stat-card.element.js";
 import "../components/active-requests-sidebar.element.js";
 import "../components/export-modal.element.js";
 import stylesString from '../css/dashboard.element.css?inline';
@@ -38,6 +34,15 @@ import { ACTIVE_REQUESTS_SIDEBAR_MODAL } from "../components/active-requests-sid
 import { UMB_METRICS_EXPORT_MODAL } from "../components/export-modal.token.js";
 import { UMB_METRICS_CLEANUP_DIALOG } from "../components/cleanup-dialog.token.js";
 import { SQL_STACKTRACE_MODAL } from "../components/sql-stacktrace.modal.js";
+
+// Import tab components
+import "./tabs/overview-tab.element.js";
+import "./tabs/heap-tab.element.js";
+import "./tabs/umbraco-tab.element.js";
+import "./tabs/delivery-pulse-tab.element.js";
+import "./tabs/database-tab.element.js";
+import "./tabs/thresholds-tab.element.js";
+import "./tabs/utils-tab.element.js";
 
 @customElement("umbmetrics-dashboard")
 export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
@@ -71,18 +76,6 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
   @state()
   private _loadingAlerts: boolean = false;
 
-  @state()
-  private _currentPage: number = 1;
-
-  @state()
-  private _itemsPerPage: number = 10;
-
-  @state()
-  private _queryFilter: string = 'all'; // 'all', 'success', 'failed'
-
-  @state()
-  private _expandedGroups: Set<string> = new Set();
-
   #notificationContext?: typeof UMB_NOTIFICATION_CONTEXT.TYPE;
   #authContext?: UmbAuthContext;
   #metricsService?: MetricsPerformanceService;
@@ -102,1274 +95,246 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
         (currentUser) => {
           this._contextCurrentUser = currentUser;
         },
-        "_contextCurrentUser"
+        "currentUserObserver"
       );
     });
 
+
     this.consumeContext(UMB_AUTH_CONTEXT, (authContext) => {
       this.#authContext = authContext;
-      
-      this.#metricsService = new MetricsPerformanceService(async () => {
-        const token = await this.#authContext?.getLatestToken();
-        if (!token) {
-          throw new Error('No authentication token available');
-        }
-        return token;
-      });
-
-      this.#thresholdService = new ThresholdService(async () => {
-        const token = await this.#authContext?.getLatestToken();
-        if (!token) {
-          throw new Error('No authentication token available');
-        }
-        return token;
-      });
     });
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.#initServices();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.#stopAutoRefresh();
+    this.#unsubscribe?.();
   }
 
-  #onClickRefreshMetrics = async (ev: Event) => {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      return;
-    }
+  async #initServices() {
+    if (!this.#authContext) return;
+    const tokenProvider = async () => {
+      const token = await this.#authContext?.getLatestToken();
+      if (!token) throw new Error('No authentication token available');
+      return token;
+    };
+    this.#metricsService = new MetricsPerformanceService(tokenProvider);
+    this.#thresholdService = new ThresholdService(tokenProvider);
+  }
 
-    const buttonElement = ev.target as UUIButtonElement;
-    buttonElement.state = "waiting";
-
+  async #loadPerformanceMetrics() {
+    if (!this.#metricsService) return;
     try {
-      if (this._autoRefresh && this.#metricsService.isConnected) {
-        await this.#metricsService.requestMetrics();
-        this.#loadUmbracoMetrics();
-      } else {
-        await Promise.all([
-          this.#loadPerformanceMetrics(),
-          this.#loadUmbracoMetrics()        
-        ]);
-      }
-      buttonElement.state = "success";
+      const metrics = await this.#metricsService.getPerformanceMetrics();
+      this._performanceMetrics = metrics;
+      this._deliveryPulseMetrics = metrics.deliveryPulse ?? undefined;
     } catch (error) {
-      console.error('Error refreshing metrics:', error);
-      buttonElement.state = "failed";
-    }
-  };
-
-  #loadPerformanceMetrics = async () => {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      return;
-    }
-
-    try {
-      this._performanceMetrics = await this.#metricsService.getPerformanceMetrics();
-      // Reset paging when new data is loaded
-      this._deliveryPulseMetrics=this._performanceMetrics.deliveryPulse;
-      this._currentPage = 1;
-    } catch (error) {
-      console.error("Error loading performance metrics:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: "Error",
-            message: error instanceof Error 
-              ? error.message 
-              : "Failed to load performance metrics",
-          },
-        });
-      }
-    }
-  };
-
-  async #loadDeliveryPulseMetrics() {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      return;
-    }
-
-    try {
-      this._deliveryPulseMetrics = await this.#metricsService.getDeliveryPulseMetrics();
-    } catch (error) {
-      console.error("Error loading delivery pulse metrics:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: "Error",
-            message: error instanceof Error 
-              ? error.message 
-              : "Failed to load delivery pulse metrics",
-          },
-        });
-      }
+      console.error("Failed to load performance metrics:", error);
+      this.#notificationContext?.peek("danger", {
+        data: { message: "Failed to load performance metrics" },
+      });
     }
   }
 
   async #loadUmbracoMetrics() {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      return;
-    }
-
+    if (!this.#metricsService) return;
     try {
       this._umbracoMetrics = await this.#metricsService.getUmbracoMetrics();
     } catch (error) {
-      console.error("Error loading Umbraco metrics:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: "Error",
-            message: error instanceof Error 
-              ? error.message 
-              : "Failed to load Umbraco metrics",
-          },
-        });
-      }
+      console.error("Failed to load Umbraco metrics:", error);
+      this.#notificationContext?.peek("danger", {
+        data: { message: "Failed to load Umbraco metrics" },
+      });
     }
   }
 
   async #loadThresholdAlerts() {
-    if (!this.#thresholdService) {
-      console.error('Threshold service not initialized');
-      return;
-    }
-
+    if (!this.#thresholdService) return;
     this._loadingAlerts = true;
     try {
-      this._thresholdAlerts = await this.#thresholdService.getActiveAlerts();
+      const [alerts, stats] = await Promise.all([
+        this.#thresholdService.getActiveAlerts(),
+        this.#thresholdService.getAlertStats(),
+      ]);
+      this._thresholdAlerts = alerts;
+      this._alertStats = stats;
     } catch (error) {
-      console.error("Error loading threshold alerts:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: this.localize?.term('threshold_errorLoadingAlerts') || "Error Loading Alerts",
-            message: error instanceof Error 
-              ? error.message 
-              : this.localize?.term('threshold_errorLoadingAlerts') || "Failed to load threshold alerts",
-          },
-        });
-      }
+      console.error("Failed to load threshold alerts:", error);
     } finally {
       this._loadingAlerts = false;
     }
   }
 
-  async #loadAlertStats() {
-    if (!this.#thresholdService) {
-      console.error('Threshold service not initialized');
-      return;
-    }
-
-    try {
-      this._alertStats = await this.#thresholdService.getAlertStats();
-    } catch (error) {
-      console.error("Error loading alert stats:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: this.localize?.term('threshold_errorLoadingStats') || "Error Loading Stats",
-            message: error instanceof Error 
-              ? error.message 
-              : this.localize?.term('threshold_errorLoadingStats') || "Failed to load alert statistics",
-          },
-        });
-      }
-    }
+  async #onClickRefreshMetrics() {
+    await Promise.all([
+      this.#loadPerformanceMetrics(),
+      this.#loadUmbracoMetrics(),
+      this.#loadThresholdAlerts(),
+    ]);
   }
 
-  
-
-  #openActiveRequestsSidebar = async () => {
-    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-    
-    modalManager?.open(
-      this, 
-      ACTIVE_REQUESTS_SIDEBAR_MODAL   
-    );
-  }
-
-  #openExportModal = async () => {
-    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-    
-    modalManager?.open(
-      this, 
-      UMB_METRICS_EXPORT_MODAL   
-    );
-  }
- 
-  #openCleanupDialog=async ()=>{
-    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-    
-    modalManager?.open(
-      this, 
-      UMB_METRICS_CLEANUP_DIALOG   
-    );
-  }
-
-  #openSqlStacktraceModal = async (op: any) => {
-    const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-    
-    modalManager?.open(
-      this, 
-      SQL_STACKTRACE_MODAL,
-      {
-        data: { operationKey: op.operationKey, operationValue: op.operationValue }
-      }
-    );
-  }
-
-  #toggleAutoRefresh = async () => {
+  async #toggleAutoRefresh() {
     this._autoRefresh = !this._autoRefresh;
-
     if (this._autoRefresh) {
-      await this.#startAutoRefresh();
+      await this.#connectToHub();
     } else {
-      await this.#stopAutoRefresh();
+      await this.#disconnectFromHub();
     }
-  };
+  }
 
-  #startAutoRefresh = async () => {
-    if (!this.#metricsService) {
-      console.error('Metrics service not initialized');
-      this._autoRefresh = false;
-      return;
-    }
-
+  async #connectToHub() {
+    if (!this.#metricsService) return;
     try {
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("default", {
-          data: {
-            headline: "Connecting...",
-            message: "Establishing connection to metrics hub",
-          },
-        });
-      }
-
+      await this.#metricsService.connectToHub();
+      this._isConnected = true;
       this.#unsubscribe = this.#metricsService.onMetricsUpdate((metrics) => {
         this._performanceMetrics = metrics;
-        this._deliveryPulseMetrics = metrics.deliveryPulse;
-        this._isConnected = true;
+        this._deliveryPulseMetrics = metrics.deliveryPulse ?? undefined;
       });
-
-      await this.#metricsService.connectToHub();
-      this._isConnected = this.#metricsService.isConnected;
-
-      if (this._isConnected && this.#notificationContext) {
-        this.#notificationContext.peek("positive", {
-          data: {
-            headline: "Connected",
-            message: "Real-time metrics updates enabled",
-          },
-        });
-      }
     } catch (error) {
-      console.error("Error starting auto-refresh:", error);
-      this._autoRefresh = false;
+      console.error("Failed to connect to SignalR hub:", error);
       this._isConnected = false;
-
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: "Connection Failed",
-            message: error instanceof Error 
-              ? error.message 
-              : "Failed to connect to metrics hub. Try again.",
-          },
-        });
-      }
-
-      if (this.#unsubscribe) {
-        this.#unsubscribe();
-        this.#unsubscribe = undefined;
-      }
+      this._autoRefresh = false;
     }
-  };
+  }
 
-  #stopAutoRefresh = async () => {
-    if (!this.#metricsService) {
-      return;
-    }
-
+  async #disconnectFromHub() {
+    if (!this.#metricsService) return;
     try {
-      if (this.#unsubscribe) {
-        this.#unsubscribe();
-        this.#unsubscribe = undefined;
-      }
-
+      this.#unsubscribe?.();
+      this.#unsubscribe = undefined;
       await this.#metricsService.disconnectFromHub();
       this._isConnected = false;
-
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("default", {
-          data: {
-            headline: "Disconnected",
-            message: "Real-time updates disabled",
-          },
-        });
-      }
     } catch (error) {
-      console.error("Error stopping auto-refresh:", error);
+      console.error("Failed to disconnect from SignalR hub:", error);
     }
-  };
-
-  #switchTab = (tabName: string) => {
-    this._activeTab = tabName;
-    // Reset paging when switching tabs
-    this._currentPage = 1;
-  };
-
-  #renderOverviewTab() {
-    if (!this._performanceMetrics) {
-      return html`<p>${this.localize?.term('dashboard_clickToLoadPerformance') || 'Click "Refresh Metrics" to load application performance data'}</p>`;
-    }
-
-    const m = this._performanceMetrics;
-
-    return html`
-      <umbmetrics-app-info-banner
-        .applicationInfo=${m.applicationInfo}
-        .isConnected=${this._isConnected}
-      ></umbmetrics-app-info-banner>
-
-      <umbmetrics-metrics-grid columns="4">
-        <umbmetrics-metric-card
-          icon="icon-dashboard"
-          title="${this.localize?.term('metrics_cpuUsage') || 'CPU Usage'}"
-          value="${m.cpuUsage.toFixed(1)}%"
-          detail="Process CPU"
-          color="${getStatusColor(m.cpuUsage, 80)}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-memory"
-          title="${this.localize?.term('metrics_memoryUsage') || 'Memory Usage'}"
-          value="${m.memoryUsage.workingSetMB.toFixed(0)} MB"
-          detail="Private: ${m.memoryUsage.privateMemoryMB.toFixed(0)} MB"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-activity"
-          title="Requests/Sec"
-          value="${m.requestMetrics.requestsPerSecond.toFixed(2)}"
-          detail="Last min: ${m.requestMetrics.lastMinuteRequests}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-timer"
-          title="Avg Response"
-          value="${m.requestMetrics.averageResponseTimeMs.toFixed(0)} ms"
-          detail="Last 100 requests"
-          color="${getStatusColor(m.requestMetrics.averageResponseTimeMs, 1000)}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-link"
-          title="${this.localize?.term('metrics_activeRequests') || 'Active Requests'}"
-          value="${m.requestMetrics.activeRequests}"
-          detail="Total: ${formatNumber(m.requestMetrics.totalRequests)}"
-          ?clickable=${true}
-          actionLabel="View Details"
-          @card-action="${this.#openActiveRequestsSidebar}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-alert"
-          title="Failed Requests"
-          value="${formatNumber(m.requestMetrics.failedRequests)}"
-          detail="4xx/5xx responses"
-          color="${m.requestMetrics.failedRequests > 0 ? 'danger' : 'positive'}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-nodes"
-          title="${this.localize?.term('metrics_threadCount') || 'Thread Count'}"
-          value="${m.threadInfo.threadCount}"
-          detail="Pool: ${m.threadInfo.threadPoolThreadCount}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          icon="icon-list"
-          title="Work Items"
-          value="${m.threadInfo.pendingWorkItemCount}"
-          detail="Completed: ${formatNumber(m.threadInfo.completedWorkItemCount)}"
-        ></umbmetrics-metric-card>
-
-        <umbmetrics-metric-card
-          span="4"
-          icon="icon-calendar"
-          title="${this.localize?.term('dashboard_lastUpdated') || 'Last updated'}"
-          value="${new Date(m.timestamp).toLocaleString()}"
-        ></umbmetrics-metric-card>
-      </umbmetrics-metrics-grid>
-    `;
   }
 
-  #renderHeapTab() {
-    if (!this._performanceMetrics) {
-      return html`<p>${this.localize?.term('dashboard_clickToLoadHeap') || 'Click "Refresh Metrics" to load heap information'}</p>`;
-    }
-
-    const m = this._performanceMetrics;
-
-    const heapStats: StatRow[] = [
-      { label: 'Gen 0', value: `${m.memoryUsage.gcGen0HeapSizeMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_gc_gen0_heap') || 'Generation 0 heap contains short-lived objects' },
-      { label: 'Gen 1', value: `${m.memoryUsage.gcGen1HeapSizeMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_gc_gen1_heap') || 'Generation 1 heap contains objects that survived Gen 0 collection' },
-      { label: 'Gen 2', value: `${m.memoryUsage.gcGen2HeapSizeMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_gc_gen2_heap') || 'Generation 2 heap contains long-lived objects' },
-    ];
-
-    const collectionStats: StatRow[] = [
-      { label: 'Gen 0', value: formatNumber(m.garbageCollectionStats.gen0Collections), info: this.localize?.term('stat_info_gc_gen0_collections') || 'Number of Generation 0 garbage collections' },
-      { label: 'Gen 1', value: formatNumber(m.garbageCollectionStats.gen1Collections), info: this.localize?.term('stat_info_gc_gen1_collections') || 'Number of Generation 1 garbage collections' },
-      { label: 'Gen 2', value: formatNumber(m.garbageCollectionStats.gen2Collections), info: this.localize?.term('stat_info_gc_gen2_collections') || 'Number of Generation 2 garbage collections (full GC)' },
-    ];
-
-    const gcDetails: StatRow[] = [
-      { label: 'GC Mode', value: m.garbageCollectionStats.isServerGC ? "Server" : "Workstation", info: this.localize?.term('stat_info_gc_mode') || 'Server GC is optimized for multi-core servers, Workstation GC for client apps' },
-      { label: 'Total Heap Size', value: `${m.memoryUsage.totalHeapSizeMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_total_heap_size') || 'Total memory allocated for managed objects across all generations' },
-      { label: 'Fragmented Memory', value: `${m.memoryUsage.fragmentedMemoryMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_fragmented_memory') || 'Memory that is allocated but cannot be used due to fragmentation' },
-      { label: 'Memory Load', value: `${m.garbageCollectionStats.memoryLoadMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_memory_load') || 'Current memory load on the system' },
-      { label: 'High Memory Threshold', value: `${m.garbageCollectionStats.highMemoryLoadThresholdMB.toFixed(2)} MB`, info: this.localize?.term('stat_info_high_memory_threshold') || 'Memory threshold that triggers aggressive garbage collection' },
-      { label: 'Latency Mode', value: m.garbageCollectionStats.gcLatencyMode, info: this.localize?.term('stat_info_latency_mode') || 'GC latency mode affects how aggressively garbage collection runs' },
-      { label: 'Total Pause Time', value: `${m.garbageCollectionStats.totalPauseTimeMs.toFixed(2)} ms`, info: this.localize?.term('stat_info_total_pause_time') || 'Total time the application was paused for garbage collection' },
-    ];
-
-    return html`
-      <umbmetrics-metrics-grid columns="4">
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-box"
-          title="GC Heap Sizes"
-          .stats=${heapStats}
-        ></umbmetrics-stat-card>
-
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-trash"
-          title="GC Collections"
-          .stats=${collectionStats}
-        ></umbmetrics-stat-card>
-
-        <umbmetrics-stat-card
-          span="4"
-          icon="icon-chart"
-          title="Garbage Collector Details"
-          .stats=${gcDetails}
-        ></umbmetrics-stat-card>
-      </umbmetrics-metrics-grid>
-    `;
+  #switchTab(tab: string) {
+    this._activeTab = tab;
   }
 
-  #renderUmbracoTab() {
-    if (!this._umbracoMetrics) {
-      return html`<p>${this.localize?.term('dashboard_clickToLoadUmbraco') || 'Click "Refresh Metrics" to load Umbraco-specific data'}</p>`;
-    }
-
-    const m = this._umbracoMetrics;
-
-    const contentStats: StatRow[] = [
-      { label: 'Total Nodes', value: formatNumber(m.contentStatistics.totalContentNodes) },
-      { label: 'Published', value: formatNumber(m.contentStatistics.publishedNodes), color: 'positive' },
-      { label: 'Unpublished', value: formatNumber(m.contentStatistics.unpublishedNodes), color: 'warning' },
-      { label: 'Trashed', value: formatNumber(m.contentStatistics.trashedNodes), color: m.contentStatistics.trashedNodes > 0 ? 'danger' : 'positive' },
-      { label: 'Content Types', value: m.contentStatistics.contentTypeCount },
-    ];
-
-    const mediaStats: StatRow[] = [
-      { label: 'Total Items', value: formatNumber(m.mediaStatistics.totalMediaItems) },
-      { label: 'Total Size', value: `${m.mediaStatistics.totalMediaSizeMB.toFixed(2)} MB` },
-      { label: 'Images', value: formatNumber(m.mediaStatistics.imagesCount) },
-      { label: 'Documents', value: formatNumber(m.mediaStatistics.documentsCount) },
-      { label: 'Media Types', value: m.mediaStatistics.mediaTypeCount },
-    ];
-
-    const cacheStats: StatRow[] = [
-      { label: 'Memory Cache', value: `${formatNumber(m.cacheStatistics.memoryCacheEntryCount)} entries` },
-      { label: 'Cache Hit Ratio', value: `${(m.cacheStatistics.cacheHitRatio * 100).toFixed(1)}%` },
-      { label: 'NuCache', value: `${formatNumber(m.cacheStatistics.nuCacheCount)} items` },
-      { label: 'Total Size', value: m.cacheStatistics.totalCacheSize },
-    ];
-
-    const userStats: StatRow[] = [
-      { label: 'Total Users', value: formatNumber(m.backofficeUsers.totalUsers) },
-      { label: 'Active Users', value: formatNumber(m.backofficeUsers.activeUsers), color: 'positive' },
-      { label: 'Administrators', value: formatNumber(m.backofficeUsers.adminUsers) },
-      { label: 'Current Sessions', value: formatNumber(m.backofficeUsers.currentSessions), color: m.backofficeUsers.currentSessions > 0 ? 'positive' : 'default' },
-    ];
-
-    return html`
-      <umbmetrics-metrics-grid columns="4">
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-document"
-          title="Content Statistics"
-          .stats=${contentStats}
-        ></umbmetrics-stat-card>
-
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-picture"
-          title="Media Library"
-          .stats=${mediaStats}
-        ></umbmetrics-stat-card>
-
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-server-alt"
-          title="Cache Performance"
-          .stats=${cacheStats}
-        ></umbmetrics-stat-card>
-
-        <umbmetrics-stat-card
-          span="2"
-          icon="icon-users"
-          title="Backoffice Users"
-          .stats=${userStats}
-        ></umbmetrics-stat-card>
-      </umbmetrics-metrics-grid>
-    `;
+  #onOpenActiveRequests() {
+    this.#openActiveRequestsModal();
   }
 
-  #renderUtilsTab() {
-    return html`
-      <div class="utils-tab">
-        <h3>${this.localize?.term('dashboard_utilityTools') || 'Utility Tools'}</h3>
-        <p class="description">${this.localize?.term('dashboard_utilityToolsDescription') || 'Additional tools for managing and exporting metrics data'}</p>
-        
-        <div class="utils-grid">
-          <div class="util-card">
-            <div class="util-icon">
-              <uui-icon name="icon-download"></uui-icon>
-            </div>
-            <div class="util-content">
-              <h4>${this.localize?.term('dashboard_exportMetricsCard') || 'Export Metrics'}</h4>
-              <p>${this.localize?.term('dashboard_exportMetricsDescription') || 'Export performance and Umbraco metrics in various formats (CSV, JSON)'}</p>
-              <uui-button 
-                look="primary" 
-                color="positive"
-                @click="${this.#openExportModal}"
-                style="margin-top: 1rem;"
-              >
-                <uui-icon name="icon-download"></uui-icon>
-                ${this.localize?.term('dashboard_openExportDialog') || 'Open Export Dialog'}
-              </uui-button>
-            </div>
-          </div>
-
-          <div class="util-card">
-            <div class="util-icon">
-              <uui-icon name="icon-settings"></uui-icon>
-            </div>
-            <div class="util-content">
-              <h4>${this.localize?.term('dashboard_dataManagement') || 'Data Management'}</h4>
-              <p>${this.localize?.term('dashboard_dataManagementDescription') || 'Manage historical metrics data and cleanup options'}</p>
-              <uui-button 
-                look="outline"
-                style="margin-top: 1rem;"
-                 color="warning"
-                 @click="${this.#openCleanupDialog}"
-              >
-                <uui-icon name="icon-trash"></uui-icon>
-                ${this.localize?.term('dashboard_cleanupOldData') || 'Cleanup Old Data'}
-              </uui-button>
-            </div>
-          </div>
-
-          <div class="util-card">
-            <div class="util-icon">
-              <uui-icon name="icon-chart"></uui-icon>
-            </div>
-            <div class="util-content">
-              <h4>${this.localize?.term('dashboard_advancedAnalytics') || 'Advanced Analytics'}</h4>
-              <p>${this.localize?.term('dashboard_advancedAnalyticsDescription') || 'Generate detailed reports and analytics from collected metrics'}</p>
-              <uui-button 
-                look="outline"
-                style="margin-top: 1rem;"
-                disabled
-              >
-                <uui-icon name="icon-chart"></uui-icon>
-                ${this.localize?.term('dashboard_generateReport') || 'Generate Report'}
-              </uui-button>
-            </div>
-          </div>
-
-          <div class="util-card">
-            <div class="util-icon">
-              <uui-icon name="icon-alarm-clock"></uui-icon>
-            </div>
-            <div class="util-content">
-              <h4>${this.localize?.term('dashboard_scheduledTasks') || 'Scheduled Tasks'}</h4>
-              <p>${this.localize?.term('dashboard_scheduledTasksDescription') || 'Schedule automatic exports and data collection tasks'}</p>
-              <uui-button 
-                look="outline"
-                style="margin-top: 1rem;"
-                disabled
-              >
-                <uui-icon name="icon-time"></uui-icon>
-                ${this.localize?.term('dashboard_scheduleExport') || 'Schedule Export'}
-              </uui-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+  async #openActiveRequestsModal() {
+    const modalManagerContext = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    modalManagerContext?.open(this, ACTIVE_REQUESTS_SIDEBAR_MODAL, {
+      data: {
+        activeRequests: this._performanceMetrics?.requestMetrics.activeRequests ?? 0,
+        totalRequests: this._performanceMetrics?.requestMetrics.totalRequests ?? 0,
+        failedRequests: this._performanceMetrics?.requestMetrics.failedRequests ?? 0,
+        requestsPerSecond: this._performanceMetrics?.requestMetrics.requestsPerSecond ?? 0,
+        averageResponseTimeMs: this._performanceMetrics?.requestMetrics.averageResponseTimeMs ?? 0,
+      },
+    });
   }
 
-  #renderThresholdsTab() {
-  
-    async () => {
-      await Promise.all([
-        this.#loadThresholdAlerts(),
-        this.#loadAlertStats()
-      ]);}
-   
-    if (this._loadingAlerts) {
-      return html`<p>${this.localize?.term('threshold_loadingAlerts') || 'Loading threshold alerts...'}</p>`;
-    }
-
-    const stats = this._alertStats;
-    const alerts = this._thresholdAlerts;
-
-    return html`
-      <div class="thresholds-tab">
-        <div class="thresholds-header">
-          <h3>${this.localize?.term('threshold_title') || 'Threshold Monitoring'}</h3>
-          <div class="thresholds-controls">
-            <uui-button 
-              look="primary" 
-              color="positive"
-              @click="${async () => {
-                await Promise.all([
-                  this.#loadThresholdAlerts(),
-                  this.#loadAlertStats()
-                ]);
-              }}"
-            >
-              <uui-icon name="icon-refresh"></uui-icon>
-              ${this.localize?.term('common_refresh') || 'Refresh'}
-            </uui-button>
-          </div>
-        </div>
-
-        ${stats ? html`
-          <div class="thresholds-stats">
-            <umbmetrics-metrics-grid columns="4">
-              <umbmetrics-metric-card
-                icon="icon-alert"
-                title="${this.localize?.term('threshold_activeAlerts') || 'Active Alerts'}"
-                value="${stats.activeAlerts}"
-                detail="${this.localize?.term('threshold_totalAlerts') || 'Total'}: ${stats.totalAlerts}"
-                color="${stats.activeAlerts > 0 ? 'danger' : 'positive'}"
-              ></umbmetrics-metric-card>
-
-              <umbmetrics-metric-card
-                icon="icon-check"
-                title="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}"
-                value="${stats.acknowledgedAlerts}"
-                detail="${this.localize?.term('threshold_acknowledgedAlerts') || 'Acknowledged'}: ${stats.acknowledgedAlerts}"
-                color="${stats.acknowledgedAlerts > 0 ? 'warning' : 'default'}"
-              ></umbmetrics-metric-card>
-
-              <umbmetrics-metric-card
-                icon="icon-time"
-                title="${this.localize?.term('threshold_last24Hours') || 'Last 24 Hours'}"
-                value="${stats.last24Hours}"
-                detail="${this.localize?.term('threshold_last7Days') || 'Last 7 Days'}: ${stats.last7Days}"
-              ></umbmetrics-metric-card>
-
-              <umbmetrics-metric-card
-                icon="icon-chart"
-                title="${this.localize?.term('threshold_bySeverity') || 'By Severity'}"
-                value=""
-                detail="Low: ${stats.bySeverity['0']}, Med: ${stats.bySeverity['1']}, High: ${stats.bySeverity['2']}, Crit: ${stats.bySeverity['3']}"
-              ></umbmetrics-metric-card>
-            </umbmetrics-metrics-grid>
-          </div>
-        ` : ''}
-
-        <div class="thresholds-alerts">
-          <h4>${this.localize?.term('threshold_activeAlerts') || 'Active Alerts'}</h4>
-          
-          ${alerts.length === 0 ? html`
-            <p class="no-alerts">${this.localize?.term('threshold_noAlerts') || 'No active alerts'}</p>
-          ` : html`
-            <div class="alerts-list">
-              ${repeat(alerts, alert => alert.id, alert => html`
-                <div class="alert-item" data-severity="${alert.severity}">
-                  <div class="alert-header">
-                    <div class="alert-severity">
-                      <uui-icon name="icon-alert"></uui-icon>
-                      <span class="severity-label">${this.localize?.term(`threshold_${alert.severity}`) || alert.severity}</span>
-                    </div>
-                    <div class="alert-time">
-                      ${new Date(alert.triggeredAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div class="alert-content">
-                    <div class="alert-message">${alert.message}</div>
-                    <div class="alert-details">
-                      <span class="alert-detail">
-                        <strong>${this.localize?.term('threshold_triggeredValue') || 'Triggered Values'}:</strong>
-                        ${alert.triggeredValuesJson}
-                      </span>                 
-                      <span class="alert-detail">
-                        <strong>${this.localize?.term('threshold_ruleName') || 'Rule'}:</strong>
-                        ${alert.ruleName}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="alert-actions">
-                    <uui-button 
-                      look="primary" 
-                      color="warning"
-                      @click="${() => this.#acknowledgeAlert(alert.id)}"
-                    >
-                      ${this.localize?.term('threshold_acknowledge') || 'Acknowledge'}
-                    </uui-button>                  
-                  </div>
-                </div>
-              `)}
-            </div>
-          `}
-        </div>        
-      </div>
-    `;
+  async #openExportModal() {
+    const modalManagerContext = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    modalManagerContext?.open(this, UMB_METRICS_EXPORT_MODAL, {
+      data: {
+        performanceMetrics: this._performanceMetrics,
+        umbracoMetrics: this._umbracoMetrics,
+      },
+    });
   }
 
-  async #acknowledgeAlert(alertId: number) {
-    if (!this.#thresholdService || !this._contextCurrentUser?.name) {
-      return;
-    }
+  async #openCleanupDialog() {
+    const modalManagerContext = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    modalManagerContext?.open(this, UMB_METRICS_CLEANUP_DIALOG, {
+      data: {},
+    });
+  }
 
+  async #openSqlStacktraceModal(e: CustomEvent) {
+    const { operationKey, operationValue } = e.detail;
+    const modalManagerContext = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
+    modalManagerContext?.open(this, SQL_STACKTRACE_MODAL, {
+      data: {
+        operationKey,
+        operationValue,
+      },
+    });
+  }
+
+  async #onAcknowledgeAlert(e: CustomEvent) {
+    const { alertId } = e.detail;
+    if (!this.#thresholdService) return;
     try {
-      await this.#thresholdService.acknowledgeAlert(alertId, {
-        acknowledgedBy: this._contextCurrentUser.name
-      });
-      
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("positive", {
-          data: {
-            headline: this.localize?.term('threshold_alertAcknowledged') || "Alert Acknowledged",
-            message: this.localize?.term('threshold_alertAcknowledged') || "Alert has been acknowledged successfully",
-          },
-        });
-      }
-
+      const request: AcknowledgeAlertRequest = { acknowledgedBy: this._contextCurrentUser?.name || 'Unknown' };
+      await this.#thresholdService.acknowledgeAlert(alertId, request);
       await this.#loadThresholdAlerts();
-      await this.#loadAlertStats();
+      this.#notificationContext?.peek('positive', {
+        data: { message: "Alert acknowledged" },
+      });
     } catch (error) {
-      console.error("Error acknowledging alert:", error);
-      if (this.#notificationContext) {
-        this.#notificationContext.peek("danger", {
-          data: {
-            headline: this.localize?.term('threshold_errorAcknowledgingAlert') || "Error Acknowledging Alert",
-            message: error instanceof Error 
-              ? error.message 
-              : this.localize?.term('threshold_errorAcknowledgingAlert') || "Failed to acknowledge alert",
-          },
-        });
-      }
+      console.error("Failed to acknowledge alert:", error);
+      this.#notificationContext?.peek('danger', {
+        data: { message: "Failed to acknowledge alert" },
+      });
     }
-  }
-
-
-
-  #renderDeliveryPulseTab() {
-    if (!this._deliveryPulseMetrics) {
-      return html`<p>${this.localize?.term('dashboard_clickToLoadDeliveryPulse') || 'Click "Refresh Metrics" to load Delivery API performance data'}</p>`;
-    }
-
-    const m = this._deliveryPulseMetrics;
-
-    return html`
-      <div class="database-tab">
-        <div class="database-header">
-          <h3>${this.localize?.term('dashboard_deliveryPulse') || 'Delivery Pulse'}</h3>
-          <div class="database-controls">
-            <uui-button 
-              look="primary" 
-              color="positive"
-              @click="${this.#loadDeliveryPulseMetrics}"
-            >
-              <uui-icon name="icon-refresh"></uui-icon>
-              ${this.localize?.term('common_refresh') || 'Refresh'}
-            </uui-button>
-          </div>
-        </div>
-
-        <div class="database-stats">
-          <umbmetrics-metrics-grid columns="4">
-            <umbmetrics-metric-card
-              icon="icon-nodes"
-              title="${this.localize?.term('deliveryPulse_totalRequests') || 'Total Requests'}"
-              value="${m.totalRequests}"
-              detail="${this.localize?.term('deliveryPulse_sinceStartup') || 'Since startup'}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-alert"
-              title="${this.localize?.term('deliveryPulse_errors') || 'Errors'}"
-              value="${m.totalErrors}"
-              detail="${this.localize?.term('deliveryPulse_5xxResponses') || '5xx responses'}"
-              color="${m.totalErrors > 0 ? 'danger' : 'positive'}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-wrong"
-              title="${this.localize?.term('deliveryPulse_404s') || '404 Not Found'}"
-              value="${m.total404s}"
-              detail="${this.localize?.term('deliveryPulse_notFoundCount') || 'Not found responses'}"
-              color="${m.total404s > 0 ? 'warning' : 'positive'}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-timer"
-              title="${this.localize?.term('deliveryPulse_avgLatency') || 'Avg Latency'}"
-              value="${m.averageLatencyMs.toFixed(1)} ms"
-              detail="${this.localize?.term('deliveryPulse_maxLatency') || 'Max'}: ${m.maxLatencyMs.toFixed(1)} ms"
-              color="${getDurationColor(m.averageLatencyMs)}"
-            ></umbmetrics-metric-card>
-          </umbmetrics-metrics-grid>
-        </div>
-
-        <div class="delivery-pulse-endpoints">
-          <h4>${this.localize?.term('deliveryPulse_topEndpoints') || 'Top Endpoints'}</h4>
-          
-          ${m.topEndpoints.length === 0 ? html`
-            <p class="no-endpoints">${this.localize?.term('deliveryPulse_noEndpoints') || 'No Delivery API requests recorded yet'}</p>
-          ` : html`
-            <div class="endpoints-table-container">
-              <div class="endpoints-table-wrapper">
-                <table class="endpoints-table">
-                  <thead>
-                    <tr>
-                      <th>${this.localize?.term('deliveryPulse_path') || 'Path'}</th>
-                      <th>${this.localize?.term('deliveryPulse_method') || 'Method'}</th>
-                      <th>${this.localize?.term('deliveryPulse_requests') || 'Requests'}</th>
-                      <th>${this.localize?.term('deliveryPulse_avgLatency') || 'Avg Latency'}</th>
-                      <th>${this.localize?.term('deliveryPulse_maxLatency') || 'Max Latency'}</th>
-                      <th>${this.localize?.term('deliveryPulse_errors') || 'Errors'}</th>
-                      <th>${this.localize?.term('deliveryPulse_404s') || '404s'}</th>
-                      <th>${this.localize?.term('deliveryPulse_lastAccessed') || 'Last Accessed'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${repeat(m.topEndpoints, (ep) => ep.path + ep.method, (ep) => html`
-                      <tr>
-                        <td>
-                          <div class="endpoint-path" title="${ep.path}">
-                            <span class="endpoint-path-text">${ep.path}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span class="endpoint-method method-${ep.method.toLowerCase()}">${ep.method}</span>
-                        </td>
-                        <td>
-                          <span class="endpoint-stat">${ep.requestCount}</span>
-                        </td>
-                        <td>
-                          <span class="endpoint-duration ${getDurationColor(ep.averageLatencyMs)}">
-                            ${ep.averageLatencyMs.toFixed(1)} ms
-                          </span>
-                        </td>
-                        <td>
-                          <span class="endpoint-duration ${getDurationColor(ep.maxLatencyMs)}">
-                            ${ep.maxLatencyMs.toFixed(1)} ms
-                          </span>
-                        </td>
-                        <td>
-                          <span class="endpoint-stat ${ep.errorCount > 0 ? 'stat-error' : 'stat-ok'}">
-                            ${ep.errorCount}
-                          </span>
-                        </td>
-                        <td>
-                          <span class="endpoint-stat ${ep.notFoundCount > 0 ? 'stat-warning' : 'stat-ok'}">
-                            ${ep.notFoundCount}
-                          </span>
-                        </td>
-                        <td>
-                          <span class="endpoint-time">${new Date(ep.lastAccessed).toLocaleString()}</span>
-                        </td>
-                      </tr>
-                    `)}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          `}
-        </div>
-      </div>
-    `;
-  }
-
-  #toggleGroup = (groupKey: string) => {
-    const newSet = new Set(this._expandedGroups);
-    if (newSet.has(groupKey)) {
-      newSet.delete(groupKey);
-    } else {
-      newSet.add(groupKey);
-    }
-    this._expandedGroups = newSet;
-  };
-
-  #renderDatabaseTab() {
-    if (!this._performanceMetrics) {
-      return html`<p>${this.localize?.term('dashboard_clickToLoadDatabase') || 'Click "Refresh Metrics" to load database operations'}</p>`;
-    }
-
-    const sqlOperations = this._performanceMetrics.sqlOperations || [];
-    
-    // Create operations with duration in milliseconds for sorting
-    const operationsWithDuration = sqlOperations.map(op => ({
-      ...op,
-      durationMs: op.duration
-    }));
-    
-    // Apply filter
-    let filteredOperations = [...operationsWithDuration];
-    if (this._queryFilter === 'success') {
-      filteredOperations = filteredOperations.filter(op => op.success);
-    } else if (this._queryFilter === 'failed') {
-      filteredOperations = filteredOperations.filter(op => !op.success);
-    }
-    
-    // Group operations by queryHash (computed on backend from SQL query text)
-    const groups = new Map<string, typeof filteredOperations>();
-    for (const op of filteredOperations) {
-      const key = op.queryHash || '__no_hash__';
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(op);
-    }
-    
-    // Sort groups by max duration descending (worst-performing query first)
-    const sortedGroups = Array.from(groups.entries())
-      .map(([hash, ops]) => ({
-        hash,
-        queryText: ops[0]?.operationValue || '(empty)',
-        operations: ops,
-        count: ops.length,
-        maxDuration: Math.max(...ops.map(o => o.durationMs)),
-        avgDuration: ops.reduce((sum, o) => sum + o.durationMs, 0) / ops.length,
-        totalDuration: ops.reduce((sum, o) => sum + o.durationMs, 0),
-        successCount: ops.filter(o => o.success).length,
-        failedCount: ops.filter(o => !o.success).length,
-      }))
-      .sort((a, b) => b.maxDuration - a.maxDuration);
-    
-    // Calculate statistics
-    const totalOperations = filteredOperations.length;
-    const successfulOperations = filteredOperations.filter(op => op.success).length;
-    const failedOperations = totalOperations - successfulOperations;
-    const totalDuration = filteredOperations.reduce((sum, op) => sum + op.durationMs, 0);
-    const avgDuration = totalOperations > 0 ? totalDuration / totalOperations : 0;
-    const maxDuration = totalOperations > 0 ? Math.max(...filteredOperations.map(op => op.durationMs)) : 0;
-
-    // Calculate paging for groups
-    const totalGroups = sortedGroups.length;
-    const totalPages = Math.ceil(totalGroups / this._itemsPerPage);
-    const startIndex = (this._currentPage - 1) * this._itemsPerPage;
-    const endIndex = Math.min(startIndex + this._itemsPerPage, totalGroups);
-    const pagedGroups = sortedGroups.slice(startIndex, endIndex);
-
-    // Helper methods for paging and filtering
-    const goToPage = (page: number) => {
-      if (page >= 1 && page <= totalPages) {
-        this._currentPage = page;
-      }
-    };
-
-    const changeItemsPerPage = (items: number) => {
-      this._itemsPerPage = items;
-      this._currentPage = 1; // Reset to first page when changing items per page
-    };
-
-    const changeQueryFilter = (filter: string) => {
-      this._queryFilter = filter;
-      this._currentPage = 1; // Reset to first page when changing filter
-    };
-
-    return html`
-      <div class="database-tab">
-        <div class="database-header">
-          <h3>${this.localize?.term('dashboard_database') || 'Database Operations'}</h3>
-          <div class="database-controls">
-            <uui-button 
-              look="primary" 
-              color="positive"
-              @click="${this.#onClickRefreshMetrics}"
-            >
-              <uui-icon name="icon-refresh"></uui-icon>
-              ${this.localize?.term('common_refresh') || 'Refresh'}
-            </uui-button>
-          </div>
-        </div>
-
-        <div class="database-stats">
-          <umbmetrics-metrics-grid columns="4">
-            <umbmetrics-metric-card
-              icon="icon-database"
-              title="Total Operations"
-              value="${totalOperations}"
-              detail="${this.localize?.term('dashboard_groups') || 'Groups'}: ${totalGroups}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-check"
-              title="Successful"
-              value="${successfulOperations}"
-              detail="${totalOperations > 0 ? ((successfulOperations / totalOperations) * 100).toFixed(1) + '%' : '0%'}"
-              color="${successfulOperations === totalOperations ? 'positive' : 'default'}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-alert"
-              title="Failed"
-              value="${failedOperations}"
-              detail="${totalOperations > 0 ? ((failedOperations / totalOperations) * 100).toFixed(1) + '%' : '0%'}"
-              color="${failedOperations > 0 ? 'danger' : 'positive'}"
-            ></umbmetrics-metric-card>
-
-            <umbmetrics-metric-card
-              icon="icon-timer"
-              title="Avg Duration"
-              value="${(avgDuration.toFixed(2))} ms"
-              detail="Max: ${(maxDuration.toFixed(2))} ms"
-              color="${getDurationColor(avgDuration)}"
-            ></umbmetrics-metric-card>
-          </umbmetrics-metrics-grid>
-        </div>
-
-        <div class="database-operations">
-          <div class="operations-header">
-            <h4>${this.localize?.term('dashboard_sqlOperationsGrouped') || 'SQL Operations (Grouped by Query)'}</h4>           
-              <div class="paging-controls">
-                <div class="query-filter">
-                  <label>${this.localize?.term('dashboard_filterByStatus') || 'Filter by status'}:</label>
-                  <select 
-                    .value="${this._queryFilter}"
-                    @change="${(e: Event) => changeQueryFilter((e.target as HTMLSelectElement).value)}"
-                  >
-                    <option value="all">${this.localize?.term('dashboard_allQueries') || 'All Queries'}</option>
-                    <option value="success">${this.localize?.term('dashboard_successfulQueries') || 'Successful Only'}</option>
-                    <option value="failed">${this.localize?.term('dashboard_failedQueries') || 'Failed Only'}</option>
-                  </select>
-                </div>
-                <div class="items-per-page">
-                  <label>${this.localize?.term('common_itemsPerPage') || 'Items per page'}:</label>
-                  <select 
-                    .value="${this._itemsPerPage.toString()}"
-                    @change="${(e: Event) => changeItemsPerPage(parseInt((e.target as HTMLSelectElement).value))}"
-                  >
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                  </select>
-                </div>
-                <div class="paging-info">
-                  ${this.localize?.term('common_showing') || 'Showing'} ${endIndex==0?0: startIndex + 1} ${this.localize?.term('common_to') || 'to'} ${endIndex} ${this.localize?.term('common_ofTotal') || 'of total'} ${totalGroups} ${this.localize?.term('dashboard_groups') || 'groups'}
-                </div>
-              </div>           
-          </div>
-          
-          ${sortedGroups.length === 0 ? html`
-            <p class="no-operations">${this.localize?.term('dashboard_noData') || 'No database operations recorded'}</p>
-          ` : html`
-            <div class="operations-table-container">
-              <div class="operations-table-wrapper">
-                <table class="operations-table">
-                  <thead>
-                    <tr>
-                      <th class="col-expand"></th>
-                      <th>${this.localize?.term('dashboard_query') || 'Query'}</th>
-                      <th>${this.localize?.term('dashboard_executions') || 'Executions'}</th>
-                      <th>${this.localize?.term('dashboard_avgDuration') || 'Avg Duration'}</th>
-                      <th>${this.localize?.term('dashboard_maxDuration') || 'Max Duration'}</th>
-                      <th>${this.localize?.term('dashboard_successRate') || 'Success Rate'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${repeat(pagedGroups, (g) => g.hash, (group) => {
-                      const groupKey = group.hash;
-                      const isExpanded = this._expandedGroups.has(groupKey);
-                      const successRate = group.count > 0 ? ((group.successCount / group.count) * 100).toFixed(1) : '0.0';
-                      
-                      return html`
-                        <tr class="group-header ${isExpanded ? 'expanded' : ''}" @click="${() => this.#toggleGroup(groupKey)}">
-                          <td class="col-expand">
-                            <uui-icon name="${isExpanded ? 'icon-arrow-down' : 'icon-arrow-right'}"></uui-icon>
-                          </td>
-                          <td>
-                            <div class="group-query" title="${group.queryText}">
-                              <span class="group-query-text">${group.queryText}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span class="group-stat">${group.count}</span>
-                          </td>
-                          <td>
-                            <span class="operation-duration ${getDurationColor(group.avgDuration)}">
-                              ${(group.avgDuration.toFixed(2))} ms
-                            </span>
-                          </td>
-                          <td>
-                            <span class="operation-duration ${getDurationColor(group.maxDuration)}">
-                              ${(group.maxDuration.toFixed(2))} ms
-                            </span>
-                          </td>
-                          <td>
-                            <span class="group-stat ${group.failedCount > 0 ? 'operation-failure' : 'operation-success'}">
-                              ${successRate}%
-                            </span>
-                          </td>
-                        </tr>
-                        ${isExpanded ? group.operations.map(op => html`
-                          <tr class="group-child">
-                            <td class="col-expand"></td>
-                            <td>
-                              <div class="operation-query" title="${op.operationValue || 'N/A'}">
-                                ${op.operationValue || 'N/A'}
-                              </div>
-                            </td>
-                            <td>
-                              ${op.success ? html`
-                                <span class="operation-success">${this.localize?.term('common_success') || 'Success'}</span>
-                              ` : html`
-                                <span class="operation-failure">${this.localize?.term('common_failed') || 'Failed'}</span>
-                              `}
-                            </td>
-                            <td>
-                              ${new Date(op.startCommand).toLocaleTimeString()}
-                            </td>
-                            <td>
-                              <span class="operation-duration ${getDurationColor(op.duration)}">
-                                ${(op.duration.toFixed(2))} ms
-                              </span>
-                            </td>
-                            <td>
-                              ${op.hasStackTrace ? html`
-                                <uui-button
-                                  look="default"
-                                  compact
-                                  title="${this.localize?.term('sqlStacktrace_viewStackTrace') || 'View Stack Trace'}"
-                                  @click="${(e: Event) => { e.stopPropagation(); this.#openSqlStacktraceModal(op); }}"
-                                >
-                                  <uui-icon name="icon-bug"></uui-icon>
-                                </uui-button>
-                              ` : html`
-                                <span class="no-trace">&mdash;</span>
-                              `}
-                            </td>
-                          </tr>
-                        `) : ''}
-                      `;
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            ${totalPages > 1 ? html`
-              <div class="pagination">
-                <uui-button
-                  look="default"
-                  ?disabled="${this._currentPage === 1}"
-                  @click="${() => goToPage(this._currentPage - 1)}"
-                >
-                  <uui-icon name="icon-chevron-left"></uui-icon>
-                  ${this.localize?.term('common_previous') || 'Previous'}
-                </uui-button>
-                
-                <div class="page-numbers">
-                  ${Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (this._currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (this._currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = this._currentPage - 2 + i;
-                    }
-                    
-                    return html`
-                      <uui-button
-                        look="${pageNum === this._currentPage ? 'primary' : 'default'}"
-                        color="${pageNum === this._currentPage ? 'positive' : 'default'}"
-                        @click="${() => goToPage(pageNum)}"
-                      >
-                        ${pageNum}
-                      </uui-button>
-                    `;
-                  })}
-                  
-                  ${totalPages > 5 && this._currentPage < totalPages - 2 ? html`
-                    <span class="ellipsis">...</span>
-                    <uui-button
-                      look="default"
-                      @click="${() => goToPage(totalPages)}"
-                    >
-                      ${totalPages}
-                    </uui-button>
-                  ` : ''}
-                </div>
-                
-                <uui-button
-                  look="default"
-                  ?disabled="${this._currentPage === totalPages}"
-                  @click="${() => goToPage(this._currentPage + 1)}"
-                >
-                  ${this.localize?.term('common_next') || 'Next'}
-                  <uui-icon name="icon-chevron-right"></uui-icon>
-                </uui-button>
-                
-                <div class="page-jump">
-                  <label>${this.localize?.term('common_goToPage') || 'Go to page'}:</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="${totalPages}"
-                    .value="${this._currentPage.toString()}"
-                    @change="${(e: Event) => {
-                      const page = parseInt((e.target as HTMLInputElement).value);
-                      if (page >= 1 && page <= totalPages) {
-                        goToPage(page);
-                      }
-                    }}"
-                  />
-                  <span>${this.localize?.term('common_of') || 'of'} ${totalPages}</span>
-                </div>
-              </div>
-            ` : ''}
-          `}
-        </div>
-      </div>
-    `;
   }
 
   #renderTabContent() {
     switch (this._activeTab) {
       case 'overview':
-        return this.#renderOverviewTab();
+        return html`
+          <umbmetrics-overview-tab
+            .performanceMetrics=${this._performanceMetrics}
+            .isConnected=${this._isConnected}
+            @open-active-requests=${this.#onOpenActiveRequests}
+          ></umbmetrics-overview-tab>`;
       case 'heap':
-        return this.#renderHeapTab();
+        return html`
+          <umbmetrics-heap-tab
+            .performanceMetrics=${this._performanceMetrics}
+          ></umbmetrics-heap-tab>`;
       case 'umbraco':
-        return this.#renderUmbracoTab();
+        return html`
+          <umbmetrics-umbraco-tab
+            .umbracoMetrics=${this._umbracoMetrics}
+          ></umbmetrics-umbraco-tab>`;
       case 'deliveryPulse':
-        return this.#renderDeliveryPulseTab();
+        return html`
+          <umbmetrics-delivery-pulse-tab
+            .deliveryPulseMetrics=${this._deliveryPulseMetrics}
+            @refresh-delivery-pulse=${this.#onClickRefreshMetrics}
+          ></umbmetrics-delivery-pulse-tab>`;
       case 'database':
-        return this.#renderDatabaseTab();
+        return html`
+          <umbmetrics-database-tab
+            .performanceMetrics=${this._performanceMetrics}
+            @refresh-metrics=${this.#onClickRefreshMetrics}
+            @open-sql-stacktrace=${this.#openSqlStacktraceModal}
+          ></umbmetrics-database-tab>`;
       case 'thresholds':
-        return this.#renderThresholdsTab();
+        return html`
+          <umbmetrics-thresholds-tab
+            .alerts=${this._thresholdAlerts}
+            .alertStats=${this._alertStats}
+            .loading=${this._loadingAlerts}
+            @refresh-thresholds=${this.#onClickRefreshMetrics}
+            @acknowledge-alert=${this.#onAcknowledgeAlert}
+          ></umbmetrics-thresholds-tab>`;
       case 'utils':
-        return this.#renderUtilsTab();
+        return html`
+          <umbmetrics-utils-tab
+            @open-export-modal=${this.#openExportModal}
+            @open-cleanup-dialog=${this.#openCleanupDialog}
+          ></umbmetrics-utils-tab>`;
       default:
-        return this.#renderOverviewTab();
+        return html`
+          <umbmetrics-overview-tab
+            .performanceMetrics=${this._performanceMetrics}
+            .isConnected=${this._isConnected}
+            @open-active-requests=${this.#onOpenActiveRequests}
+          ></umbmetrics-overview-tab>`;
     }
   }
 
@@ -1456,7 +421,7 @@ export class UmbMetrcisDashboardElement extends UmbElementMixin(LitElement) {
           ${this.#renderTabContent()}
         </div>
       </uui-box>
-          `;
+    `;
   }
 
   static styles = css`${unsafeCSS(stylesString)}`;
