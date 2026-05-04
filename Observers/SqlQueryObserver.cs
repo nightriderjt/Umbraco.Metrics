@@ -34,6 +34,7 @@ namespace UmbMetrics.Observers
             Guid operationId = GetOperationId(value.Value);
             switch (value.Key)
             {
+                 
                 case "Microsoft.Data.SqlClient.WriteCommandBefore":
                     var command = GetPropertyValue<DbCommand>(value.Value, "Command");
                     if (command == null) break;

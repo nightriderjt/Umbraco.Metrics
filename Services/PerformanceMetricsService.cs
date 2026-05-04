@@ -27,6 +27,12 @@ public class PerformanceMetricsService : IPerformanceMetricsService
         return stackTrace;
     }
 
+    public SqlStackTrace? GetSqlStackTrace(Guid operationId)
+    {
+        SqlStackTraces.TryGetValue(operationId, out var stackTrace);
+        return stackTrace;
+    }
+
     public async Task<PerformanceMetrics> GetMetricsAsync()
     {
         var metrics = new PerformanceMetrics

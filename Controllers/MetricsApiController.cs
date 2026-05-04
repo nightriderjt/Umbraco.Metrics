@@ -79,6 +79,39 @@ public class MetricsApiController : ManagementApiControllerBase
     }
 
     /// <summary>
+    /// Gets the SQL stack trace for a specific operation
+    /// </summary>
+    [HttpGet("sql-trace/{operationId:guid}")]
+    [ProducesResponseType(typeof(SqlStackTrace), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public IActionResult GetSqlStackTrace(Guid operationId)
+    {
+        try
+        {
+            var stackTrace = _metricsService.GetSqlStackTrace(operationId);
+            if (stackTrace == null)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Stack trace not found",
+                    Detail = $"No SQL stack trace found for operation {operationId}",
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+            return Ok(stackTrace);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve SQL stack trace",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
     /// Gets the current performance metrics for the application
     /// </summary>
     /// <returns>Performance metrics data</returns>

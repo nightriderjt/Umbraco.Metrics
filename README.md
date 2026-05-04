@@ -135,6 +135,8 @@ After installation and configuration, restart your Umbraco site and navigate to 
 
 > **Note:** From version 17.3.4.1+, the dashboard has moved from the Settings section to its own dedicated backoffice section. Make sure your backoffice user has the appropriate permissions to access the new section.
 
+> **Note:** From version 17.3.4.1+, the dashboard has moved from the Settings section to its own dedicated backoffice section. Make sure your backoffice user has the appropriate permissions to access the new section.
+
 ## Advanced Features
 
 ### Historical Metrics Collection
