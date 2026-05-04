@@ -27,36 +27,28 @@ public class MetricsExportService : IMetricsExportService
 
     public async Task<ExportResult> ExportMetricsAsync(ExportOptions options)
     {
-        try
+        // Check if this is a historical export
+        if (options.Scope == ExportScope.Historical || options.Scope == ExportScope.Custom)
         {
-            // Check if this is a historical export
-            if (options.Scope == ExportScope.Historical || options.Scope == ExportScope.Custom)
-            {
-                return await _historicalExportService.ExportHistoricalMetricsAsync(options);
-            }
-
-            // Current snapshot export
-            if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
-            {
-                return await ExportCombinedMetricsAsync(options);
-            }
-            else if (options.IncludePerformanceMetrics)
-            {
-                return await ExportPerformanceMetricsAsync(options);
-            }
-            else if (options.IncludeUmbracoMetrics)
-            {
-                return await ExportUmbracoMetricsAsync(options);
-            }
-            else
-            {
-                throw new ArgumentException("At least one metric type must be selected for export");
-            }
+            return await _historicalExportService.ExportHistoricalMetricsAsync(options);
         }
-        catch (Exception ex)
+
+        // Current snapshot export
+        if (options.IncludePerformanceMetrics && options.IncludeUmbracoMetrics)
         {
-            _logger.LogError(ex, "Error exporting metrics");
-            throw;
+            return await ExportCombinedMetricsAsync(options);
+        }
+        else if (options.IncludePerformanceMetrics)
+        {
+            return await ExportPerformanceMetricsAsync(options);
+        }
+        else if (options.IncludeUmbracoMetrics)
+        {
+            return await ExportUmbracoMetricsAsync(options);
+        }
+        else
+        {
+            throw new ArgumentException("At least one metric type must be selected for export");
         }
     }
 
@@ -238,8 +230,8 @@ public class MetricsExportService : IMetricsExportService
         csvBuilder.AppendLine($"Media,Media Types,{metrics.MediaStatistics.MediaTypeCount},");
 
         // Cache Statistics
-        csvBuilder.AppendLine($"Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
-        csvBuilder.AppendLine($"Cache,Runtime Cache Size,{metrics.CacheStatistics.RuntimeCacheSizeMB:F2},MB");
+        csvBuilder.AppendLine($"Cache,Memory Cache Entries,{metrics.CacheStatistics.MemoryCacheEntryCount},");
+        csvBuilder.AppendLine($"Cache,Cache Hit Ratio,{metrics.CacheStatistics.CacheHitRatio:P2},");
         csvBuilder.AppendLine($"Cache,NuCache Items,{metrics.CacheStatistics.NuCacheCount},");
         csvBuilder.AppendLine($"Cache,NuCache Size,{metrics.CacheStatistics.NuCacheSizeMB:F2},MB");
         csvBuilder.AppendLine($"Cache,Total Cache Size,{metrics.CacheStatistics.TotalCacheSize},");
@@ -289,7 +281,7 @@ public class MetricsExportService : IMetricsExportService
 
         csvBuilder.AppendLine($"Umbraco,Content,Total Nodes,{metrics.ContentStatistics.TotalContentNodes},");
         csvBuilder.AppendLine($"Umbraco,Media,Total Items,{metrics.MediaStatistics.TotalMediaItems},");
-        csvBuilder.AppendLine($"Umbraco,Cache,Runtime Cache Items,{metrics.CacheStatistics.RuntimeCacheCount},");
+        csvBuilder.AppendLine($"Umbraco,Cache,Memory Cache Entries,{metrics.CacheStatistics.MemoryCacheEntryCount},");
         csvBuilder.AppendLine($"Umbraco,Users,Total Users,{metrics.BackofficeUsers.TotalUsers},");
     }
 
@@ -301,7 +293,7 @@ public class MetricsExportService : IMetricsExportService
         var headers = properties.Select(p => p.Name);
         csvBuilder.AppendLine(string.Join(",", headers));
 
-        // Data row
+        // Data rowa
         var values = properties.Select(p =>
         {
             var value = p.GetValue(data);

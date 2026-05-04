@@ -1,3 +1,5 @@
+import { DeliveryPulseMetrics } from "./delivery-pulse-metrics";
+
 export interface SqlStackTrace {
   caller?: string;
   method?: string;
@@ -27,6 +29,7 @@ export interface PerformanceMetrics {
   requestMetrics: RequestMetrics;
   applicationInfo: ApplicationInfo;
   sqlOperations: SqlOperation[];
+  deliveryPulse: DeliveryPulseMetrics;
 }
 
 export interface MemoryMetrics {

@@ -100,6 +100,15 @@ public static class SqlQueries
         public const string MediaCount =
             @"SELECT COUNT(*) FROM umbracoNode 
               WHERE nodeObjectType = @0 AND trashed = 0";
+
+        /// <summary>
+        /// Get total size of NuCache data in bytes from the cmsContentNu table.
+        /// NuCache stores serialized content in data (NVARCHAR) and dataRaw (VARBINARY) columns.
+        /// </summary>
+        public const string NuCacheDataSize =
+            @"SELECT ISNULL(SUM(
+                ISNULL(DATALENGTH(data), 0) + ISNULL(DATALENGTH(dataRaw), 0)
+              ), 0) FROM cmsContentNu";
     }
 
     public static class Thresholds

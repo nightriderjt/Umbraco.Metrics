@@ -21,38 +21,30 @@ public class HistoricalMetricsExportService : IHistoricalMetricsExportService
 
     public async Task<ExportResult> ExportHistoricalMetricsAsync(ExportOptions options)
     {
-        try
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.Scope == ExportScope.Current)
         {
-            ArgumentNullException.ThrowIfNull(options);
-
-            if (options.Scope == ExportScope.Current)
-            {
-                throw new ArgumentException("Historical export requires Historical or Custom scope");
-            }
-
-            // Get historical metrics based on scope
-            IReadOnlyList<PerformanceMetrics> performanceMetrics = [];
-            Memory<UmbracoMetrics> umbracoMetrics = new();
-
-            if (options.IncludePerformanceMetrics)
-            {
-                performanceMetrics = await GetHistoricalPerformanceMetricsAsync(options);
-            }
-
-            // Note: Umbraco metrics historical storage is not implemented yet
-            // For now, we'll only export performance metrics for historical data
-            if (options.IncludeUmbracoMetrics)
-            {
-                _logger.LogWarning("Historical Umbraco metrics export requested but not implemented");
-            }
-
-            return GenerateHistoricalExportResult(performanceMetrics, umbracoMetrics, options);
+            throw new ArgumentException("Historical export requires Historical or Custom scope");
         }
-        catch (Exception ex)
+
+        // Get historical metrics based on scope
+        IReadOnlyList<PerformanceMetrics> performanceMetrics = [];
+        Memory<UmbracoMetrics> umbracoMetrics = new();
+
+        if (options.IncludePerformanceMetrics)
         {
-            _logger.LogError(ex, "Error exporting historical metrics");
-            throw;
+            performanceMetrics = await GetHistoricalPerformanceMetricsAsync(options);
         }
+
+        // Note: Umbraco metrics historical storage is not implemented yet
+        // For now, we'll only export performance metrics for historical data
+        if (options.IncludeUmbracoMetrics)
+        {
+            _logger.LogWarning("Historical Umbraco metrics export requested but not implemented");
+        }
+
+        return GenerateHistoricalExportResult(performanceMetrics, umbracoMetrics, options);
     }
 
     private async Task<IReadOnlyList<PerformanceMetrics>> GetHistoricalPerformanceMetricsAsync(ExportOptions options)

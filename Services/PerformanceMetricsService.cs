@@ -3,18 +3,28 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using UmbMetrics.Middleware;
 using UmbMetrics.Models;
+using UmbMetrics.Services.Interfaces;
 
 namespace UmbMetrics.Services;
 
 public class PerformanceMetricsService : IPerformanceMetricsService
 {
-    private readonly ILogger<PerformanceMetricsService> _logger;    
+    private readonly ILogger<PerformanceMetricsService> _logger;
+    private readonly IDeliveryPulseMetricsService? _deliveryPulseService;
     private static readonly Process _currentProcess = Process.GetCurrentProcess();
     public   ConcurrentDictionary<Guid,SqlOperation> SqlOperations { get;  set; } = [];
     public   ConcurrentDictionary<Guid,SqlStackTrace> SqlStackTraces { get;  set; } = [];
-    public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger)
+    public PerformanceMetricsService(ILogger<PerformanceMetricsService> logger, IDeliveryPulseMetricsService? deliveryPulseService = null)
     {
         _logger = logger;
+        _deliveryPulseService = deliveryPulseService;
+    }
+
+
+    public SqlStackTrace? GetSqlStackTrace(Guid operationId)
+    {
+        SqlStackTraces.TryGetValue(operationId, out var stackTrace);
+        return stackTrace;
     }
 
     public SqlStackTrace? GetSqlStackTrace(Guid operationId)
@@ -25,28 +35,22 @@ public class PerformanceMetricsService : IPerformanceMetricsService
 
     public async Task<PerformanceMetrics> GetMetricsAsync()
     {
-        try
+        var metrics = new PerformanceMetrics
         {
-            var metrics = new PerformanceMetrics
-            {
-                Timestamp = DateTime.UtcNow,
-                CpuUsage = await GetCpuUsageAsync(),
-                MemoryUsage = GetMemoryUsage(),
-                ThreadInfo = GetThreadInfo(),
-                GarbageCollectionStats = GetGarbageCollectionStats(),
-                RequestMetrics = GetRequestMetrics(),
-                ApplicationInfo = GetApplicationInfo(),
-                SqlOperations = SqlOperations.Values.ToList() ?? []
-            };
+            Timestamp = DateTime.UtcNow,
+            CpuUsage = await GetCpuUsageAsync(),
+            MemoryUsage = GetMemoryUsage(),
+            ThreadInfo = GetThreadInfo(),
+            GarbageCollectionStats = GetGarbageCollectionStats(),
+            RequestMetrics = GetRequestMetrics(),
+            ApplicationInfo = GetApplicationInfo(),
+            SqlOperations = SqlOperations.Values.ToList() ?? [],
+            DeliveryPulse = _deliveryPulseService?.GetMetrics()?? new DeliveryPulseMetrics()
+        };
 
-            return metrics;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving performance metrics");
-            throw;
-        }
+        return metrics;
     }
+
 
     private async Task<double> GetCpuUsageAsync()
     {

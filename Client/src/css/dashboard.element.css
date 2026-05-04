@@ -620,6 +620,143 @@ uui-box.wide {
   line-height: 1.5;
 }
 
+/* Delivery Pulse Tab Styles */
+.delivery-pulse-endpoints {
+  margin-bottom: 2rem;
+}
+
+.delivery-pulse-endpoints h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--uui-color-text);
+}
+
+.no-endpoints {
+  text-align: center;
+  padding: 2rem;
+  color: var(--uui-color-text-alt);
+  font-style: italic;
+  background: var(--uui-color-surface);
+  border-radius: var(--uui-border-radius);
+  border: 1px dashed var(--uui-color-border);
+}
+
+.endpoints-table-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--uui-border-radius);
+}
+
+.endpoints-table-wrapper {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.endpoints-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--uui-color-surface);
+  border: 1px solid var(--uui-color-border);
+  border-radius: var(--uui-border-radius);
+  overflow: hidden;
+}
+
+.endpoints-table thead {
+  background: var(--uui-color-surface-alt);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.endpoints-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--uui-color-text);
+  border-bottom: 1px solid var(--uui-color-border);
+  background: var(--uui-color-surface-alt);
+}
+
+.endpoints-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--uui-color-border);
+  color: var(--uui-color-text);
+}
+
+.endpoints-table tr:last-child td {
+  border-bottom: none;
+}
+
+.endpoints-table tr:hover {
+  background: var(--uui-color-surface-hover);
+}
+
+.endpoint-path {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.endpoint-path-text {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--uui-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.endpoint-method {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--uui-border-radius);
+  background: var(--uui-color-surface-alt);
+}
+
+.endpoint-stat {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.stat-error {
+  color: var(--uui-color-danger);
+}
+
+.stat-warning {
+  color: var(--uui-color-warning);
+}
+
+.stat-ok {
+  color: var(--uui-color-positive);
+}
+
+.endpoint-duration {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.endpoint-duration.long {
+  color: var(--uui-color-danger);
+}
+
+.endpoint-duration.medium {
+  color: var(--uui-color-warning);
+}
+
+.endpoint-duration.short {
+  color: var(--uui-color-positive);
+}
+
+.endpoint-time {
+  font-size: 0.875rem;
+  color: var(--uui-color-text-alt);
+}
+
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .utils-grid {

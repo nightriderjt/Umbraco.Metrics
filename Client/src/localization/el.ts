@@ -54,7 +54,27 @@ export default {
     "avgDuration": "Μέση Διάρκεια",
     "maxDuration": "Μέγιστη Διάρκεια",
     "successRate": "Ποσοστό Επιτυχίας",
-    "groups": "ομάδες"
+    "groups": "ομάδες",
+    "deliveryPulse": "Delivery Pulse",
+    "clickToLoadDeliveryPulse": "Κάντε κλικ στο \"Ανανέωση Μετρικών\" για φόρτωση δεδομένων απόδοσης Delivery API"
+  },
+
+  // Delivery Pulse
+  "deliveryPulse": {
+    "totalRequests": "Συνολικές Αιτήσεις",
+    "sinceStartup": "Από την εκκίνηση",
+    "errors": "Σφάλματα",
+    "5xxResponses": "Αποκρίσεις 5xx",
+    "404s": "404 Μη Ευρεθέν",
+    "notFoundCount": "Αποκρίσεις μη εύρεσης",
+    "avgLatency": "Μέση Καθυστέρηση",
+    "maxLatency": "Μέγιστη Καθυστέρηση",
+    "topEndpoints": "Κορυφαία Τερματικά Σημεία",
+    "noEndpoints": "Δεν καταγράφηκαν ακόμη αιτήσεις Delivery API",
+    "path": "Διαδρομή",
+    "method": "Μέθοδος",
+    "requests": "Αιτήσεις",
+    "lastAccessed": "Τελευταία Πρόσβαση"
   },
 
   // Export Modal
@@ -142,6 +162,8 @@ export default {
     "activeRequests": "Ενεργές Αιτήσεις",
     "totalContentNodes": "Συνολικοί Κόμβοι Περιεχομένου",
     "totalMediaItems": "Συνολικά Αντικείμενα Πολυμέσων",
+    "memoryCacheEntries": "Καταχωρήσεις Cache Μνήμης",
+    "cacheHitRatio": "Αναλογία Επιτυχιών Cache",
     "runtimeCacheItems": "Αντικείμενα Cache Εκτέλεσης",
     "totalUsers": "Συνολικοί Χρήστες",
     "processId": "ID Διεργασίας",

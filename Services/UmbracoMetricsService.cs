@@ -1,8 +1,6 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using UmbMetrics.Models;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Hosting;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.Persistence;
 
@@ -10,80 +8,77 @@ namespace UmbMetrics.Services;
 
 public class UmbracoMetricsService : IUmbracoMetricsService
 {   
-   
     private readonly IUserService _userService;
-    private readonly AppCaches _appCaches;
+    private readonly IMemoryCache _memoryCache;
     private readonly ILogger<UmbracoMetricsService> _logger;
     private readonly IUmbracoDatabaseFactory _databaseFactory;
-    private readonly IHostingEnvironment _hostingEnvironment;
 
     public UmbracoMetricsService(    
         IUserService userService,
-        AppCaches appCaches,
+        IMemoryCache memoryCache,
         ILogger<UmbracoMetricsService> logger,
-        IUmbracoDatabaseFactory databaseFactory,
-        IHostingEnvironment hostingEnvironment)
+        IUmbracoDatabaseFactory databaseFactory)
     {      
         _userService = userService;
-        _appCaches = appCaches;
+        _memoryCache = memoryCache;
         _logger = logger;
         _databaseFactory = databaseFactory;
-        _hostingEnvironment = hostingEnvironment;
     }
 
     public async Task<UmbracoMetrics> GetMetricsAsync()
     {
-        try
+        var metrics = new UmbracoMetrics
         {
-            var metrics = new UmbracoMetrics
-            {
-                Timestamp = DateTime.UtcNow,
-                ContentStatistics = await GetContentStatisticsAsync(),
-                MediaStatistics = await GetMediaStatisticsAsync(),
-                CacheStatistics = GetCacheStatistics(),
-                BackofficeUsers = await GetBackofficeUserInfoAsync()
-            };
+            Timestamp = DateTime.UtcNow,
+            ContentStatistics = await GetContentStatisticsAsync(),
+            MediaStatistics = await GetMediaStatisticsAsync(),
+            CacheStatistics = GetCacheStatistics(),
+            BackofficeUsers = await GetBackofficeUserInfoAsync()
+        };
 
-            return metrics;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving Umbraco metrics");
-            throw;
-        }
+        return metrics;
     }
 
     private CacheStatistics GetCacheStatistics()
     {
-        var runtimeCacheCount = 0;
-        var runtimeCacheSizeBytes = 0L;
-        var nuCacheCount = 0;
-        var nuCacheSizeBytes = 0L;
+        var stats = new CacheStatistics();
 
         try
         {
-            // === RUNTIME CACHE ===
-            var runtimeCacheItems = _appCaches.RuntimeCache.SearchByKey("").ToList();
-            runtimeCacheCount = runtimeCacheItems.Count;
-            runtimeCacheSizeBytes = EstimateRuntimeCacheSize(runtimeCacheItems);
+            // === MEMORY CACHE STATISTICS (via .NET 10 MemoryCache.GetCurrentStatistics()) ===
+            if (_memoryCache is MemoryCache memoryCache)
+            {
+                var cacheStats = memoryCache.GetCurrentStatistics();
+                if (cacheStats is not null)
+                {
+                    stats.MemoryCacheEntryCount = cacheStats.CurrentEntryCount;
+                    stats.TotalCacheHits = cacheStats.TotalHits;
+                    stats.TotalCacheMisses = cacheStats.TotalMisses;
+                    stats.CacheHitRatio = (cacheStats.TotalHits + cacheStats.TotalMisses) > 0
+                        ? Math.Round((double)cacheStats.TotalHits / (cacheStats.TotalHits + cacheStats.TotalMisses), 4)
+                        : 0;
+                }
+            }
+            else
+            {
+                _logger.LogDebug("IMemoryCache is not a MemoryCache instance; cannot retrieve cache statistics");
+            }
 
-            // === NUCACHE (Published Content Cache) ===
-            nuCacheSizeBytes = GetNuCacheFileSize();
-            nuCacheCount = GetPublishedContentCountFromDatabase();
+            // === NUCACHE (Published Content Cache - in-memory, backed by database) ===
+            stats.NuCacheCount = GetPublishedContentCountFromDatabase();
+            stats.NuCacheSizeBytes = GetNuCacheDataSizeFromDatabase();
+            stats.NuCacheSizeMB = Math.Round(stats.NuCacheSizeBytes / 1024.0 / 1024.0, 2);
+
+            // === TOTAL CACHE SIZE ===
+            // Memory cache size requires SizeLimit which breaks Umbraco, so we only report entry count.
+            stats.TotalCacheSize = $"{stats.MemoryCacheEntryCount} entries, {stats.NuCacheCount} NuCache items ({FormatBytes(stats.NuCacheSizeBytes)})";
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Could not retrieve cache statistics");
         }
 
-        return new CacheStatistics
-        {
-            RuntimeCacheCount = runtimeCacheCount,
-            RuntimeCacheSizeMB = Math.Round(runtimeCacheSizeBytes / 1024.0 / 1024.0, 2),
-            NuCacheCount = nuCacheCount,
-            NuCacheSizeMB = Math.Round(nuCacheSizeBytes / 1024.0 / 1024.0, 2),
-            TotalCacheSize = FormatBytes(runtimeCacheSizeBytes + nuCacheSizeBytes)
-        };
+        return stats;
     }
 
     private int GetPublishedContentCountFromDatabase()
@@ -107,117 +102,19 @@ public class UmbracoMetricsService : IUmbracoMetricsService
         }
     }
 
-    private long GetNuCacheFileSize()
+    private long GetNuCacheDataSizeFromDatabase()
     {
         try
         {
-            var localTempPath = _hostingEnvironment.LocalTempPath;
-            var nuCachePath = Path.Combine(localTempPath, "NuCache");
-
-            if (!Directory.Exists(nuCachePath))
-            {
-                var umbracoPath = Path.Combine(_hostingEnvironment.ApplicationPhysicalPath, "umbraco", "Data", "NuCache");
-                if (Directory.Exists(umbracoPath))
-                {
-                    nuCachePath = umbracoPath;
-                }
-                else
-                {
-                    _logger.LogDebug("NuCache directory not found");
-                    return 0;
-                }
-            }
-
-            long totalSize = 0;
-            var allFiles = Directory.GetFiles(nuCachePath, "*", SearchOption.AllDirectories);
-            foreach (var file in allFiles)
-            {
-                var fileInfo = new FileInfo(file);
-                totalSize += fileInfo.Length;
-            }
-
-            _logger.LogDebug("NuCache total size: {Size} bytes from {Count} files", totalSize, allFiles.Length);
-            return totalSize;
+            using var db = _databaseFactory.CreateDatabase();
+            var sizeBytes = db.ExecuteScalar<long>(UmbMetrics.Constants.SqlQueries.Cache.NuCacheDataSize);
+            _logger.LogDebug("NuCache data size from database: {Size} bytes", sizeBytes);
+            return sizeBytes;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Could not get NuCache file size");
+            _logger.LogWarning(ex, "Could not get NuCache data size from database");
             return 0;
-        }
-    }
-
-    private long EstimateRuntimeCacheSize(List<object?> cacheItems)
-    {
-        if (cacheItems.Count == 0) return 0;
-
-        try
-        {
-            var sampleSize = Math.Min(cacheItems.Count, 500);
-            var sampledBytes = 0L;
-
-            for (int i = 0; i < sampleSize; i++)
-            {
-                var item = cacheItems[i];
-                if (item == null) continue;
-                sampledBytes += EstimateObjectSize(item);
-            }
-
-            if (sampleSize > 0)
-            {
-                var avgBytesPerItem = sampledBytes / sampleSize;
-                return avgBytesPerItem * cacheItems.Count;
-            }
-
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error estimating runtime cache size");
-            return 0;
-        }
-    }
-
-    private long EstimateObjectSize(object obj)
-    {
-        if (obj == null) return 0;
-
-        try
-        {
-            return obj switch
-            {
-                string s => s.Length * 2 + 56,
-                byte[] b => b.Length + 24,
-                int => 20,
-                long => 24,
-                double => 24,
-                bool => 17,
-                DateTime => 24,
-                Guid => 32,
-                _ => EstimateComplexObjectSize(obj)
-            };
-        }
-        catch
-        {
-            return 256;
-        }
-    }
-    private static JsonSerializerOptions SerializerOptions() => new()
-    {
-        MaxDepth = 3,
-        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
-    };
-    private long EstimateComplexObjectSize(object obj)
-    {
-        try
-        {
-            var json = JsonSerializer.Serialize(obj, SerializerOptions());
-            return (json.Length * 2) + 100;
-        }
-        catch
-        {
-            var type = obj.GetType();
-            var propertyCount = type.GetProperties().Length;
-            return propertyCount * 100 + 200;
         }
     }
 

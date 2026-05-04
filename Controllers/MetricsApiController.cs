@@ -25,6 +25,7 @@ public class MetricsApiController : ManagementApiControllerBase
     private readonly IHistoricalMetricsService _historicalMetricsService;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IMetricsCleanUpService _metricsCleanUpService;
+    private readonly IDeliveryPulseMetricsService? _deliveryPulseMetricsService;
 
     public MetricsApiController(
         IPerformanceMetricsService metricsService,
@@ -32,7 +33,8 @@ public class MetricsApiController : ManagementApiControllerBase
         IMetricsExportService exportService,
         IHistoricalMetricsService historicalMetricsService,
         IWebHostEnvironment webHostEnvironment,
-        IMetricsCleanUpService metricsCleanUpService)
+        IMetricsCleanUpService metricsCleanUpService,
+        IDeliveryPulseMetricsService? deliveryPulseMetricsService=null)
     {
         _metricsService = metricsService;
         _umbracoMetricsService = umbracoMetricsService;
@@ -40,6 +42,40 @@ public class MetricsApiController : ManagementApiControllerBase
         _historicalMetricsService = historicalMetricsService;
         _webHostEnvironment = webHostEnvironment;
         _metricsCleanUpService = metricsCleanUpService;
+        _deliveryPulseMetricsService = deliveryPulseMetricsService;
+    }
+
+    /// <summary>
+    /// Gets the SQL stack trace for a specific operation
+    /// </summary>
+    [HttpGet("sql-trace/{operationId:guid}")]
+    [ProducesResponseType(typeof(SqlStackTrace), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public IActionResult GetSqlStackTrace(Guid operationId)
+    {
+        try
+        {
+            var stackTrace = _metricsService.GetSqlStackTrace(operationId);
+            if (stackTrace == null)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Stack trace not found",
+                    Detail = $"No SQL stack trace found for operation {operationId}",
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+            return Ok(stackTrace);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve SQL stack trace",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
     }
 
     /// <summary>
@@ -100,6 +136,8 @@ public class MetricsApiController : ManagementApiControllerBase
     }
 
     [HttpGet("umb")]
+    [ProducesResponseType(typeof(UmbracoMetrics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetUmbracoMetrics()
     {
         try
@@ -109,7 +147,11 @@ public class MetricsApiController : ManagementApiControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return Problem(
+                title: "Failed to retrieve Umbraco metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
         }
     }
 
@@ -350,6 +392,29 @@ public class MetricsApiController : ManagementApiControllerBase
         {
             return Problem(
                 title: "Failed to save metrics",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    /// <summary>
+    /// Gets Delivery Pulse metrics for the Delivery API
+    /// </summary>
+    [HttpGet("delivery-pulse")]
+    [ProducesResponseType(typeof(DeliveryPulseMetrics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public IActionResult GetDeliveryPulseMetrics()
+    {
+        try
+        {
+            var metrics = _deliveryPulseMetricsService?.GetMetrics() ?? new DeliveryPulseMetrics();
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Failed to retrieve Delivery Pulse metrics",
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError
             );

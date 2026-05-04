@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,6 +24,12 @@ public class MetricsComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
+        // Enable MemoryCache statistics tracking so GetCurrentStatistics() returns data
+        builder.Services.AddOptions<MemoryCacheOptions>().Configure(x =>
+        {
+            x.TrackStatistics = true;          
+        });
+
         // Register metrics service
         builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();         
         builder.Services.AddScoped<IUmbracoMetricsService, UmbracoMetricsService>();
@@ -40,13 +46,12 @@ public class MetricsComposer : IComposer
         {
             builder.Services.AddHostedService<SqlTrackingBootstrapper>();
         }      
-        var environment = builder.Services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
-
+        var contentRootPath = AppContext.BaseDirectory;
 
         builder.Services.Configure<HistoricalMetricsOptions>(options =>
         {
             // Configure default options
-            options.StoragePath = Path.Combine(environment.ContentRootPath, "umbraco/Data/TEMP/MetricsHistory");
+            options.StoragePath = Path.Combine(contentRootPath, "umbraco/Data/TEMP/MetricsHistory");
             options.SaveIntervalSeconds = 5;
             options.RetentionDays = 30;
             options.MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
@@ -55,13 +60,22 @@ public class MetricsComposer : IComposer
         });
 
         // Register email notification settings configuration
-        builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection("UmbMetrics:EmailNotifications"));
+        builder.Services.Configure<EmailNotificationSettings>(builder.Config.GetSection(EmailNotificationSettings.SectionName));
 
         // Register threshold rules configuration
-        builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection("UmbMetrics:ThresholdRules"));
+        builder.Services.Configure<ThresholdRulesSettings>(builder.Config.GetSection(ThresholdRulesSettings.SectionName));
 
         builder.Services.AddSignalR();
 
+
+        // Register Delivery Pulse services
+        var enableDeliveryPulse = builder.Config.GetValue<bool?>("UmbMetrics:DeliveryPulse:EnableDeliveryPulse") ?? false;
+        if (enableDeliveryPulse)
+        {
+            builder.Services.Configure<DeliveryPulseOptions>(builder.Config.GetSection(DeliveryPulseOptions.SectionName));
+            builder.Services.AddSingleton<IDeliveryPulseMetricsService, DeliveryPulseMetricsService>();      
+        }
+      
 
         // Register threshold monitoring services
         builder.Services.AddSingleton<IThresholdEvaluationService, ThresholdEvaluationService>();
@@ -94,6 +108,10 @@ public class MetricsComposer : IComposer
                 applicationBuilder =>
                 {
                     applicationBuilder.UseMiddleware<MetricsMiddleware>();
+                    if (enableDeliveryPulse)
+                    {
+                        applicationBuilder.UseMiddleware<DeliveryPulseMiddleware>();
+                    }                 
                 },
                 applicationBuilder => { },
                 applicationBuilder => { }
